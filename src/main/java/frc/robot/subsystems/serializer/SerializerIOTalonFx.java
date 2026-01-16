@@ -30,7 +30,7 @@ public class SerializerIOTalonFx implements SerializerIO {
   private final StatusSignal<Current> torqueCurrent;
   final VelocityVoltage velocityVoltage = new VelocityVoltage(0).withSlot(0);
 
-  public SerializerIOTalonFx(gi talonCANId, String canbus) {
+  public SerializerIOTalonFx(int talonCANId, String canbus) {
     talon = new TalonFX(talonCANId, canbus);
     config = new TalonFXConfiguration();
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
