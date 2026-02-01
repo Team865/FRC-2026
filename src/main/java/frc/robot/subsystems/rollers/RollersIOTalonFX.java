@@ -1,4 +1,4 @@
-package frc.robot.subsystems.balltunneler;
+package frc.robot.subsystems.rollers;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -18,33 +18,44 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.PhoenixUtil;
 
-public class BallTunnelerIOTalonFx implements BallTunnelerIO {
+public class RollersIOTalonFX implements RollersIO {
+
   private final TalonFX talon;
-  private final TalonFXConfiguration config;
+  private final TalonFXConfiguration config = new TalonFXConfiguration();
+
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(50.0);
+  private final VelocityVoltage velocityVoltage = new VelocityVoltage(0).withSlot(0);
+
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
+
   private final StatusSignal<Angle> position;
   private final StatusSignal<AngularVelocity> velocity;
   private final StatusSignal<Voltage> appliedVoltage;
   private final StatusSignal<Current> supplyCurrent;
   private final StatusSignal<Current> torqueCurrent;
-  final VelocityVoltage velocityVoltage = new VelocityVoltage(0).withSlot(0);
 
-  public BallTunnelerIOTalonFx(int talonCANId, String canbus) {
-    talon = new TalonFX(talonCANId, canbus);
-    config = new TalonFXConfiguration();
-    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+  @SuppressWarnings("removal")
+  public RollersIOTalonFX(int canId, String canBus, RollersConstants constants) {
+
+    talon = new TalonFX(canId, canBus);
+
+    config.MotorOutput.Inverted =
+        constants.inverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.CurrentLimits.SupplyCurrentLimit = 40;
+
+    config.CurrentLimits.SupplyCurrentLimit = constants.currentLimit;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    config.Slot0.kS = BallTunnelerConstants.kS;
-    config.Slot0.kV = BallTunnelerConstants.kV;
-    config.Slot0.kP = BallTunnelerConstants.kP;
-    config.Slot0.kD = BallTunnelerConstants.kD;
-    config.Slot0.kI = 0.0;
-    config.Feedback.SensorToMechanismRatio =
-        BallTunnelerConstants.GEAR_RATIO; // Adjust for gearing constant
+    config.Feedback.SensorToMechanismRatio = constants.gearRatio;
+
+    config.Slot0.kS = constants.kS;
+    config.Slot0.kV = constants.kV;
+    config.Slot0.kP = constants.kP;
+    config.Slot0.kD = constants.kD;
+
     PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
 
     position = talon.getPosition();
@@ -52,6 +63,7 @@ public class BallTunnelerIOTalonFx implements BallTunnelerIO {
     appliedVoltage = talon.getMotorVoltage();
     supplyCurrent = talon.getSupplyCurrent();
     torqueCurrent = talon.getTorqueCurrent();
+
     PhoenixUtil.tryUntilOk(
         5,
         () ->
@@ -60,7 +72,7 @@ public class BallTunnelerIOTalonFx implements BallTunnelerIO {
   }
 
   @Override
-  public void updateInputs(BallTunnelerIOInputsAutoLogged inputs) {
+  public void updateInputs(RollersIOInputsAutoLogged inputs) {
     inputs.connected =
         connectedDebouncer.calculate(
             BaseStatusSignal.refreshAll(
@@ -70,17 +82,16 @@ public class BallTunnelerIOTalonFx implements BallTunnelerIO {
     inputs.positionRads = position.getValue().in(Radians);
     inputs.velocityRadsPerSec = velocity.getValue().in(RadiansPerSecond);
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
-    inputs.torqueCurrent = torqueCurrent.getValueAsDouble();
+    inputs.supplyCurrentAmps = supplyCurrent.getValueAsDouble();
+    inputs.torqueCurrentAmps = torqueCurrent.getValueAsDouble();
   }
 
   @Override
   public void setControlConstants(double kS, double kV, double kP, double kD) {
-
     config.Slot0.kS = kS;
     config.Slot0.kV = kV;
     config.Slot0.kP = kP;
     config.Slot0.kD = kD;
-
     PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
   }
 

@@ -27,9 +27,10 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOSim;
-import frc.robot.subsystems.intake.IntakeIOTalonFx;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.rollers.RollersIO;
+import frc.robot.subsystems.rollers.RollersIOSim;
+import frc.robot.subsystems.rollers.RollersIOTalonFX;
 import frc.robot.util.AllianceFlipUtil;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -91,7 +92,10 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
 
-        intake = new Intake(new IntakeIOTalonFx(12, "rio"));
+        intake =
+            new Intake(
+                new RollersIOTalonFX(
+                    IntakeConstants.CAN_ID, "rio", IntakeConstants.ROLLER_CONSTANTS));
 
         break;
 
@@ -106,7 +110,9 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
 
-        intake = new Intake(new IntakeIOSim(DCMotor.getKrakenX60(1), 0.01));
+        intake =
+            new Intake(
+                new RollersIOSim(DCMotor.getKrakenX60(1), 0.01, IntakeConstants.ROLLER_CONSTANTS));
 
         break;
 
@@ -119,7 +125,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        intake = new Intake(new IntakeIO() {});
+        intake = new Intake(new RollersIO() {});
         break;
     }
 
@@ -162,7 +168,7 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // Test intake
-    controller.y().whileTrue(intake.runIntakeVelocityRadsPerSec(5));
+    controller.y().whileTrue(intake.runVelocity(5));
 
     // Lock to 0° when A button is held
     controller

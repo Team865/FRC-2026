@@ -1,13 +1,20 @@
 package frc.robot.subsystems.balltunneler;
 
-public final class BallTunnelerConstants {
+import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.rollers.RollersConstants;
 
-  public static final double RADIUS_INCHES = 13.08 / 2;
-  public static final double GEAR_RATIO = 1 / 10;
+public class BallTunnelerConstants {
 
-  public static final double kS = 0.5;
-  public static final double kV = 0.5;
+  public static final int CAN_ID = 16;
 
-  public static final double kP = 1.0;
-  public static final double kD = 0.0;
+  public static final RollersConstants ROLLER_CONSTANTS =
+      new RollersConstants(
+          0.15, // kS
+          0.02, // kV
+          4.5, // kP
+          0.0, // kD
+          1 / 10, // gear ratio
+          false, // inverted
+          40, // current limit
+          Units.inchesToMeters(13.08 / 2));
 }

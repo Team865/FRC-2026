@@ -1,34 +1,33 @@
 package frc.robot.subsystems.balltunneler;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.rollers.Rollers;
+import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
-public class BallTunneler extends SubsystemBase {
-  private final BallTunnelerIO io;
-  private final BallTunnelerIOInputsAutoLogged inputs = new BallTunnelerIOInputsAutoLogged();
+public class BallTunneler extends Rollers {
+
+  private final RollersIO io;
 
   private final LoggedTunableNumber kS =
-      new LoggedTunableNumber("BallTunnelerConstants/kS", BallTunnelerConstants.kS);
+      new LoggedTunableNumber("BallTunneler/kS", BallTunnelerConstants.ROLLER_CONSTANTS.kS);
   private final LoggedTunableNumber kV =
-      new LoggedTunableNumber("BallTunnelerConstants/kV", BallTunnelerConstants.kV);
+      new LoggedTunableNumber("BallTunneler/kV", BallTunnelerConstants.ROLLER_CONSTANTS.kV);
   private final LoggedTunableNumber kP =
-      new LoggedTunableNumber("BallTunnelerConstants/kP", BallTunnelerConstants.kP);
+      new LoggedTunableNumber("BallTunneler/kP", BallTunnelerConstants.ROLLER_CONSTANTS.kP);
   private final LoggedTunableNumber kD =
-      new LoggedTunableNumber("BallTunnelerConstants/kD", BallTunnelerConstants.kD);
+      new LoggedTunableNumber("BallTunneler/kD", BallTunnelerConstants.ROLLER_CONSTANTS.kD);
 
-  public BallTunneler(BallTunnelerIO io) {
-
+  public BallTunneler(RollersIO io) {
+    super("BallTunneler", io, BallTunnelerConstants.ROLLER_CONSTANTS);
     this.io = io;
+
     io.setControlConstants(kS.get(), kV.get(), kP.get(), kD.get());
   }
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("BallTunneler", inputs);
+    super.periodic();
+
     LoggedTunableNumber.ifChanged(
         hashCode(),
         (constants) ->
@@ -37,15 +36,5 @@ public class BallTunneler extends SubsystemBase {
         kV,
         kP,
         kD);
-  }
-
-  @AutoLogOutput
-  public Command runVoltsSerializer(double inputVolts) {
-    return startEnd(() -> io.setVolts(inputVolts), () -> io.setVolts(0));
-  }
-
-  public Command runSerializeVelocityRadsPerSec(double velocityRadsPerSec) {
-
-    return startEnd(() -> io.setVelocity(velocityRadsPerSec), () -> io.setVelocity(0));
   }
 }

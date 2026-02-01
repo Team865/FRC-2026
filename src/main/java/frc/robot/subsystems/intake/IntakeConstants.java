@@ -1,13 +1,23 @@
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.rollers.RollersConstants;
+
 public final class IntakeConstants {
 
-  public static final double kS = 0.5;
-  public static final double kV = 0.5;
+  public static final int CAN_ID = 14;
 
-  public static final double kP = 1.0;
-  public static final double kD = 0.0;
+  public static final RollersConstants ROLLER_CONSTANTS =
+      new RollersConstants(
+          0.2, // kS
+          0.01, // kV
+          5.0, // kP
+          0.0, // kD
+          16.0 / 24.0, // gear ratio
+          false, // inverted
+          40, // current limit in amps
+          Units.inchesToMeters(1.0) // Radius
+          );
 
-  public static final double ROLLER_RADIUS_INCHES = 1.0;
-  public static final double GEAR_RATIO = 16.0 / 24.0;
+  private IntakeConstants() {}
 }
