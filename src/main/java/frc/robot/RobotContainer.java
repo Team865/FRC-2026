@@ -33,6 +33,10 @@ import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOSim;
 import frc.robot.subsystems.pivot.PivotIOTalonFX;
 import frc.robot.subsystems.pivot.PivotIOTalonFX.PivotTalonFXConstants;
+import frc.robot.subsystems.shooter.Flywheel;
+import frc.robot.subsystems.shooter.FlywheelIO;
+import frc.robot.subsystems.shooter.FlywheelIOSim;
+import frc.robot.subsystems.shooter.FlywheelIOTalonFX;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.Turret;
@@ -52,6 +56,7 @@ public class RobotContainer {
 
   private final Turret turret;
   private final Hood hood;
+  private final Flywheel flywheel;
 
   private final Superstructure superstructure;
 
@@ -115,6 +120,7 @@ public class RobotContainer {
                         ShooterConstants.Hood.getGains(),
                         false,
                         ShooterConstants.Hood.GEAR_RATIO)));
+        flywheel = new Flywheel(new FlywheelIOTalonFX());
         break;
 
       case SIM:
@@ -131,6 +137,7 @@ public class RobotContainer {
         turret =
             new Turret(new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.getGains()));
         hood = new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getGains()));
+        flywheel = new Flywheel(new FlywheelIOSim());
         break;
 
       default:
@@ -145,6 +152,8 @@ public class RobotContainer {
 
         turret = new Turret(new PivotIO() {});
         hood = new Hood(new PivotIO() {});
+        flywheel = new Flywheel(new FlywheelIO() {});
+
         break;
     }
 
@@ -230,8 +239,8 @@ public class RobotContainer {
             hood.trackTarget(
                 () ->
                     Radians.of(
-                        getAllianceHubTranslation()
-                            .getDistance(drive.getPose().getTranslation()))));
+                        getAllianceHubTranslation().getDistance(drive.getPose().getTranslation()))))
+        .whileTrue(flywheel.runVelocityRadPerSec(5.0));
   }
 
   /**
