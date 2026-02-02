@@ -8,25 +8,36 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
+import frc.robot.FieldConstants;
 
 public class VisionConstants {
   // AprilTag layout
-  public static AprilTagFieldLayout aprilTagLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+  public static AprilTagFieldLayout aprilTagLayout = FieldConstants.aprilTagLayout;
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "camera_0";
-  public static String camera1Name = "camera_1";
+  public static String camera0Name = "FrontCamera";
+  public static String camera1Name = "BackCamera";
+  public static String camera2Name = "TurretCamera";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d robotToCamera0 =
-      new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
+      new Transform3d(0.3, 0.0, 0.127, new Rotation3d(0, Units.degreesToRadians(-30), 90));
   public static Transform3d robotToCamera1 =
-      new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
+      new Transform3d(
+          0.3,
+          0.0,
+          0.5,
+          new Rotation3d(0, Units.degreesToRadians(-30), Units.degreesToRadians(-90)));
+  public static Transform3d robotToCamera2 =
+      new Transform3d(
+          0.3,
+          0.0,
+          Units.inchesToMeters(25.25),
+          new Rotation3d(0, Units.degreesToRadians(-200), 0));
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;
@@ -41,8 +52,9 @@ public class VisionConstants {
   // (Adjust to trust some cameras more than others)
   public static double[] cameraStdDevFactors =
       new double[] {
-        1.0, // Camera 0
-        1.0 // Camera 1
+        1.0, // Front
+        1.0, // Back
+        1.0 // Turret
       };
 
   // Multipliers to apply for MegaTag 2 observations

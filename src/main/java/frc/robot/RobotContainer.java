@@ -7,10 +7,13 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Radians;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,12 +26,30 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSim;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.pivot.PivotIO;
+import frc.robot.subsystems.pivot.PivotIOSim;
+import frc.robot.subsystems.pivot.PivotIOTalonFX;
+import frc.robot.subsystems.pivot.PivotIOTalonFX.PivotTalonFXConstants;
+import frc.robot.subsystems.rollers.RollersIO;
+import frc.robot.subsystems.rollers.RollersIOSim;
+import frc.robot.subsystems.rollers.RollersIOTalonFX;
+import frc.robot.subsystems.shooter.Hood;
+import frc.robot.subsystems.shooter.ShooterConstants;
+import frc.robot.subsystems.shooter.Turret;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.AllianceFlipUtil;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -43,32 +64,46 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Climber climber;
+  private final Intake intake;
+  private final Vision vision;
+
+  private final Turret turret;
+  private final Hood hood;
+
+  private final Superstructure superstructure;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
-
-  @AutoLogOutput(key = "currentAllianceHubPos")
-  public Pose2d getAllianceHubPosition() {
-    return AllianceFlipUtil.apply(FieldConstants.allianceHubPosition);
+  // Log field element positions
+  @AutoLogOutput(key = "currentAllianceHubPose")
+  public Pose2d getAllianceHubPose() {
+    return AllianceFlipUtil.apply(FieldConstants.allianceHubPose);
   }
 
-  @AutoLogOutput(key = "currentAllianceHubTranslation")
-  public Translation2d getAllianceHubTranslation() {
-    return getAllianceHubPosition().getTranslation();
+  @AutoLogOutput(key = "currentAllianceRightClimbPose")
+  public Pose2d getAllianceRightClimbPose() {
+    return AllianceFlipUtil.apply(FieldConstants.allianceRightClimbPose);
   }
 
-  @AutoLogOutput(key = "currentAllianceClimbPos")
-  public Pose2d getAllianceClimbPosition() {
-    return AllianceFlipUtil.apply(FieldConstants.allianceClimbPosition);
+  @AutoLogOutput(key = "currentAllianceLeftClimbPose")
+  public Pose2d getAllianceLeftClimbPose() {
+    return AllianceFlipUtil.apply(FieldConstants.allianceLeftClimbPose);
   }
 
-  @AutoLogOutput(key = "currentAllianceClimbTranslation")
-  public Translation2d getAllianceClimbTranslation() {
-    return getAllianceClimbPosition().getTranslation();
+  @AutoLogOutput(key = "TurretTx")
+  public double getTurretTx() {
+    return vision != null ? vision.getTurretTxDegrees() : 0.0;
+  }
+
+  @AutoLogOutput(key = "TurretCurrentTagID")
+  public int getTurretSeesHubTag() {
+    return vision.getTurretSeenTagId();
   }
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+
+  // canbus
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -87,6 +122,39 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackRight));
 
         climber = new Climber(new ClimberIO() {});
+        intake =
+            new Intake(
+                new RollersIOTalonFX(
+                    IntakeConstants.CAN_ID, "rio", IntakeConstants.ROLLER_CONSTANTS));
+
+        vision =
+            Vision.createPerCameraVision(
+                drive,
+                new VisionIOLimelight(
+                    VisionConstants.camera0Name, () -> drive.getPose().getRotation(), true),
+                new VisionIOLimelight(
+                    VisionConstants.camera1Name, () -> drive.getPose().getRotation(), true),
+                new VisionIOLimelight(
+                    VisionConstants.camera2Name, () -> drive.getPose().getRotation(), false));
+
+        turret =
+            new Turret(
+                new PivotIOTalonFX(
+                    ShooterConstants.Turret.CAN_ID,
+                    ShooterConstants.Turret.CANBUS,
+                    new PivotTalonFXConstants(
+                        ShooterConstants.Turret.getGains(),
+                        false,
+                        ShooterConstants.Turret.GEAR_RATIO)));
+        hood =
+            new Hood(
+                new PivotIOTalonFX(
+                    ShooterConstants.Hood.CAN_ID,
+                    ShooterConstants.Hood.CANBUS,
+                    new PivotTalonFXConstants(
+                        ShooterConstants.Hood.getGains(),
+                        false,
+                        ShooterConstants.Hood.GEAR_RATIO)));
         break;
 
       case SIM:
@@ -101,6 +169,28 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackRight));
 
         climber = new Climber(new ClimberIOSim());
+        intake =
+            new Intake(
+                new RollersIOSim(DCMotor.getKrakenX60(1), 0.01, IntakeConstants.ROLLER_CONSTANTS));
+
+        vision =
+            Vision.createPerCameraVision(
+                drive,
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera0Name,
+                    VisionConstants.robotToCamera0,
+                    () -> drive.getPose()),
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera1Name,
+                    VisionConstants.robotToCamera1,
+                    () -> drive.getPose()),
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera2Name,
+                    VisionConstants.robotToCamera2,
+                    () -> drive.getPose()));
+        turret =
+            new Turret(new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.getGains()));
+        hood = new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getGains()));
         break;
 
       default:
@@ -114,9 +204,17 @@ public class RobotContainer {
                 new ModuleIO() {});
 
         climber = new Climber(new ClimberIO() {});
+        intake = new Intake(new RollersIO() {});
+        vision =
+            Vision.createPerCameraVision(
+                drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
+
+        turret = new Turret(new PivotIO() {});
+        hood = new Hood(new PivotIO() {});
         break;
     }
 
+    this.superstructure = new Superstructure(drive, turret, () -> getAllianceHubPose());
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -155,6 +253,19 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
+    // Test intake
+    controller.y().whileTrue(intake.runVelocity(5));
+
+    // Lock to 0° when A button is held
+    controller
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> Rotation2d.kZero));
+
     controller
         .rightTrigger()
         .whileTrue(
@@ -163,14 +274,14 @@ public class RobotContainer {
                 () -> controller.getLeftY(),
                 () -> controller.getLeftX(),
                 () ->
-                    getAllianceHubPosition()
+                    getAllianceHubPose()
                         .getTranslation()
                         .minus(drive.getPose().getTranslation())
                         .getAngle()));
 
     // Reset gyro to 0° when B button is pressed
     controller
-        .b()
+        .start()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -181,6 +292,28 @@ public class RobotContainer {
 
     controller.povUp().onTrue(climber.setPosition(ClimberConstants.extendedPosition));
     controller.povDown().onTrue(climber.setPosition(ClimberConstants.retractedPosition));
+    controller
+        .leftTrigger()
+        .whileTrue(
+            turret.lockOntoTarget(
+                () -> {
+                  Pose2d drivePose = this.drive.getPose();
+                  Rotation2d driveHeading = drivePose.getRotation();
+                  Translation2d driveToHubVector =
+                      getAllianceHubPose().getTranslation().minus(drivePose.getTranslation());
+                  Rotation2d pointToHubRotation =
+                      new Rotation2d(driveToHubVector.getX(), driveToHubVector.getY());
+
+                  return pointToHubRotation.minus(driveHeading).getMeasure();
+                },
+                () -> drive.getAngularVelocityRadPerSec()))
+        .whileTrue(
+            hood.trackTarget(
+                () ->
+                    Radians.of(
+                        getAllianceHubPose()
+                            .getTranslation()
+                            .getDistance(drive.getPose().getTranslation()))));
   }
 
   /**

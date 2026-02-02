@@ -33,15 +33,21 @@ public class VisionIOLimelight implements VisionIO {
   private final DoubleArraySubscriber megatag1Subscriber;
   private final DoubleArraySubscriber megatag2Subscriber;
 
+  private final boolean isLL4;
+  private boolean imuSeeded = false;
+
   /**
    * Creates a new VisionIOLimelight.
    *
    * @param name The configured name of the Limelight.
    * @param rotationSupplier Supplier for the current estimated rotation, used for MegaTag 2.
+   * @param isLL4
    */
-  public VisionIOLimelight(String name, Supplier<Rotation2d> rotationSupplier) {
+  public VisionIOLimelight(String name, Supplier<Rotation2d> rotationSupplier, boolean isLL4) {
     var table = NetworkTableInstance.getDefault().getTable(name);
     this.rotationSupplier = rotationSupplier;
+    this.isLL4 = isLL4;
+
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
@@ -53,8 +59,7 @@ public class VisionIOLimelight implements VisionIO {
 
   @Override
   public void updateInputs(VisionIOInputs inputs) {
-    // Update connection status based on whether an update has been seen in the last
-    // 250ms
+    // Update connection status based on whether an update has been seen in the last 250ms
     inputs.connected =
         ((RobotController.getFPGATime() - latencySubscriber.getLastChange()) / 1000) < 250;
 
@@ -63,15 +68,19 @@ public class VisionIOLimelight implements VisionIO {
         new TargetObservation(
             Rotation2d.fromDegrees(txSubscriber.get()), Rotation2d.fromDegrees(tySubscriber.get()));
 
-    // Update orientation for MegaTag 2
-    orientationPublisher.accept(
-        new double[] {rotationSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
-    NetworkTableInstance.getDefault()
-        .flush(); // Increases network traffic but recommended by Limelight
+    // Handle LL4 IMU seeding
+    if (isLL4 && !imuSeeded) {
+      Rotation2d yaw = rotationSupplier.get();
+      orientationPublisher.accept(new double[] {yaw.getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
+      NetworkTableInstance.getDefault().flush();
+      imuSeeded = true;
+    }
 
     // Read new pose observations from NetworkTables
     Set<Integer> tagIds = new HashSet<>();
     List<PoseObservation> poseObservations = new LinkedList<>();
+
+    // MegaTag 1
     for (var rawSample : megatag1Subscriber.readQueue()) {
       if (rawSample.value.length == 0) continue;
       for (int i = 11; i < rawSample.value.length; i += 7) {
@@ -79,63 +88,49 @@ public class VisionIOLimelight implements VisionIO {
       }
       poseObservations.add(
           new PoseObservation(
-              // Timestamp, based on server timestamp of publish and latency
               rawSample.timestamp * 1.0e-6 - rawSample.value[6] * 1.0e-3,
-
-              // 3D pose estimate
               parsePose(rawSample.value),
-
-              // Ambiguity, using only the first tag because ambiguity isn't applicable for
-              // multitag
               rawSample.value.length >= 18 ? rawSample.value[17] : 0.0,
-
-              // Tag count
               (int) rawSample.value[7],
-
-              // Average tag distance
               rawSample.value[9],
-
-              // Observation type
               PoseObservationType.MEGATAG_1));
     }
+
+    // MegaTag 2
     for (var rawSample : megatag2Subscriber.readQueue()) {
       if (rawSample.value.length == 0) continue;
       for (int i = 11; i < rawSample.value.length; i += 7) {
         tagIds.add((int) rawSample.value[i]);
       }
+
+      Pose3d pose = parsePose(rawSample.value);
+
+      // Use ll4 internal imu for greated mt2 accuracy
+      if (isLL4 && imuSeeded) {
+        double imuYawRadians = Units.degreesToRadians(pose.getRotation().getZ());
+        pose =
+            new Pose3d(
+                pose.getTranslation(),
+                new Rotation3d(
+                    pose.getRotation().getX(), pose.getRotation().getY(), imuYawRadians));
+      }
+
       poseObservations.add(
           new PoseObservation(
-              // Timestamp, based on server timestamp of publish and latency
               rawSample.timestamp * 1.0e-6 - rawSample.value[6] * 1.0e-3,
-
-              // 3D pose estimate
-              parsePose(rawSample.value),
-
-              // Ambiguity, zeroed because the pose is already disambiguated
+              pose,
               0.0,
-
-              // Tag count
               (int) rawSample.value[7],
-
-              // Average tag distance
               rawSample.value[9],
-
-              // Observation type
               PoseObservationType.MEGATAG_2));
     }
 
     // Save pose observations to inputs object
-    inputs.poseObservations = new PoseObservation[poseObservations.size()];
-    for (int i = 0; i < poseObservations.size(); i++) {
-      inputs.poseObservations[i] = poseObservations.get(i);
-    }
+    inputs.poseObservations =
+        poseObservations.toArray(new PoseObservation[poseObservations.size()]);
 
-    // Save tag IDs to inputs objects
-    inputs.tagIds = new int[tagIds.size()];
-    int i = 0;
-    for (int id : tagIds) {
-      inputs.tagIds[i++] = id;
-    }
+    // Save tag IDs to inputs object
+    inputs.tagIds = tagIds.stream().mapToInt(Integer::intValue).toArray();
   }
 
   /** Parses the 3D pose from a Limelight botpose array. */

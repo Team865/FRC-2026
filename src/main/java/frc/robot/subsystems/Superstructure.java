@@ -1,12 +1,19 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.shooter.Turret;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class Superstructure extends SubsystemBase {
   public static enum SuperState {
@@ -39,7 +46,15 @@ public class Superstructure extends SubsystemBase {
   private Map<SuperState, BooleanSupplier> stateRequirements =
       new HashMap<>(); // BooleanSuppliers which return whether a state can be switched to
 
-  public Superstructure() {
+  private final Drive drive;
+  private final Turret turret;
+  private final Supplier<Pose2d> hubPoseSupplier;
+
+  public Superstructure(Drive drive, Turret turret, Supplier<Pose2d> hubPoseSupplier) {
+    this.drive = drive;
+    this.turret = turret;
+    this.hubPoseSupplier = hubPoseSupplier;
+
     // Initialize state triggers
     for (SuperState state : SuperState.values()) {
       stateTriggers.put(
@@ -119,5 +134,20 @@ public class Superstructure extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    Logger.recordOutput(
+        "Superstructure/Components/TurretTarget",
+        new Pose2d(
+            drive
+                .getPose()
+                .getTranslation()
+                .plus(
+                    new Translation2d(
+                        drive
+                            .getPose()
+                            .getTranslation()
+                            .getDistance(hubPoseSupplier.get().getTranslation()),
+                        drive.getRotation().plus(new Rotation2d(turret.getOrientation())))),
+            Rotation2d.kZero));
+  }
 }
