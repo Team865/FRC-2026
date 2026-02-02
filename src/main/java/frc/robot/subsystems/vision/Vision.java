@@ -133,7 +133,7 @@ public class Vision extends SubsystemBase {
       VisionUtil.PoseProcessingResult poseResult =
           VisionUtil.processPoseObservations(inputs[i], consumer, i);
 
-      Translation3d[] lines = VisionUtil.makeTargetLines(inputs[i]);
+      Translation3d[] lines = VisionUtil.makeTargetLines(inputs[i], i);
 
       Logger.recordOutput("Vision/" + cameraName + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(

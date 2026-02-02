@@ -4,6 +4,7 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.subsystems.vision.VisionIO;
@@ -15,17 +16,29 @@ public final class VisionUtil {
 
   private VisionUtil() {}
 
-  public static Translation3d[] makeTargetLines(VisionIOInputsAutoLogged inputs) {
+  private static Transform3d getRobotToCamera(int cameraIndex) {
+    return switch (cameraIndex) {
+      case 0 -> robotToCamera0;
+      case 1 -> robotToCamera1;
+      case 2 -> robotToCamera2;
+      default -> new Transform3d();
+    };
+  }
+
+  public static Translation3d[] makeTargetLines(VisionIOInputsAutoLogged inputs, int cameraIndex) {
     Translation3d[] lines = new Translation3d[inputs.tagIds.length * 2];
     int idx = 0;
+
     Pose3d robotPose3d =
         inputs.poseObservations.length > 0 ? inputs.poseObservations[0].pose() : new Pose3d();
+
+    Pose3d cameraPose3d = robotPose3d.transformBy(getRobotToCamera(cameraIndex));
 
     for (int tagId : inputs.tagIds) {
       var tagPoseOpt = aprilTagLayout.getTagPose(tagId);
       if (tagPoseOpt.isPresent()) {
         Pose3d tagPose3d = tagPoseOpt.get();
-        lines[idx++] = robotPose3d.getTranslation();
+        lines[idx++] = cameraPose3d.getTranslation();
         lines[idx++] = tagPose3d.getTranslation();
       }
     }

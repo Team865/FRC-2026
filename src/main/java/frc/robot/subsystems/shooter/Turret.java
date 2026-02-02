@@ -2,6 +2,9 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Radians;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ControlSystemContext;
@@ -37,14 +40,12 @@ public class Turret extends Pivot {
           double relativeAngleRads = relativeAngleSupplier.get().in(Radians);
           Logger.recordOutput("Turret/RelativeAngleOffset", relativeAngleRads);
 
-          // Calculate the nearest plausible absolute angle
           double positiveTargetAngleRads =
               (relativeAngleRads >= 0) ? relativeAngleRads : FULL_CIRCLE_RADS + relativeAngleRads;
           double negativeTargetAngleRads =
               (relativeAngleRads < 0) ? relativeAngleRads : -FULL_CIRCLE_RADS + relativeAngleRads;
 
           double absoluteAngleRads;
-
           if (positiveTargetAngleRads > ShooterConstants.Turret.MAX_ANGLE_RADS) {
             absoluteAngleRads = negativeTargetAngleRads;
           } else if (negativeTargetAngleRads < ShooterConstants.Turret.MIN_ANGLE_RADS) {
@@ -66,13 +67,12 @@ public class Turret extends Pivot {
 
           this.io.setPositionWithExtraOmega(absoluteAngleRads, -driveOmegaRadPerSecSupplier.get());
         },
-        () -> {
-          this.io.stop();
-        });
+        () -> this.io.stop());
   }
 
   @Override
   public void periodic() {
+    super.periodic();
     int id = hashCode();
 
     LoggedTunableNumber.ifChanged(
@@ -85,12 +85,18 @@ public class Turret extends Pivot {
         kA,
         kP,
         kD);
+
     LoggedTunableNumber.ifChanged(
         id,
         (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
         maxVelocity,
         maxAcceleration);
 
-    super.periodic();
+    Pose3d turretPose =
+        new Pose3d(
+            new Translation3d(0.0, 0.0, 0.0),
+            new Rotation3d(0.0, 0.0, inputsAutoLogged.positionRads));
+
+    Logger.recordOutput("Robot/ComponentPoses", new Pose3d[] {turretPose});
   }
 }

@@ -10,10 +10,10 @@ public class SerializerConstants {
       new RollersConstants(
           0.15, // kS
           0.02, // kV
-          4.0, // kP
+          0.5, // kP
           0.0, // kD
-          1 / 10, // gear ratio
-          false, // inverted
+          10, // gear ratio
+          true, // inverted
           40, // current limit in amps
           Units.inchesToMeters(13.08 / 2));
 }

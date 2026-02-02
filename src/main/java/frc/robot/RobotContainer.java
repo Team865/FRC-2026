@@ -38,6 +38,8 @@ import frc.robot.subsystems.pivot.PivotIOTalonFX.PivotTalonFXConstants;
 import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.subsystems.rollers.RollersIOSim;
 import frc.robot.subsystems.rollers.RollersIOTalonFX;
+import frc.robot.subsystems.serializer.Serializer;
+import frc.robot.subsystems.serializer.SerializerConstants;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.Turret;
@@ -47,6 +49,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.ComponentPoseUtil;
+import java.util.List;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -60,6 +64,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Intake intake;
+  private final Serializer serializer;
   private final Vision vision;
 
   private final Turret turret;
@@ -121,6 +126,10 @@ public class RobotContainer {
                 new RollersIOTalonFX(
                     IntakeConstants.CAN_ID, "rio", IntakeConstants.ROLLER_CONSTANTS));
 
+        serializer =
+            new Serializer(
+                new RollersIOTalonFX(
+                    SerializerConstants.CAN_ID, "rio", SerializerConstants.ROLLER_CONSTANTS));
         vision =
             Vision.createPerCameraVision(
                 drive,
@@ -165,6 +174,10 @@ public class RobotContainer {
         intake =
             new Intake(
                 new RollersIOSim(DCMotor.getKrakenX60(1), 0.01, IntakeConstants.ROLLER_CONSTANTS));
+        serializer =
+            new Serializer(
+                new RollersIOSim(
+                    DCMotor.getKrakenX60(1), 10, SerializerConstants.ROLLER_CONSTANTS));
 
         vision =
             Vision.createPerCameraVision(
@@ -197,6 +210,7 @@ public class RobotContainer {
                 new ModuleIO() {});
 
         intake = new Intake(new RollersIO() {});
+        serializer = new Serializer(new RollersIO() {});
         vision =
             Vision.createPerCameraVision(
                 drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
@@ -247,7 +261,7 @@ public class RobotContainer {
 
     // Test intake
     controller.y().whileTrue(intake.runVelocity(5));
-
+    controller.x().whileTrue(serializer.runVelocity(-15));
     // Lock to 0° when A button is held
     controller
         .a()
@@ -313,5 +327,9 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public void updateComponentPoses() {
+    ComponentPoseUtil.publishComponentPoses(List.of(serializer), List.of(turret));
   }
 }
