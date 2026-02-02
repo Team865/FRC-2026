@@ -13,10 +13,25 @@ public class ClimberIOSim implements ClimberIO {
 
   private final ElevatorSim physicsSim =
       new ElevatorSim(
-          ClimberConstants.kV, ClimberConstants.kA, DCMotor.getKrakenX60(1), 0, 5, true, 0);
+          ClimberConstants.getConstants().kV(),
+          ClimberConstants.getConstants().kA(),
+          DCMotor.getKrakenX60(1),
+          0,
+          5,
+          true,
+          0);
   private final ProfiledPIDController pidController =
-      new ProfiledPIDController(0, 0, 0, new Constraints(0, 0));
-  private final ElevatorFeedforward feedforwardController = new ElevatorFeedforward(0, 0, 0);
+      new ProfiledPIDController(
+          ClimberConstants.getConstants().kP(),
+          0,
+          ClimberConstants.getConstants().kD(),
+          new Constraints(0, 0));
+  private final ElevatorFeedforward feedforwardController =
+      new ElevatorFeedforward(
+          ClimberConstants.getConstants().kS(),
+          ClimberConstants.getConstants().kG(),
+          ClimberConstants.getConstants().kV(),
+          ClimberConstants.getConstants().kA());
 
   @Override
   public void updateInputs(ClimberIOInputsAutoLogged inputs) {
@@ -33,7 +48,9 @@ public class ClimberIOSim implements ClimberIO {
 
     inputs.appliedVoltage = appliedVolts;
     inputs.positionMeters = physicsSim.getPositionMeters();
-    inputs.currentAmps = physicsSim.getCurrentDrawAmps();
+    inputs.velocityMetersPerSec = physicsSim.getVelocityMetersPerSecond();
+    inputs.supplyCurrentAmps = physicsSim.getCurrentDrawAmps();
+    inputs.statorCurrentAmps = inputs.supplyCurrentAmps;
   }
 
   @Override
@@ -58,7 +75,7 @@ public class ClimberIOSim implements ClimberIO {
   }
 
   @Override
-  public void setMotionProfile(double maxVelocity, double maxAcceleration, double maxJerk) {
+  public void setMotionProfile(double maxVelocity, double maxAcceleration) {
     this.pidController.setConstraints(new Constraints(maxVelocity, maxAcceleration));
   }
 }
