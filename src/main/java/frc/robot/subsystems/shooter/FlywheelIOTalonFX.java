@@ -56,7 +56,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
         new TalonFX(ShooterConstants.Flywheel.FOLLOWER_CAN_ID, ShooterConstants.Flywheel.CANBUS);
     followerMotor.setControl(new Follower(masterMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
-    ControlSystemContext constants = ShooterConstants.Flywheel.getGains();
+    ControlSystemContext constants = ShooterConstants.Flywheel.getConstants();
 
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;

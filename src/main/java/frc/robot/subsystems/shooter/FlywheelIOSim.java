@@ -18,7 +18,7 @@ public class FlywheelIOSim implements FlywheelIO {
   private PIDController feedback;
 
   public FlywheelIOSim() {
-    ControlSystemContext baseGains = ShooterConstants.Flywheel.getGains();
+    ControlSystemContext baseGains = ShooterConstants.Flywheel.getConstants();
 
     sim =
         new DCMotorSim(

@@ -15,13 +15,13 @@ public class Flywheel extends SubsystemBase {
   private double targetVelocityRadsPerSec = 0.0;
 
   private final LoggedTunableNumber kV =
-      new LoggedTunableNumber("Shooter/Flywheel/kV", ShooterConstants.Flywheel.getGains().kV());
+      new LoggedTunableNumber("Shooter/Flywheel/kV", ShooterConstants.Flywheel.getConstants().kV());
   private final LoggedTunableNumber kS =
-      new LoggedTunableNumber("Shooter/Flywheel/kS", ShooterConstants.Flywheel.getGains().kS());
+      new LoggedTunableNumber("Shooter/Flywheel/kS", ShooterConstants.Flywheel.getConstants().kS());
   private final LoggedTunableNumber kP =
-      new LoggedTunableNumber("Shooter/Flywheel/kP", ShooterConstants.Flywheel.getGains().kP());
+      new LoggedTunableNumber("Shooter/Flywheel/kP", ShooterConstants.Flywheel.getConstants().kP());
   private final LoggedTunableNumber kD =
-      new LoggedTunableNumber("Shooter/Flywheel/kD", ShooterConstants.Flywheel.getGains().kD());
+      new LoggedTunableNumber("Shooter/Flywheel/kD", ShooterConstants.Flywheel.getConstants().kD());
 
   public Flywheel(FlywheelIO io) {
     this.io = io;

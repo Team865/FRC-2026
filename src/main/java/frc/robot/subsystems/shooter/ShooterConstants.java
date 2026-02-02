@@ -17,7 +17,7 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 0.12, 0.05, 0.0, 0.0, 0.5, 0.0, Optional.empty(), Optional.empty()));
 
-    public static ControlSystemContext getGains() {
+    public static ControlSystemContext getConstants() {
       return GAINS.getConstants();
     }
 
@@ -36,7 +36,7 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 
-    public static ControlSystemContext getGains() {
+    public static ControlSystemContext getConstants() {
       return GAINS.getConstants();
     }
 
@@ -56,7 +56,7 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 4.44, 0.1, 0.0, 0.0, 1.0, 0.0, Optional.of(1.0), Optional.of(1.0)));
 
-    public static ControlSystemContext getGains() {
+    public static ControlSystemContext getConstants() {
       return GAINS.getConstants();
     }
 

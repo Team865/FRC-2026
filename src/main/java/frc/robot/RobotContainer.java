@@ -108,7 +108,7 @@ public class RobotContainer {
                     ShooterConstants.Turret.CAN_ID,
                     ShooterConstants.Turret.CANBUS,
                     new PivotTalonFXConstants(
-                        ShooterConstants.Turret.getGains(),
+                        ShooterConstants.Turret.getConstants(),
                         false,
                         ShooterConstants.Turret.GEAR_RATIO)));
         hood =
@@ -117,7 +117,7 @@ public class RobotContainer {
                     ShooterConstants.Hood.CAN_ID,
                     ShooterConstants.Hood.CANBUS,
                     new PivotTalonFXConstants(
-                        ShooterConstants.Hood.getGains(),
+                        ShooterConstants.Hood.getConstants(),
                         false,
                         ShooterConstants.Hood.GEAR_RATIO)));
         flywheel = new Flywheel(new FlywheelIOTalonFX());
@@ -135,8 +135,8 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackRight));
 
         turret =
-            new Turret(new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.getGains()));
-        hood = new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getGains()));
+            new Turret(new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.getConstants()));
+        hood = new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getConstants()));
         flywheel = new Flywheel(new FlywheelIOSim());
         break;
 

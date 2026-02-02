@@ -12,17 +12,16 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Turret extends Pivot {
-  private final ControlSystemContext gains = ShooterConstants.Turret.getGains();
-  private final LoggedTunableNumber kS = new LoggedTunableNumber("Shooter/Turret/kS", gains.kS());
-  private final LoggedTunableNumber kV = new LoggedTunableNumber("Shooter/Turret/kV", gains.kV());
-  private final LoggedTunableNumber kA = new LoggedTunableNumber("Shooter/Turret/kA", gains.kA());
-  private final LoggedTunableNumber kP = new LoggedTunableNumber("Shooter/Turret/kP", gains.kP());
-  private final LoggedTunableNumber kD = new LoggedTunableNumber("Shooter/Turret/kD", gains.kD());
+  private final LoggedTunableNumber kS = new LoggedTunableNumber("Shooter/Turret/kS", ShooterConstants.Turret.getConstants().kS());
+  private final LoggedTunableNumber kV = new LoggedTunableNumber("Shooter/Turret/kV", ShooterConstants.Turret.getConstants().kV());
+  private final LoggedTunableNumber kA = new LoggedTunableNumber("Shooter/Turret/kA", ShooterConstants.Turret.getConstants().kA());
+  private final LoggedTunableNumber kP = new LoggedTunableNumber("Shooter/Turret/kP", ShooterConstants.Turret.getConstants().kP());
+  private final LoggedTunableNumber kD = new LoggedTunableNumber("Shooter/Turret/kD", ShooterConstants.Turret.getConstants().kD());
 
   private final LoggedTunableNumber maxVelocity =
-      new LoggedTunableNumber("Shooter/Turret/MaxVelocity", gains.maxVelocity().get());
+      new LoggedTunableNumber("Shooter/Turret/MaxVelocity", ShooterConstants.Turret.getConstants().maxVelocity().get());
   private final LoggedTunableNumber maxAcceleration =
-      new LoggedTunableNumber("Shooter/Turret/MaxAcceleration", gains.maxAcceleration().get());
+      new LoggedTunableNumber("Shooter/Turret/MaxAcceleration", ShooterConstants.Turret.getConstants().maxAcceleration().get());
 
   private final double FULL_CIRCLE_RADS = Math.PI * 2;
 
