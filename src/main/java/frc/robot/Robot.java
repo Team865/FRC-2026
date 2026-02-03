@@ -102,7 +102,10 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    SmartDashboard.putBoolean("RobotEnabled", false);
+    SmartDashboard.putBoolean("Hub Active", false);
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
@@ -122,6 +125,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
+    SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
     teleopStartTime = Timer.getFPGATimestamp();
     HubActive.randomizeOnTeleop();
     if (autonomousCommand != null) {
@@ -132,6 +136,7 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    SmartDashboard.putBoolean("RobotEnabled", DriverStation.isEnabled());
     double teleopTimeElapsedSeconds;
     boolean isFMSAttached = DriverStation.isFMSAttached();
 

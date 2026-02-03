@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -29,6 +30,8 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOSim;
 import frc.robot.subsystems.pivot.PivotIOTalonFX;
@@ -37,9 +40,17 @@ import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.FlywheelIO;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
 import frc.robot.subsystems.shooter.FlywheelIOTalonFX;
+import frc.robot.subsystems.rollers.RollersIO;
+import frc.robot.subsystems.rollers.RollersIOSim;
+import frc.robot.subsystems.rollers.RollersIOTalonFX;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.Turret;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.AllianceFlipUtil;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -53,6 +64,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Intake intake;
+  private final Vision vision;
 
   private final Turret turret;
   private final Hood hood;
@@ -62,29 +75,36 @@ public class RobotContainer {
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
-
-  @AutoLogOutput(key = "currentAllianceHubPos")
-  public Pose2d getAllianceHubPosition() {
-    return AllianceFlipUtil.apply(FieldConstants.allianceHubPosition);
+  // Log field element positions
+  @AutoLogOutput(key = "currentAllianceHubPose")
+  public Pose2d getAllianceHubPose() {
+    return AllianceFlipUtil.apply(FieldConstants.allianceHubPose);
   }
 
-  @AutoLogOutput(key = "currentAllianceHubTranslation")
-  public Translation2d getAllianceHubTranslation() {
-    return getAllianceHubPosition().getTranslation();
+  @AutoLogOutput(key = "currentAllianceRightClimbPose")
+  public Pose2d getAllianceRightClimbPose() {
+    return AllianceFlipUtil.apply(FieldConstants.allianceRightClimbPose);
   }
 
-  @AutoLogOutput(key = "currentAllianceClimbPos")
-  public Pose2d getAllianceClimbPosition() {
-    return AllianceFlipUtil.apply(FieldConstants.allianceClimbPosition);
+  @AutoLogOutput(key = "currentAllianceLeftClimbPose")
+  public Pose2d getAllianceLeftClimbPose() {
+    return AllianceFlipUtil.apply(FieldConstants.allianceLeftClimbPose);
   }
 
-  @AutoLogOutput(key = "currentAllianceClimbTranslation")
-  public Translation2d getAllianceClimbTranslation() {
-    return getAllianceClimbPosition().getTranslation();
+  @AutoLogOutput(key = "TurretTx")
+  public double getTurretTx() {
+    return vision != null ? vision.getTurretTxDegrees() : 0.0;
+  }
+
+  @AutoLogOutput(key = "TurretCurrentTagID")
+  public int getTurretSeesHubTag() {
+    return vision.getTurretSeenTagId();
   }
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+
+  // canbus
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -101,6 +121,24 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
+        intake =
+            new Intake(
+                new RollersIOTalonFX(
+                    IntakeConstants.ROLLER_CAN_ID, IntakeConstants.CANBUS, IntakeConstants.ROLLERS),
+                new PivotIOTalonFX(
+                    IntakeConstants.PIVOT_CAN_ID,
+                    IntakeConstants.CANBUS,
+                    new PivotTalonFXConstants(IntakeConstants.Pivot.getGains(), false, 1)));
+
+        vision =
+            Vision.createPerCameraVision(
+                drive,
+                new VisionIOLimelight(
+                    VisionConstants.camera0Name, () -> drive.getPose().getRotation(), true),
+                new VisionIOLimelight(
+                    VisionConstants.camera1Name, () -> drive.getPose().getRotation(), true),
+                new VisionIOLimelight(
+                    VisionConstants.camera2Name, () -> drive.getPose().getRotation(), false));
 
         turret =
             new Turret(
@@ -134,6 +172,26 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
 
+        intake =
+            new Intake(
+                new RollersIOSim(DCMotor.getKrakenX60(1), 1, IntakeConstants.ROLLERS),
+                new PivotIOSim(DCMotor.getKrakenX60(1), IntakeConstants.Pivot.getGains()));
+
+        vision =
+            Vision.createPerCameraVision(
+                drive,
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera0Name,
+                    VisionConstants.robotToCamera0,
+                    () -> drive.getPose()),
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera1Name,
+                    VisionConstants.robotToCamera1,
+                    () -> drive.getPose()),
+                new VisionIOPhotonVisionSim(
+                    VisionConstants.camera2Name,
+                    VisionConstants.robotToCamera2,
+                    () -> drive.getPose()));
         turret =
             new Turret(new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.getConstants()));
         hood = new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getConstants()));
@@ -150,6 +208,11 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
 
+        intake = new Intake(new RollersIO() {}, new PivotIO() {});
+        vision =
+            Vision.createPerCameraVision(
+                drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
+
         turret = new Turret(new PivotIO() {});
         hood = new Hood(new PivotIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
@@ -157,7 +220,7 @@ public class RobotContainer {
         break;
     }
 
-    this.superstructure = new Superstructure(drive, turret, () -> getAllianceHubPosition());
+    this.superstructure = new Superstructure(drive, turret, () -> getAllianceHubPose());
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -196,6 +259,25 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
+    // Test intake
+    controller.y().whileTrue(intake.runVelocity(5));
+
+    // Lock to 0° when A button is held
+    controller
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -controller.getLeftY(),
+                () -> -controller.getLeftX(),
+                () -> Rotation2d.kZero));
+
+    // 0 degrees
+    controller.x().onTrue(intake.pivot.setTargetAngle(Degrees.of(0)));
+
+    // 90 degrees
+    controller.b().onTrue(intake.pivot.setTargetAngle(Degrees.of(90)));
+
     controller
         .rightTrigger()
         .whileTrue(
@@ -204,7 +286,7 @@ public class RobotContainer {
                 () -> controller.getLeftY(),
                 () -> controller.getLeftX(),
                 () ->
-                    getAllianceHubPosition()
+                    getAllianceHubPose()
                         .getTranslation()
                         .minus(drive.getPose().getTranslation())
                         .getAngle()));
@@ -228,7 +310,7 @@ public class RobotContainer {
                   Pose2d drivePose = this.drive.getPose();
                   Rotation2d driveHeading = drivePose.getRotation();
                   Translation2d driveToHubVector =
-                      getAllianceHubTranslation().minus(drivePose.getTranslation());
+                      getAllianceHubPose().getTranslation().minus(drivePose.getTranslation());
                   Rotation2d pointToHubRotation =
                       new Rotation2d(driveToHubVector.getX(), driveToHubVector.getY());
 

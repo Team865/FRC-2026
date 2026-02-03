@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
+import java.util.List;
 
 public class AllianceFlipUtil {
   public static double applyX(double x) {
@@ -46,6 +47,10 @@ public class AllianceFlipUtil {
 
   public static Pose3d apply(Pose3d pose) {
     return new Pose3d(apply(pose.getTranslation()), apply(pose.getRotation()));
+  }
+
+  public static List<Integer> apply(List<Integer> aprilTagIds) {
+    return shouldFlip() ? aprilTagIds.stream().map(id -> id - 16).toList() : aprilTagIds;
   }
 
   public static boolean shouldFlip() {

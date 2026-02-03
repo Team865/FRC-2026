@@ -1,0 +1,23 @@
+{
+  "name": "865Robot2026",
+  "disableSimplification": true,
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": -90
+    },
+    {
+      "axis": "y",
+      "degrees": 180
+    },
+    {
+      "axis": "z",
+      "degrees": -90
+    }
+  ],
+  "position": [
+    0,
+    0,
+    0
+  ]
+}

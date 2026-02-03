@@ -30,6 +30,10 @@ public class Pivot extends SubsystemBase {
     return Radians.of(inputsAutoLogged.positionRads);
   }
 
+  public PivotIO getIO() {
+    return io;
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputsAutoLogged);
