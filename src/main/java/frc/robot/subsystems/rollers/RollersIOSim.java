@@ -15,25 +15,22 @@ public class RollersIOSim implements RollersIO {
   private double appliedVoltage = 0.0;
   private double targetVelocityRadPerSec = 0.0;
 
-  private SimpleMotorFeedforward feedforward;
-  private PIDController feedback;
+  private SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0.0, 0.0);
+  private final PIDController feedback = new PIDController(0.0, 0.0, 0.0);
 
   public RollersIOSim(DCMotor motor, double moi, RollersConstants constants) {
     this.constants = constants;
 
     sim =
-        new DCMotorSim(LinearSystemId.createDCMotorSystem(motor, moi, constants.gearRatio), motor);
-
-    feedforward = new SimpleMotorFeedforward(constants.kS, constants.kV);
-
-    feedback = new PIDController(constants.kP, 0.0, constants.kD);
+        new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(motor, moi, constants.gearRatio()), motor);
   }
 
   @Override
   public void updateInputs(RollersIOInputsAutoLogged inputs) {
     sim.update(0.02);
 
-    double motorTargetVel = targetVelocityRadPerSec / constants.gearRatio;
+    double motorTargetVel = targetVelocityRadPerSec / constants.gearRatio();
 
     double ffVolts = feedforward.calculate(motorTargetVel);
     double fbVolts = feedback.calculate(sim.getAngularVelocityRadPerSec(), motorTargetVel);
@@ -41,8 +38,8 @@ public class RollersIOSim implements RollersIO {
     setVolts(ffVolts + fbVolts);
 
     inputs.connected = true;
-    inputs.positionRads = sim.getAngularPositionRad() * constants.gearRatio;
-    inputs.velocityRadsPerSec = sim.getAngularVelocityRadPerSec() * constants.gearRatio;
+    inputs.positionRads = sim.getAngularPositionRad() * constants.gearRatio();
+    inputs.velocityRadsPerSec = sim.getAngularVelocityRadPerSec() * constants.gearRatio();
     inputs.appliedVoltage = appliedVoltage;
     inputs.supplyCurrentAmps = sim.getCurrentDrawAmps();
   }

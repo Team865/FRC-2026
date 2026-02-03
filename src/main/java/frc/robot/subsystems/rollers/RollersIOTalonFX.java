@@ -40,21 +40,16 @@ public class RollersIOTalonFX implements RollersIO {
     talon = new TalonFX(canId, canBus);
 
     config.MotorOutput.Inverted =
-        constants.inverted
+        constants.inverted()
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    config.CurrentLimits.SupplyCurrentLimit = constants.currentLimit;
+    config.CurrentLimits.SupplyCurrentLimit = constants.currentLimitAmps();
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    config.Feedback.SensorToMechanismRatio = constants.gearRatio;
-
-    config.Slot0.kS = constants.kS;
-    config.Slot0.kV = constants.kV;
-    config.Slot0.kP = constants.kP;
-    config.Slot0.kD = constants.kD;
+    config.Feedback.SensorToMechanismRatio = constants.gearRatio();
 
     PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
 

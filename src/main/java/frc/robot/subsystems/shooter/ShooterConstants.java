@@ -6,20 +6,20 @@ import java.util.Optional;
 
 public final class ShooterConstants {
   public static final class Flywheel {
-    public static final int MAIN_CAN_ID = 0;
+    public static final int MASTER_CAN_ID = 0;
     public static final int FOLLOWER_CAN_ID = 1;
 
     public static final String CANBUS = "rio";
 
-    public static final double kV = 0;
-    public static final double kA = 0;
-    public static final double kS = 0;
+    private static final ControlSystemConstants GAINS =
+        new ControlSystemConstants(
+            ControlSystemConstants.EMPTY_GAINS,
+            new ControlSystemContext(
+                0.12, 0.05, 0.0, 0.0, 0.5, 0.0, Optional.empty(), Optional.empty()));
 
-    public static final double kP = 0;
-    public static final double kD = 0;
-
-    public static final double MAX_VELOCITY = 1.0;
-    public static final double MAX_ACCELERATION = 1.0;
+    public static ControlSystemContext getConstants() {
+      return GAINS.getConstants();
+    }
 
     public static final double GEAR_RATIO = 1.0;
     public static final double WHEEL_RADIUS_METERS = 0.1;
@@ -36,7 +36,7 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 
-    public static ControlSystemContext getGains() {
+    public static ControlSystemContext getConstants() {
       return GAINS.getConstants();
     }
 
@@ -56,7 +56,7 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 4.44, 0.1, 0.0, 0.0, 1.0, 0.0, Optional.of(1.0), Optional.of(1.0)));
 
-    public static ControlSystemContext getGains() {
+    public static ControlSystemContext getConstants() {
       return GAINS.getConstants();
     }
 
