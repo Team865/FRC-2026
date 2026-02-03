@@ -36,13 +36,13 @@ import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOSim;
 import frc.robot.subsystems.pivot.PivotIOTalonFX;
 import frc.robot.subsystems.pivot.PivotIOTalonFX.PivotTalonFXConstants;
+import frc.robot.subsystems.rollers.RollersIO;
+import frc.robot.subsystems.rollers.RollersIOSim;
+import frc.robot.subsystems.rollers.RollersIOTalonFX;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.FlywheelIO;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
 import frc.robot.subsystems.shooter.FlywheelIOTalonFX;
-import frc.robot.subsystems.rollers.RollersIO;
-import frc.robot.subsystems.rollers.RollersIOSim;
-import frc.robot.subsystems.rollers.RollersIOTalonFX;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.Turret;
@@ -193,8 +193,10 @@ public class RobotContainer {
                     VisionConstants.robotToCamera2,
                     () -> drive.getPose()));
         turret =
-            new Turret(new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.getConstants()));
-        hood = new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getConstants()));
+            new Turret(
+                new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.getConstants()));
+        hood =
+            new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getConstants()));
         flywheel = new Flywheel(new FlywheelIOSim());
         break;
 
@@ -321,7 +323,9 @@ public class RobotContainer {
             hood.trackTarget(
                 () ->
                     Radians.of(
-                        getAllianceHubTranslation().getDistance(drive.getPose().getTranslation()))))
+                        getAllianceHubPose()
+                            .getTranslation()
+                            .getDistance(drive.getPose().getTranslation()))))
         .whileTrue(flywheel.runVelocityRadPerSec(5.0));
   }
 
