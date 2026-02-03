@@ -25,7 +25,6 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ClimberConstants;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.drive.Drive;
@@ -219,7 +218,6 @@ public class RobotContainer {
                 new ModuleIO() {});
 
         climber = new Climber(new ClimberIO() {});
-        intake = new Intake(new RollersIO() {});
         intake = new Intake(new RollersIO() {}, new PivotIO() {});
         vision =
             Vision.createPerCameraVision(
@@ -314,8 +312,8 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    controller.povUp().onTrue(climber.setPosition(ClimberConstants.extendedPosition));
-    controller.povDown().onTrue(climber.setPosition(ClimberConstants.retractedPosition));
+    controller.povUp().onTrue(climber.extend());
+    controller.povDown().onTrue(climber.retract());
     controller
         .leftTrigger()
         .whileTrue(
