@@ -40,6 +40,14 @@ public class Climber extends SubsystemBase {
         });
   }
 
+  public Command extend() {
+    return this.setPosition(ClimberConstants.extendedPosition);
+  }
+
+  public Command retract() {
+    return this.setPosition(ClimberConstants.retractedPosition);
+  }
+
   @Override
   public void periodic() {
     climberIO.updateInputs(climberIOInputs);

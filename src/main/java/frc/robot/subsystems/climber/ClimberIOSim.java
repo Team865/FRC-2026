@@ -46,6 +46,7 @@ public class ClimberIOSim implements ClimberIO {
     physicsSim.setInputVoltage(appliedVolts);
     physicsSim.update(0.020);
 
+    inputs.connected = true;
     inputs.appliedVoltage = appliedVolts;
     inputs.positionMeters = physicsSim.getPositionMeters();
     inputs.velocityMetersPerSec = physicsSim.getVelocityMetersPerSecond();
