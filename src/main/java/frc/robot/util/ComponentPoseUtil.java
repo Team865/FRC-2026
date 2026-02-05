@@ -17,8 +17,8 @@ public class ComponentPoseUtil {
   public static void publishComponentPoses(
       Rollers rollers, Pivot turretPivot, Pivot intakePivot, Climber climber) {
 
-    Pose3d[] poses = new Pose3d[4]; 
-    //Serializer
+    Pose3d[] poses = new Pose3d[4];
+    // Serializer
     poses[0] =
         rollers != null
             ? new Pose3d(new Translation3d(), new Rotation3d(0, 0, rollers.getPositionRads()))
