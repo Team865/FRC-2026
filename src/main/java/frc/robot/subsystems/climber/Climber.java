@@ -48,6 +48,10 @@ public class Climber extends SubsystemBase {
     return this.setPosition(ClimberConstants.retractedPosition);
   }
 
+  public double getPositionMeters() {
+    return climberIOInputs.positionMeters;
+  }
+
   @Override
   public void periodic() {
     climberIO.updateInputs(climberIOInputs);

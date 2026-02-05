@@ -68,7 +68,7 @@
       ]
     },
     {
-      "name": "SlapdownArm",
+      "name": "IntakeArm",
       "zeroedRotations": [
         {
           "axis": "x",
@@ -87,6 +87,28 @@
         -0.21,
         0.0,
         -0.31
+      ]
+    },
+    {
+      "name": "Climber",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": -90
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": -90
+        }
+      ],
+      "zeroedPosition": [
+        0.0,
+        0.0,
+        0.0
       ]
     }
   ]

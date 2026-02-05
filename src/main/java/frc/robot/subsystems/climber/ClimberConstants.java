@@ -13,7 +13,7 @@ public final class ClimberConstants {
 
   public static final Distance retractedPosition = Inches.of(0);
   public static final Distance extendedPosition =
-      Inches.of(30); // Placeholder until the climber is designed
+      Inches.of(5); // Placeholder until the climber is designed
 
   private static final ControlSystemConstants GAINS =
       new ControlSystemConstants(

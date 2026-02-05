@@ -360,6 +360,6 @@ public class RobotContainer {
   }
 
   public void updateComponentPoses() {
-    ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.pivot);
+    ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.pivot, climber);
   }
 }
