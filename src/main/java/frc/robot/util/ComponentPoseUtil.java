@@ -5,7 +5,7 @@ import static edu.wpi.first.units.Units.Radians;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import frc.robot.subsystems.climber.Climber; // import your climber class
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.rollers.Rollers;
 import org.littletonrobotics.junction.Logger;
@@ -17,9 +17,8 @@ public class ComponentPoseUtil {
   public static void publishComponentPoses(
       Rollers rollers, Pivot turretPivot, Pivot intakePivot, Climber climber) {
 
-    Pose3d[] poses = new Pose3d[4]; // now 4 components
-
-    // Spindexer
+    Pose3d[] poses = new Pose3d[4]; 
+    //Serializer
     poses[0] =
         rollers != null
             ? new Pose3d(new Translation3d(), new Rotation3d(0, 0, rollers.getPositionRads()))
