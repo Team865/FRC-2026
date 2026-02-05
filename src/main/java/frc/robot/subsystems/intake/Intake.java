@@ -1,40 +1,53 @@
 package frc.robot.subsystems.intake;
 
+import frc.robot.subsystems.pivot.Pivot;
+import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
 
 public class Intake extends Rollers {
 
-  // Tunable PID / feedforward numbers for live tuning
-  private final LoggedTunableNumber kS =
-      new LoggedTunableNumber("Intake/kS", IntakeConstants.ROLLER_CONSTANTS.kS);
-  private final LoggedTunableNumber kV =
-      new LoggedTunableNumber("Intake/kV", IntakeConstants.ROLLER_CONSTANTS.kV);
-  private final LoggedTunableNumber kP =
-      new LoggedTunableNumber("Intake/kP", IntakeConstants.ROLLER_CONSTANTS.kP);
-  private final LoggedTunableNumber kD =
-      new LoggedTunableNumber("Intake/kD", IntakeConstants.ROLLER_CONSTANTS.kD);
+  private final LoggedTunableNumber kS = new LoggedTunableNumber("Intake/kS", 0.2);
+  private final LoggedTunableNumber kV = new LoggedTunableNumber("Intake/kV", 0.01);
+  private final LoggedTunableNumber kP = new LoggedTunableNumber("Intake/kP", 5.0);
+  private final LoggedTunableNumber kD = new LoggedTunableNumber("Intake/kD", 0.0);
 
-  public Intake(RollersIO io) {
-    super("Intake", io, IntakeConstants.ROLLER_CONSTANTS);
+  public final Pivot pivot;
+  private final LoggedTunableNumber pivot_kS =
+      new LoggedTunableNumber("IntakePivot/kS", IntakeConstants.Pivot.getGains().kS());
+  private final LoggedTunableNumber pivot_kV =
+      new LoggedTunableNumber("IntakePivot/kV", IntakeConstants.Pivot.getGains().kV());
+  private final LoggedTunableNumber pivot_kA =
+      new LoggedTunableNumber("IntakePivot/kA", IntakeConstants.Pivot.getGains().kA());
+  private final LoggedTunableNumber pivot_kP =
+      new LoggedTunableNumber("IntakePivot/kP", IntakeConstants.Pivot.getGains().kP());
+  private final LoggedTunableNumber pivot_kD =
+      new LoggedTunableNumber("IntakePivot/kD", IntakeConstants.Pivot.getGains().kD());
 
-    // Apply initial PID constants to the IO
-    io.setControlConstants(kS.get(), kV.get(), kP.get(), kD.get());
+  public Intake(RollersIO rollersIO, PivotIO pivotIO) {
+    super("Intake", rollersIO);
+    this.pivot = new Pivot("IntakePivot", pivotIO);
   }
 
   @Override
   public void periodic() {
-    super.periodic();
+    int id = hashCode();
 
-    // Update PID / feedforward constants if changed on the dashboard
+    // Update roller control constants if changed
     LoggedTunableNumber.ifChanged(
-        hashCode(),
-        (constants) ->
-            getIO().setControlConstants(constants[0], constants[1], constants[2], constants[3]),
-        kS,
-        kV,
-        kP,
-        kD);
+        id, c -> getIO().setControlConstants(c[0], c[1], c[2], c[3]), kS, kV, kP, kD);
+
+    // Update pivot control constants if changed
+    LoggedTunableNumber.ifChanged(
+        id,
+        c -> pivot.getIO().setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+        pivot_kS,
+        pivot_kV,
+        pivot_kA,
+        pivot_kP,
+        pivot_kD);
+
+    super.periodic();
   }
 }
