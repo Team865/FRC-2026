@@ -6,9 +6,9 @@ import frc.robot.util.LoggedTunableNumber;
 
 public class Serializer extends Rollers {
 
-  private final LoggedTunableNumber kS = new LoggedTunableNumber("Serializer/kS", 0.0);
-  private final LoggedTunableNumber kV = new LoggedTunableNumber("Serializer/kV", 0.0);
-  private final LoggedTunableNumber kP = new LoggedTunableNumber("Serializer/kP", 0.0);
+  private final LoggedTunableNumber kS = new LoggedTunableNumber("Serializer/kS", 0.15);
+  private final LoggedTunableNumber kV = new LoggedTunableNumber("Serializer/kV", 0.01);
+  private final LoggedTunableNumber kP = new LoggedTunableNumber("Serializer/kP", 5);
   private final LoggedTunableNumber kD = new LoggedTunableNumber("Serializer/kD", 0.0);
 
   public Serializer(RollersIO io) {

@@ -42,6 +42,8 @@ import frc.robot.subsystems.pivot.PivotIOTalonFX.PivotTalonFXConstants;
 import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.subsystems.rollers.RollersIOSim;
 import frc.robot.subsystems.rollers.RollersIOTalonFX;
+import frc.robot.subsystems.serializer.Serializer;
+import frc.robot.subsystems.serializer.SerializerConstants;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.FlywheelIO;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
@@ -56,7 +58,6 @@ import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
-import java.util.List;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -142,7 +143,7 @@ public class RobotContainer {
         serializer =
             new Serializer(
                 new RollersIOTalonFX(
-                    SerializerConstants.CAN_ID, "rio", SerializerConstants.ROLLER_CONSTANTS));
+                    SerializerConstants.CAN_ID, "rio", SerializerConstants.ROLLERS));
         vision =
             Vision.createPerCameraVision(
                 drive,
@@ -191,6 +192,9 @@ public class RobotContainer {
                 new RollersIOSim(DCMotor.getKrakenX60(1), 1, IntakeConstants.ROLLERS),
                 new PivotIOSim(DCMotor.getKrakenX60(1), IntakeConstants.Pivot.getGains()));
 
+        serializer =
+            new Serializer(
+                new RollersIOSim(DCMotor.getKrakenX60(1), 5, SerializerConstants.ROLLERS));
         vision =
             Vision.createPerCameraVision(
                 drive,
@@ -212,6 +216,7 @@ public class RobotContainer {
         hood =
             new Hood(new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.getConstants()));
         flywheel = new Flywheel(new FlywheelIOSim());
+
         break;
 
       default:
@@ -233,6 +238,7 @@ public class RobotContainer {
         turret = new Turret(new PivotIO() {});
         hood = new Hood(new PivotIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
+        serializer = new Serializer(new RollersIO() {});
 
         break;
     }
@@ -276,10 +282,8 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Test intake
-    controller.y().whileTrue(intake.runVelocity(5));
-    controller.x().whileTrue(serializer.runVelocity(-15));
-    // Lock to 0° when A button is held
+    controller.y().whileTrue(serializer.runVelocity(15));
+
     controller
         .a()
         .whileTrue(
@@ -293,7 +297,7 @@ public class RobotContainer {
     controller.x().onTrue(intake.pivot.setTargetAngle(Degrees.of(0)));
 
     // 90 degrees
-    controller.b().onTrue(intake.pivot.setTargetAngle(Degrees.of(90)));
+    controller.b().onTrue(intake.pivot.setTargetAngle(Degrees.of(-90)));
 
     controller
         .rightTrigger()
@@ -356,6 +360,6 @@ public class RobotContainer {
   }
 
   public void updateComponentPoses() {
-    ComponentPoseUtil.publishComponentPoses(List.of(serializer), List.of(turret));
+    ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.pivot);
   }
 }

@@ -8,12 +8,7 @@ public final class SerializerConstants {
   public static final int CAN_ID = 15;
 
   public static final RollersConstants ROLLERS =
-      new RollersConstants(
-          1.0 / 10.0, // gear ratio
-          false, // inverted
-          40, // current limit (amps)
-          Units.inchesToMeters(13.08 / 2.0) // roller radius
-          );
+      new RollersConstants(5, true, 40, Units.inchesToMeters(8));
 
   private SerializerConstants() {}
 }

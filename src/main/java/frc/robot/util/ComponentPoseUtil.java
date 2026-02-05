@@ -7,43 +7,36 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.rollers.Rollers;
-import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class ComponentPoseUtil {
 
-  /**
-   * Publishes component poses to AdvantageScope.
-   *
-   * @param rollers
-   * @param pivots
-   */
-  public static void publishComponentPoses(List<Rollers> rollers, List<Pivot> pivots) {
-    int total = rollers.size() + pivots.size();
-    Pose3d[] poses = new Pose3d[total];
+  private ComponentPoseUtil() {}
 
-    for (int i = 0; i < rollers.size(); i++) {
-      Rollers r = rollers.get(i);
-      if (r != null) {
-        poses[i] =
-            new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, r.getPositionRads()));
-      } else {
+  public static void publishComponentPoses(Rollers rollers, Pivot turretPivot, Pivot intakePivot) {
 
-        poses[i] = new Pose3d();
-      }
-    }
+    Pose3d[] poses = new Pose3d[3];
 
-    for (int i = 0; i < pivots.size(); i++) {
-      Pivot p = pivots.get(i);
-      if (p != null && p.getOrientation() != null) {
-        poses[rollers.size() + i] =
-            new Pose3d(
-                new Translation3d(0, 0, 0), new Rotation3d(0, 0, p.getOrientation().in(Radians)));
-      } else {
+    // Spindexer
+    poses[0] =
+        rollers != null
+            ? new Pose3d(new Translation3d(), new Rotation3d(0, 0, rollers.getPositionRads()))
+            : new Pose3d();
 
-        poses[rollers.size() + i] = new Pose3d();
-      }
-    }
+    // Turret
+    poses[1] =
+        turretPivot != null && turretPivot.getOrientation() != null
+            ? new Pose3d(
+                new Translation3d(), new Rotation3d(0, 0, turretPivot.getOrientation().in(Radians)))
+            : new Pose3d();
+
+    // Intake arm
+    poses[2] =
+        intakePivot != null && intakePivot.getOrientation() != null
+            ? new Pose3d(
+                new Translation3d(-0.31, 0, 0.21),
+                new Rotation3d(0, intakePivot.getOrientation().in(Radians), 0))
+            : new Pose3d();
 
     Logger.recordOutput("Robot/ComponentPoses", poses);
   }

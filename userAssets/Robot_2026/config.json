@@ -22,6 +22,7 @@
   ],
   "components": [
     {
+      "name": "Rollers",
       "zeroedRotations": [
         {
           "axis": "x",
@@ -64,6 +65,28 @@
         0.0,
         0.0,
         0.0
+      ]
+    },
+    {
+      "name": "SlapdownArm",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": -90
+        }
+      ],
+      "zeroedPosition": [
+        -0.21,
+        0.0,
+        -0.31
       ]
     }
   ]
