@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "DeployIntake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Path2"
@@ -20,6 +26,12 @@
           "type": "path",
           "data": {
             "pathName": "Path3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowIntake"
           }
         }
       ]

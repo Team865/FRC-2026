@@ -8,7 +8,7 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.763591666666665,
+        "x": 7.763591666666664,
         "y": 7.504275
       },
       "isLocked": false,
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 8.0,
-        "y": 5.894349999995703
+        "x": 8.00472832961292,
+        "y": 5.937517379677752
       },
       "prevControl": {
-        "x": 8.020575000000001,
-        "y": 6.952516666666667
+        "x": 8.025303329612921,
+        "y": 6.995684046348716
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,14 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "DeployIntake",
+      "waypointRelativePos": 0.3892773892773886,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 18.0,
     "maxAcceleration": 5.0,
