@@ -4,6 +4,7 @@ public final class LEDConstants {
   private LEDConstants() {}
 
   public static final int pwmPort = 1;
+
   public static final double OFF = 0.99;
 
   public static final double RED = 0.61;
