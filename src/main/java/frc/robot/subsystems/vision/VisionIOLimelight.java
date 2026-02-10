@@ -32,6 +32,7 @@ public class VisionIOLimelight implements VisionIO {
   private final DoubleArraySubscriber megatag1Subscriber;
   private final DoubleArraySubscriber megatag2Subscriber;
 
+  private final String name;
   private final boolean isLL4;
   private boolean imuSeeded = false;
 
@@ -44,6 +45,7 @@ public class VisionIOLimelight implements VisionIO {
    */
   public VisionIOLimelight(String name, Supplier<Rotation2d> rotationSupplier, boolean isLL4) {
     var table = NetworkTableInstance.getDefault().getTable(name);
+    this.name = name;
     this.rotationSupplier = rotationSupplier;
     this.isLL4 = isLL4;
 
@@ -145,5 +147,10 @@ public class VisionIOLimelight implements VisionIO {
             Math.toRadians(rawLLArray[3]),
             Math.toRadians(rawLLArray[4]),
             Math.toRadians(rawLLArray[5])));
+  }
+
+  @Override
+  public String getName() {
+      return this.name;
   }
 }
