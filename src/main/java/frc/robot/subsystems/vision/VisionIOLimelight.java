@@ -10,7 +10,6 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
@@ -105,15 +104,21 @@ public class VisionIOLimelight implements VisionIO {
 
       Pose3d pose = parsePose(rawSample.value);
 
-      // Use ll4 internal imu for greated mt2 accuracy
+      double yawRadians;
+
       if (isLL4 && imuSeeded) {
-        double imuYawRadians = Units.degreesToRadians(pose.getRotation().getZ());
-        pose =
-            new Pose3d(
-                pose.getTranslation(),
-                new Rotation3d(
-                    pose.getRotation().getX(), pose.getRotation().getY(), imuYawRadians));
+        yawRadians = pose.getRotation().getZ();
+      } else {
+        yawRadians = rotationSupplier.get().getRadians();
       }
+
+      pose =
+          new Pose3d(
+              pose.getTranslation(),
+              new Rotation3d(
+                  pose.getRotation().getX(),
+                  pose.getRotation().getY(),
+                  yawRadians));
 
       poseObservations.add(
           new PoseObservation(
@@ -140,8 +145,8 @@ public class VisionIOLimelight implements VisionIO {
         rawLLArray[1],
         rawLLArray[2],
         new Rotation3d(
-            Units.degreesToRadians(rawLLArray[3]),
-            Units.degreesToRadians(rawLLArray[4]),
-            Units.degreesToRadians(rawLLArray[5])));
+            Math.toRadians(rawLLArray[3]),
+            Math.toRadians(rawLLArray[4]),
+            Math.toRadians(rawLLArray[5])));
   }
 }

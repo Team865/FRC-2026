@@ -5,7 +5,6 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -133,8 +132,6 @@ public class Vision extends SubsystemBase {
       VisionUtil.PoseProcessingResult poseResult =
           VisionUtil.processPoseObservations(inputs[i], consumer, i);
 
-      Translation3d[] lines = VisionUtil.makeTargetLines(inputs[i], i);
-
       Logger.recordOutput("Vision/" + cameraName + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
           "Vision/" + cameraName + "/RobotPoses", poseResult.all.toArray(new Pose3d[0]));
@@ -144,7 +141,6 @@ public class Vision extends SubsystemBase {
       Logger.recordOutput(
           "Vision/" + cameraName + "/RobotPosesRejected",
           poseResult.rejected.toArray(new Pose3d[0]));
-      Logger.recordOutput("Vision/" + cameraName + "/TargetLines3D", lines);
 
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(poseResult.all);

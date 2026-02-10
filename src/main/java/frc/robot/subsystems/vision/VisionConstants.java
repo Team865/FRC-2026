@@ -18,9 +18,9 @@ public class VisionConstants {
   public static AprilTagFieldLayout aprilTagLayout = FieldConstants.aprilTagLayout;
 
   // Camera names, must match names configured on coprocessor
-  public static String camera0Name = "FrontCamera";
-  public static String camera1Name = "BackCamera";
-  public static String camera2Name = "TurretCamera";
+  public static String camera0Name = "limelight-left";
+  public static String camera1Name = "limelight-left";
+  public static String camera2Name = "limelight-turret";
 
   // Robot to camera transforms
   // (Not used by Limelight, configure in web UI instead)
@@ -29,19 +29,19 @@ public class VisionConstants {
           Units.inchesToMeters(2),
           Units.inchesToMeters(12.355),
           Units.inchesToMeters(23.952),
-          new Rotation3d(0, Units.degreesToRadians(-40), 90));
+          new Rotation3d(0, Units.degreesToRadians(-30), 90));
   public static Transform3d robotToCamera1 =
       new Transform3d(
           Units.inchesToMeters(2),
           Units.inchesToMeters(-12.355),
           Units.inchesToMeters(23.952),
-          new Rotation3d(0, Units.degreesToRadians(-40), Units.degreesToRadians(-90)));
+          new Rotation3d(0, Units.degreesToRadians(-30), Units.degreesToRadians(-90)));
   public static Transform3d robotToCamera2 =
       new Transform3d(
           Units.inchesToMeters(1),
           Units.inchesToMeters(1),
           Units.inchesToMeters(23.952),
-          new Rotation3d(0, Units.degreesToRadians(-40), 0));
+          new Rotation3d(0, Units.degreesToRadians(-30), 0));
 
   // Basic filtering thresholds
   public static double maxAmbiguity = 0.3;

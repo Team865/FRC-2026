@@ -4,8 +4,6 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
@@ -16,66 +14,44 @@ public final class VisionUtil {
 
   private VisionUtil() {}
 
-  private static Transform3d getRobotToCamera(int cameraIndex) {
-    return switch (cameraIndex) {
-      case 0 -> robotToCamera0;
-      case 1 -> robotToCamera1;
-      case 2 -> robotToCamera2;
-      default -> new Transform3d();
-    };
-  }
-
-  public static Translation3d[] makeTargetLines(VisionIOInputsAutoLogged inputs, int cameraIndex) {
-    Translation3d[] lines = new Translation3d[inputs.tagIds.length * 2];
-    int idx = 0;
-
-    Pose3d robotPose3d =
-        inputs.poseObservations.length > 0 ? inputs.poseObservations[0].pose() : new Pose3d();
-
-    Pose3d cameraPose3d = robotPose3d.transformBy(getRobotToCamera(cameraIndex));
-
-    for (int tagId : inputs.tagIds) {
-      var tagPoseOpt = aprilTagLayout.getTagPose(tagId);
-      if (tagPoseOpt.isPresent()) {
-        Pose3d tagPose3d = tagPoseOpt.get();
-        lines[idx++] = cameraPose3d.getTranslation();
-        lines[idx++] = tagPose3d.getTranslation();
-      }
-    }
-
-    return lines;
-  }
-
   public static PoseProcessingResult processPoseObservations(
       VisionIOInputsAutoLogged inputs, VisionConsumer consumer, int cameraIndex) {
-    List<Pose3d> robotPoses = new LinkedList<>();
-    List<Pose3d> robotPosesAccepted = new LinkedList<>();
-    List<Pose3d> robotPosesRejected = new LinkedList<>();
 
-    for (var observation : inputs.poseObservations) {
-      boolean rejectPose =
-          observation.tagCount() == 0
-              || (observation.tagCount() == 1 && observation.ambiguity() > maxAmbiguity)
-              || Math.abs(observation.pose().getZ()) > maxZError
-              || observation.pose().getX() < 0.0
-              || observation.pose().getX() > aprilTagLayout.getFieldLength()
-              || observation.pose().getY() < 0.0
-              || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+    List<Pose3d> all = new LinkedList<>();
+    List<Pose3d> accepted = new LinkedList<>();
+    List<Pose3d> rejected = new LinkedList<>();
 
-      robotPoses.add(observation.pose());
-      if (rejectPose) {
-        robotPosesRejected.add(observation.pose());
-        continue;
-      } else {
-        robotPosesAccepted.add(observation.pose());
+    for (var obs : inputs.poseObservations) {
+      Pose3d pose = obs.pose();
+      all.add(pose);
+
+      boolean isMT2 = obs.type() == VisionIO.PoseObservationType.MEGATAG_2;
+
+      // Accept only MT2 or sim poses
+      boolean acceptPose = isMT2 || obs.type() == VisionIO.PoseObservationType.PHOTONVISION;
+
+      if (acceptPose && isMT2) {
+        acceptPose =
+            obs.tagCount() > 0
+                && Math.abs(pose.getZ()) <= maxZError
+                && pose.getX() >= 0.0
+                && pose.getX() <= aprilTagLayout.getFieldLength()
+                && pose.getY() >= 0.0
+                && pose.getY() <= aprilTagLayout.getFieldWidth();
       }
 
-      double stdDevFactor =
-          Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
+      if (!acceptPose) {
+        rejected.add(pose);
+        continue;
+      }
+
+      accepted.add(pose);
+
+      double stdDevFactor = Math.pow(obs.averageTagDistance(), 2.0) / Math.max(1, obs.tagCount());
       double linearStdDev = linearStdDevBaseline * stdDevFactor;
       double angularStdDev = angularStdDevBaseline * stdDevFactor;
 
-      if (observation.type() == VisionIO.PoseObservationType.MEGATAG_2) {
+      if (isMT2) {
         linearStdDev *= linearStdDevMegatag2Factor;
         angularStdDev *= angularStdDevMegatag2Factor;
       }
@@ -86,12 +62,12 @@ public final class VisionUtil {
       }
 
       consumer.accept(
-          observation.pose().toPose2d(),
-          observation.timestamp(),
+          pose.toPose2d(),
+          obs.timestamp(),
           VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
     }
 
-    return new PoseProcessingResult(robotPoses, robotPosesAccepted, robotPosesRejected);
+    return new PoseProcessingResult(all, accepted, rejected);
   }
 
   public static class PoseProcessingResult {
