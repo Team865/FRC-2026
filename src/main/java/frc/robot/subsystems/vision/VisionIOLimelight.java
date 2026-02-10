@@ -115,10 +115,7 @@ public class VisionIOLimelight implements VisionIO {
       pose =
           new Pose3d(
               pose.getTranslation(),
-              new Rotation3d(
-                  pose.getRotation().getX(),
-                  pose.getRotation().getY(),
-                  yawRadians));
+              new Rotation3d(pose.getRotation().getX(), pose.getRotation().getY(), yawRadians));
 
       poseObservations.add(
           new PoseObservation(
