@@ -369,6 +369,20 @@ public class RobotContainer {
                 () -> -driverController.getLeftX(),
                 () -> Rotation2d.kCW_90deg));
 
+    driverController
+        .rightTrigger()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> {
+                  Translation2d lookatVector =
+                      getAllianceHubPose().getTranslation().minus(drive.getPose().getTranslation());
+
+                  return new Rotation2d(lookatVector.getX(), lookatVector.getY());
+                }));
+
     // Shooting state reset
     driverController.back().onTrue(superstructure.forceState(ShootingState.IDLE));
 
