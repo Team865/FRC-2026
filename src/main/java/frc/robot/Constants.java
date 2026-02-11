@@ -7,6 +7,7 @@ import java.util.Optional;
 public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+  private static final boolean enableLockoutZone = true;
 
   // Allow tuning in SIM or REAl, disallow in a competition match or REPLAY
   public static boolean tuningMode() {
@@ -21,6 +22,15 @@ public final class Constants {
       default:
         return false;
     }
+  }
+
+  // Prevent the robot from moving to certain zones in the shop
+  public static boolean shouldUseLockoutZones() {
+    return switch (currentMode) {
+      case REAL -> !DriverStation.isFMSAttached() && enableLockoutZone;
+      case SIM -> enableLockoutZone; // Remove later
+      default -> false;
+    };
   }
 
   public enum Mode {

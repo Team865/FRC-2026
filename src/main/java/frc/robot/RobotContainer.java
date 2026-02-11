@@ -58,7 +58,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
-import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -223,21 +222,7 @@ public class RobotContainer {
                     DCMotor.getKrakenX44(1),
                     IndexerConstants.BallTunneler.SYSTEM_CONSTANTS,
                     IndexerConstants.BallTunneler.ROLLERS_SPECS));
-        vision =
-            Vision.createPerCameraVision(
-                drive,
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera0Name,
-                    VisionConstants.robotToCamera0,
-                    () -> drive.getPose()),
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera1Name,
-                    VisionConstants.robotToCamera1,
-                    () -> drive.getPose()),
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera2Name,
-                    VisionConstants.robotToCamera2,
-                    () -> drive.getPose()));
+        vision = Vision.createPerCameraVision(drive);
         turret =
             new Turret(
                 new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.SYSTEM_CONSTANTS));

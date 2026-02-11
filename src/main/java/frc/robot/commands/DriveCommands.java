@@ -22,8 +22,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.AllianceFlipUtil;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -45,7 +48,24 @@ public class DriveCommands {
 
   private DriveCommands() {}
 
-  private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+  private static Translation2d getLinearVelocityFromJoysticks(Drive drive, double x, double y) {
+    if (Constants.shouldUseLockoutZones()) {
+      // Apply lockout
+      Translation2d robotTranslation = drive.getPose().getTranslation();
+      var lockoutZoneBoundingBox = FieldConstants.Lockout.getZone();
+
+      Translation2d minCoords = lockoutZoneBoundingBox.getFirst();
+      Translation2d maxCoords = lockoutZoneBoundingBox.getSecond();
+      boolean shouldFlip = AllianceFlipUtil.shouldFlip();
+
+      x *=
+          getLockoutSpeedFactor(
+              shouldFlip ? -x : x, robotTranslation.getX(), minCoords.getX(), maxCoords.getX());
+      y *=
+          getLockoutSpeedFactor(
+              shouldFlip ? -y : y, robotTranslation.getY(), minCoords.getY(), maxCoords.getY());
+    }
+
     // Apply deadband
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
@@ -79,7 +99,8 @@ public class DriveCommands {
         () -> {
           // Get linear velocity
           Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+              getLinearVelocityFromJoysticks(
+                  drive, xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
           // Apply rotation deadband
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
@@ -93,9 +114,7 @@ public class DriveCommands {
                   linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
                   linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
                   omega * drive.getMaxAngularSpeedRadPerSec());
-          boolean isFlipped =
-              DriverStation.getAlliance().isPresent()
-                  && DriverStation.getAlliance().get() == Alliance.Red;
+          boolean isFlipped = AllianceFlipUtil.shouldFlip();
           drive.runVelocity(
               ChassisSpeeds.fromFieldRelativeSpeeds(
                   speeds,
@@ -131,7 +150,8 @@ public class DriveCommands {
             () -> {
               // Get linear velocity
               Translation2d linearVelocity =
-                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+                  getLinearVelocityFromJoysticks(
+                      drive, xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
               // Calculate angular speed
               double omega =
@@ -160,6 +180,20 @@ public class DriveCommands {
 
         // Reset PID controller when command starts
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+  }
+
+  private static double getLockoutSpeedFactor(
+      double speed, double currentPos, double minPos, double maxPos) {
+    double lockoutThreshold = FieldConstants.Lockout.thresholdMeters;
+
+    // Check x-axis
+    if (speed > 0 && (currentPos + lockoutThreshold >= maxPos)) {
+      return Math.abs(Math.max(maxPos - currentPos, 0) / lockoutThreshold);
+    } else if (speed < 0 && (currentPos - lockoutThreshold <= minPos)) {
+      return Math.abs(Math.max(currentPos - minPos, 0) / lockoutThreshold);
+    }
+
+    return 1.0;
   }
 
   /**

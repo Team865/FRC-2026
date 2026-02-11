@@ -32,7 +32,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -45,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.VisionUtil;
@@ -116,9 +116,7 @@ public class Drive extends SubsystemBase {
           kinematics,
           rawGyroRotation,
           lastModulePositions,
-          new Pose2d(
-              new Translation2d(Units.inchesToMeters(651.22), Units.inchesToMeters(317.69)),
-              Rotation2d.k180deg));
+          new Pose2d(FieldConstants.fieldLength, FieldConstants.fieldWidth, Rotation2d.k180deg));
 
   // For controlling drive speed
   private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts;

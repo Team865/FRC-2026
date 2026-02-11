@@ -9,9 +9,12 @@ package frc.robot;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.util.AllianceFlipUtil;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,4 +55,24 @@ public class FieldConstants {
           Units.inchesToMeters(38.62),
           Units.inchesToMeters(180.75),
           Rotation2d.fromDegrees(180)); // Away from origin
+
+  public static final class Lockout {
+    public static final double thresholdMeters = 1.0;
+
+    /* Returns the coordinates of the lockout zone as a pair of Translation2d's, where the first is the minimum and second the maximum. */
+    public static Pair<Translation2d, Translation2d> getZone() {
+      double robotCenterToEdgeMeters = Units.inchesToMeters(27.5 / 2);
+      Translation2d minOffset = new Translation2d(robotCenterToEdgeMeters, robotCenterToEdgeMeters);
+      Translation2d maxOffset =
+          new Translation2d(-robotCenterToEdgeMeters, -robotCenterToEdgeMeters);
+
+      return AllianceFlipUtil.shouldFlip()
+          ? new Pair<>(
+              new Translation2d(fieldLength / 2.0, 0.0).plus(minOffset),
+              new Translation2d(fieldLength, fieldWidth).plus(maxOffset))
+          : new Pair<>(
+              Translation2d.kZero.plus(minOffset),
+              new Translation2d(fieldLength / 2.0, fieldWidth).plus(maxOffset));
+    }
+  }
 }
