@@ -15,6 +15,7 @@ import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.commands.DriveCommands;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +49,8 @@ public class VisionIOLimelight implements VisionIO {
     this.name = name;
     this.rotationSupplier = rotationSupplier;
     this.isLL4 = isLL4;
+
+    if (isLL4) DriveCommands.reseedLimelight4s.add(this::reseedLimelights);
 
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
@@ -147,6 +150,10 @@ public class VisionIOLimelight implements VisionIO {
             Math.toRadians(rawLLArray[3]),
             Math.toRadians(rawLLArray[4]),
             Math.toRadians(rawLLArray[5])));
+  }
+
+  public void reseedLimelights() {
+    this.imuSeeded = false;
   }
 
   @Override

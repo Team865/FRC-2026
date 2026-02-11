@@ -17,13 +17,16 @@ public final class VisionUtil {
   public static PoseProcessingResult processPoseObservations(
       VisionIOInputsAutoLogged inputs, VisionConsumer consumer, int cameraIndex) {
 
-    List<Pose3d> all = new LinkedList<>();
-    List<Pose3d> accepted = new LinkedList<>();
-    List<Pose3d> rejected = new LinkedList<>();
+    List<Pose3d> allObservedPoses = new LinkedList<>();
+    List<Pose3d> acceptedPoses = new LinkedList<>();
+    List<Pose3d> rejectedPoses = new LinkedList<>();
+
+    if (inputs.poseObservations.length == 0)
+      return new PoseProcessingResult(allObservedPoses, acceptedPoses, rejectedPoses);
 
     for (var obs : inputs.poseObservations) {
       Pose3d pose = obs.pose();
-      all.add(pose);
+      allObservedPoses.add(pose);
 
       boolean isMT2 = obs.type() == VisionIO.PoseObservationType.MEGATAG_2;
 
@@ -41,13 +44,13 @@ public final class VisionUtil {
       }
 
       if (!acceptPose) {
-        rejected.add(pose);
+        rejectedPoses.add(pose);
         continue;
       }
 
-      accepted.add(pose);
+      acceptedPoses.add(pose);
 
-      double stdDevFactor = Math.pow(obs.averageTagDistance(), 2.0) / Math.max(1, obs.tagCount());
+      double stdDevFactor = Math.pow(obs.averageTagDistance(), 2.0) / obs.tagCount();
       double linearStdDev = linearStdDevBaseline * stdDevFactor;
       double angularStdDev = angularStdDevBaseline * stdDevFactor;
 
@@ -67,7 +70,7 @@ public final class VisionUtil {
           VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
     }
 
-    return new PoseProcessingResult(all, accepted, rejected);
+    return new PoseProcessingResult(allObservedPoses, acceptedPoses, rejectedPoses);
   }
 
   public static class PoseProcessingResult {
