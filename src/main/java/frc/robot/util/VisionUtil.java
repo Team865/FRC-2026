@@ -7,12 +7,22 @@ import edu.wpi.first.math.geometry.Pose3d;
 import frc.robot.subsystems.vision.Vision.VisionConsumer;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
+import frc.robot.subsystems.vision.VisionIOLimelight;
 import java.util.LinkedList;
 import java.util.List;
 
 public final class VisionUtil {
-
   private VisionUtil() {}
+
+  private static final List<VisionIOLimelight> limelight4s = new LinkedList<>();
+
+  public static void reseedAllLimelight4s() {
+    for (VisionIOLimelight io : limelight4s) io.reseed();
+  }
+
+  public static void registerLimelight4IO(VisionIOLimelight io) {
+    limelight4s.add(io);
+  }
 
   public static PoseProcessingResult processPoseObservations(
       VisionIOInputsAutoLogged inputs, VisionConsumer consumer, int cameraIndex) {

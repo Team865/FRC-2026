@@ -33,10 +33,6 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
-  public interface Limelight4ReseedConsumer {
-    public abstract void reseed();
-  }
-
   private static final double DEADBAND = 0.1;
   private static final double ANGLE_KP = 20.0;
   private static final double ANGLE_KD = 0.4;
@@ -46,8 +42,6 @@ public class DriveCommands {
   private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
-
-  public static final List<Limelight4ReseedConsumer> reseedLimelight4s = new LinkedList<>();
 
   private DriveCommands() {}
 
@@ -67,12 +61,9 @@ public class DriveCommands {
 
   public static Command resetGyro(Drive drive) {
     return Commands.runOnce(
-        () -> {
-          drive.setPose(
-              new Pose2d(drive.getPose().getTranslation(), DriveConstants.getZeroOrientation()));
-
-          for (Limelight4ReseedConsumer consumer : reseedLimelight4s) consumer.reseed();
-        },
+        () ->
+            drive.setPose(
+                new Pose2d(drive.getPose().getTranslation(), DriveConstants.getZeroOrientation())),
         drive);
   }
 
