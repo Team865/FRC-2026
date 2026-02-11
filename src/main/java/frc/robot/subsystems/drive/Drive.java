@@ -379,8 +379,13 @@ public class Drive extends SubsystemBase {
   }
 
   /** Sets the drivetrain maximum speed */
-  public Command setMaxLinearSpeed(LinearVelocity maxSpeed) {
-    return runOnce(() -> currentMaxSpeed = maxSpeed);
+  public void setMaxLinearSpeed(LinearVelocity maxSpeed) {
+    currentMaxSpeed = maxSpeed;
+  }
+
+  /** Command wrapper for {@link #setMaxLinearSpeed(LinearVelocity)} */
+  public Command setMaxLinearSpeedCmd(LinearVelocity maxSpeed) {
+    return runOnce(() -> setMaxLinearSpeed(maxSpeed));
   }
 
   /** Returns the maximum linear speed */

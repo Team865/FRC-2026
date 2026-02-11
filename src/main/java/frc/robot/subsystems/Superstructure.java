@@ -129,8 +129,8 @@ public class Superstructure extends SubsystemBase {
             flywheel.runVelocityRadPerSec(
                 ShooterConstants.Flywheel.SHOOTING_SPEED.in(
                     RadiansPerSecond))) // Spin up the flywheels
-        .onTrue(drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts))
-        .onFalse(drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed));
+        .onTrue(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))
+        .onFalse(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
 
     shootingStateMachine
         .stateTriggers
