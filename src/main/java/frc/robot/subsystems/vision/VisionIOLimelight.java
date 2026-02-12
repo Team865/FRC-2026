@@ -30,7 +30,6 @@ public class VisionIOLimelight implements VisionIO {
   private final DoubleSubscriber latencySubscriber;
   private final DoubleSubscriber txSubscriber;
   private final DoubleSubscriber tySubscriber;
-  private final DoubleArraySubscriber megatag1Subscriber;
   private final DoubleArraySubscriber megatag2Subscriber;
 
   private final String name;
@@ -56,7 +55,6 @@ public class VisionIOLimelight implements VisionIO {
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
-    megatag1Subscriber = table.getDoubleArrayTopic("botpose_wpiblue").subscribe(new double[] {});
     megatag2Subscriber =
         table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(new double[] {});
   }
@@ -72,20 +70,26 @@ public class VisionIOLimelight implements VisionIO {
         new TargetObservation(
             Rotation2d.fromDegrees(txSubscriber.get()), Rotation2d.fromDegrees(tySubscriber.get()));
 
-    // Handle LL4 IMU seeding
-    if (isLL4 && !imuSeeded) {
-      Rotation2d yaw = rotationSupplier.get();
+    Rotation2d yaw = rotationSupplier.get();
+
+    if (isLL4) {
+      // Seed then run ll4 off internal imu
+      if (!imuSeeded) {
+        orientationPublisher.accept(new double[] {yaw.getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
+        NetworkTableInstance.getDefault().flush();
+        imuSeeded = true;
+      }
+    } else {
+      // Non ll4, always seed
       orientationPublisher.accept(new double[] {yaw.getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
-      NetworkTableInstance.getDefault().flush();
-      imuSeeded = true;
     }
 
     // Read new pose observations from NetworkTables
     Set<Integer> tagIds = new HashSet<>();
     List<PoseObservation> poseObservations = new LinkedList<>();
 
-    // MegaTag 1
-    for (var rawSample : megatag1Subscriber.readQueue()) {
+    // MegaTag 2
+    for (var rawSample : megatag2Subscriber.readQueue()) {
       if (rawSample.value.length == 0) continue;
       for (int i = 11; i < rawSample.value.length; i += 7) {
         tagIds.add((int) rawSample.value[i]);
@@ -94,38 +98,6 @@ public class VisionIOLimelight implements VisionIO {
           new PoseObservation(
               rawSample.timestamp * 1.0e-6 - rawSample.value[6] * 1.0e-3,
               parsePose(rawSample.value),
-              rawSample.value.length >= 18 ? rawSample.value[17] : 0.0,
-              (int) rawSample.value[7],
-              rawSample.value[9],
-              PoseObservationType.MEGATAG_1));
-    }
-
-    // MegaTag 2
-    for (var rawSample : megatag2Subscriber.readQueue()) {
-      if (rawSample.value.length == 0) continue;
-      for (int i = 11; i < rawSample.value.length; i += 7) {
-        tagIds.add((int) rawSample.value[i]);
-      }
-
-      Pose3d pose = parsePose(rawSample.value);
-
-      double yawRadians;
-
-      if (isLL4 && imuSeeded) {
-        yawRadians = pose.getRotation().getZ();
-      } else {
-        yawRadians = rotationSupplier.get().getRadians();
-      }
-
-      pose =
-          new Pose3d(
-              pose.getTranslation(),
-              new Rotation3d(pose.getRotation().getX(), pose.getRotation().getY(), yawRadians));
-
-      poseObservations.add(
-          new PoseObservation(
-              rawSample.timestamp * 1.0e-6 - rawSample.value[6] * 1.0e-3,
-              pose,
               0.0,
               (int) rawSample.value[7],
               rawSample.value[9],
