@@ -2,6 +2,9 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -49,10 +52,26 @@ public class Flywheel extends SubsystemBase {
     return this.runEnd(() -> io.setVolts(volts), () -> io.setVolts(0));
   }
 
+  public Command runVolts(DoubleSupplier voltsSupplier) {
+    return this.runEnd(() -> io.setVolts(voltsSupplier.getAsDouble()), () -> io.setVolts(0));
+  }
+
   public Command runVelocity(AngularVelocity velocity) {
     return this.runEnd(
         () -> {
           targetVelocityRadsPerSec = velocity.in(RadiansPerSecond);
+          io.setVelocity(targetVelocityRadsPerSec);
+        },
+        () -> {
+          targetVelocityRadsPerSec = 0.0;
+          io.stop();
+        });
+  }
+
+  public Command runVelocity(Supplier<AngularVelocity> velocitySupplier) {
+    return this.runEnd(
+        () -> {
+          targetVelocityRadsPerSec = velocitySupplier.get().in(RadiansPerSecond);
           io.setVelocity(targetVelocityRadsPerSec);
         },
         () -> {
