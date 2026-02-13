@@ -17,7 +17,7 @@ public final class IndexerConstants {
     public static final AngularVelocity SPINDEXING_SPEED = RotationsPerSecond.of(5);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(5, true, 40, Units.inchesToMeters(8));
+        new RollersSpecifications(5, true, Units.inchesToMeters(8));
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
@@ -31,7 +31,7 @@ public final class IndexerConstants {
     public static final AngularVelocity TUNNELING_SPEED = RotationsPerSecond.of(20);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(1.0 / 10.0, false, 40, Units.inchesToMeters(13.08 / 2.0));
+        new RollersSpecifications(1.0 / 10.0, false, Units.inchesToMeters(13.08 / 2.0));
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(

@@ -126,7 +126,7 @@ public class Superstructure extends SubsystemBase {
             hood.trackTarget(
                 () -> ShootingUtil.calculateHoodAngle(hubPoseSupplier, drive::getPose)))
         .whileFalse(
-            flywheel.runVelocityRadPerSec(
+            flywheel.runVelocity(
                 ShooterConstants.Flywheel.SHOOTING_SPEED.in(
                     RadiansPerSecond))) // Spin up the flywheels
         .onTrue(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))

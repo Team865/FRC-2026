@@ -1,10 +1,19 @@
 package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.AngularVelocityUnit;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.util.LoggedTunableNumber;
+
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Second;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -34,19 +43,22 @@ public class Flywheel extends SubsystemBase {
     return this.runOnce(() -> io.setVolts(volts));
   }
 
-  public Command setVelocityRadPerSec(double velocityRadPerSec) {
-    return this.runOnce(() -> io.setVelocity(velocityRadPerSec));
+  public Command setVelocity(AngularVelocity velocity) {
+    return this.runOnce(() -> {
+      targetVelocityRadsPerSec = velocity.in(RadiansPerSecond);
+      io.setVelocity(velocity.in(RadiansPerSecond));
+    });
   }
 
   public Command runVolts(double volts) {
     return this.runEnd(() -> io.setVolts(volts), () -> io.setVolts(0));
   }
 
-  public Command runVelocityRadPerSec(double velocityRadPerSec) {
+  public Command runVelocity(AngularVelocity velocity) {
     return this.runEnd(
         () -> {
-          targetVelocityRadsPerSec = velocityRadPerSec;
-          io.setVelocity(velocityRadPerSec);
+          targetVelocityRadsPerSec = velocity.in(RadiansPerSecond);
+          io.setVelocity(targetVelocityRadsPerSec);
         },
         () -> {
           targetVelocityRadsPerSec = 0.0;
@@ -60,7 +72,7 @@ public class Flywheel extends SubsystemBase {
 
   public Trigger atTargetVelocity() {
     return new Trigger(
-        () -> MathUtil.isNear(targetVelocityRadsPerSec, inputs.velocityRadsPerSec, Math.PI / 2));
+        () -> MathUtil.isNear(targetVelocityRadsPerSec, inputs.velocityRadsPerSec, ShooterConstants.Flywheel.SETPOINT_TOLERANCE_RADS));
   }
 
   @Override

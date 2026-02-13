@@ -50,9 +50,15 @@ public class PivotIOTalonFX implements PivotIO {
 
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    motorConfig.Feedback.SensorToMechanismRatio = specs.gearRatio();
+    motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    motorConfig.CurrentLimits.StatorCurrentLimit = specs.statorCurrentLimit();
+    motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    motorConfig.CurrentLimits.SupplyCurrentLimit = specs.supplyCurrentLimit();
 
+    motorConfig.Feedback.SensorToMechanismRatio = specs.gearRatio();
+    motorConfig.CurrentLimits.SupplyCurrentLimit = 60.0;
     PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> motor.setPosition(0));
 
     positionSignal = motor.getPosition();
     velocitySignal = motor.getVelocity();
