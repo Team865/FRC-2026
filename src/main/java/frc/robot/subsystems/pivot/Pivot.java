@@ -2,12 +2,11 @@ package frc.robot.subsystems.pivot;
 
 import static edu.wpi.first.units.Units.Radians;
 
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Pivot extends SubsystemBase {
@@ -39,7 +38,7 @@ public class Pivot extends SubsystemBase {
 
   public Command setTargetAngle(Supplier<Angle> targetSupplier) {
     return this.runOnce(() -> io.setPosition(targetSupplier.get().in(Radians)));
-  } 
+  }
 
   public Angle getOrientation() {
     return Radians.of(inputsAutoLogged.positionRads);
