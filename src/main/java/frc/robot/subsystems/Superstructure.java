@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -126,9 +125,7 @@ public class Superstructure extends SubsystemBase {
             hood.trackTarget(
                 () -> ShootingUtil.calculateHoodAngle(hubPoseSupplier, drive::getPose)))
         .whileFalse(
-            flywheel.runVelocity(
-                ShooterConstants.Flywheel.SHOOTING_SPEED.in(
-                    RadiansPerSecond))) // Spin up the flywheels
+            flywheel.runVelocity(ShooterConstants.Flywheel.SHOOTING_SPEED)) // Spin up the flywheels
         .onTrue(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))
         .onFalse(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
 
@@ -165,10 +162,11 @@ public class Superstructure extends SubsystemBase {
         .whileTrue( // Run the intake based on drivetrain speed
             intake.runLinearVelocity(
                 () ->
-                    Math.max(
-                        drive.getLinearSpeedMetersPerSec()
-                            * IntakeConstants.Rollers.DRIVETRAIN_TO_INTAKE_SPEED_FACTOR,
-                        IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED.in(MetersPerSecond))));
+                    MetersPerSecond.of(
+                        Math.max(
+                            drive.getLinearSpeedMetersPerSec()
+                                * IntakeConstants.Rollers.DRIVETRAIN_TO_INTAKE_SPEED_FACTOR,
+                            IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED.in(MetersPerSecond)))));
 
     shootingStateMachine
         .stateTriggers
