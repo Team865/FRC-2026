@@ -1,15 +1,24 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SysIdBuilder;
+import frc.robot.util.SysIdRegister.SysIdTestable;
+
+import java.time.chrono.ThaiBuddhistChronology;
 import java.util.function.Supplier;
 
-public class Hood extends Pivot {
+import org.littletonrobotics.junction.Logger;
+
+public class Hood extends Pivot implements SysIdTestable {
   private final LoggedTunableNumber kS =
       new LoggedTunableNumber("Shooter/Hood/kS", ShooterConstants.Hood.SYSTEM_CONSTANTS.kS);
   private final LoggedTunableNumber kV =
@@ -29,11 +38,15 @@ public class Hood extends Pivot {
           "Shooter/Hood/MaxAcceleration",
           ShooterConstants.Hood.SYSTEM_CONSTANTS.maxAcceleration.get());
 
+    private final SysIdRoutine sysIdRoutine;
+
   public Hood(PivotIO io) {
     super("Shooter/Hood", io);
 
     io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     io.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
+
+    this.sysIdRoutine = new SysIdBuilder(this, io::setVolts).build();
   }
 
   public Command trackTarget(Supplier<Angle> angleSupplier) {
@@ -65,5 +78,10 @@ public class Hood extends Pivot {
         maxAcceleration);
 
     super.periodic();
+  }
+
+  @Override
+  public SysIdRoutine getRoutine() {
+      return this.sysIdRoutine;
   }
 }
