@@ -1,22 +1,16 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
-
-import java.time.chrono.ThaiBuddhistChronology;
 import java.util.function.Supplier;
-
-import org.littletonrobotics.junction.Logger;
 
 public class Hood extends Pivot implements SysIdTestable {
   private final LoggedTunableNumber kS =
@@ -38,7 +32,7 @@ public class Hood extends Pivot implements SysIdTestable {
           "Shooter/Hood/MaxAcceleration",
           ShooterConstants.Hood.SYSTEM_CONSTANTS.maxAcceleration.get());
 
-    private final SysIdRoutine sysIdRoutine;
+  private final SysIdRoutine sysIdRoutine;
 
   public Hood(PivotIO io) {
     super("Shooter/Hood", io);
@@ -82,6 +76,6 @@ public class Hood extends Pivot implements SysIdTestable {
 
   @Override
   public SysIdRoutine getRoutine() {
-      return this.sysIdRoutine;
+    return this.sysIdRoutine;
   }
 }

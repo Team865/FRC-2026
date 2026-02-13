@@ -4,14 +4,14 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-import java.util.function.Consumer;
-
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import java.util.function.Consumer;
+import org.littletonrobotics.junction.Logger;
 
 public class SysIdBuilder {
   private final SysIdRoutine.Config config;
@@ -23,7 +23,9 @@ public class SysIdBuilder {
 
   public SysIdBuilder(Subsystem subsystem, Consumer<Double> voltageConsumer) {
     this.config = new SysIdRoutine.Config();
-    this.mechanism = new SysIdRoutine.Mechanism(voltage -> voltageConsumer.accept(voltage.in(Volts)), null, subsystem);
+    this.mechanism =
+        new SysIdRoutine.Mechanism(
+            voltage -> voltageConsumer.accept(voltage.in(Volts)), null, subsystem);
   }
 
   public SysIdBuilder withQuasistaticRampRate(double voltsPerSec) {
@@ -45,6 +47,15 @@ public class SysIdBuilder {
   }
 
   public SysIdRoutine build() {
-    return new SysIdRoutine(new SysIdRoutine.Config(rampRateVoltsPerSec, dynamicStepVoltage, timeout), mechanism);
-  } 
+    return new SysIdRoutine(
+        new SysIdRoutine.Config(
+            rampRateVoltsPerSec,
+            dynamicStepVoltage,
+            timeout,
+            state ->
+                Logger.recordOutput(
+                    String.format("%sSysIdTestState", mechanism.m_subsystem.getName()),
+                    state.toString())),
+        mechanism);
+  }
 }
