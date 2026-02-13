@@ -20,12 +20,12 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Optional.empty(), Optional.empty()),
+                0.12, 0.0, 0.4, 0.0, 0.5, 0.004, Optional.empty(), Optional.empty()),
             new ControlSystemContext(
                 0.12, 0.05, 0.0, 0.0, 0.5, 0.0, Optional.empty(), Optional.empty()));
 
-    public static final double GEAR_RATIO = 2.0;
-    public static final double WHEEL_RADIUS_METERS = 0.1;
+    public static final double GEAR_RATIO = 1;
+    public static final double WHEEL_RADIUS_METERS = 0.05;
 
     public static final AngularVelocity SHOOTING_SPEED = RadiansPerSecond.of(5.0);
     public static final double SETPOINT_TOLERANCE_RADS = Math.PI / 4;

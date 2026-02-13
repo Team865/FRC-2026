@@ -70,7 +70,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     config.CurrentLimits.SupplyCurrentLimit = 70.0;
 
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = 120.0;
+    config.CurrentLimits.StatorCurrentLimit = 200.0;
 
     PhoenixUtil.tryUntilOk(5, () -> masterMotor.getConfigurator().apply(config));
     PhoenixUtil.tryUntilOk(5, () -> followerMotor.getConfigurator().apply(config));
@@ -149,7 +149,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
   @Override
   public void setVelocity(double velocityRadPerSec) {
-    masterMotor.setControl(velocityRequest.withVelocity(velocityRadPerSec));
+    masterMotor.setControl(velocityRequest.withVelocity(RadiansPerSecond.of(velocityRadPerSec)));
   }
 
   @Override
