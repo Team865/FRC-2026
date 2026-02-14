@@ -110,6 +110,12 @@ public class Vision extends SubsystemBase {
     return turretSeenTagId;
   }
 
+  public void throttleCameras(int throttleAmount) {
+    for (VisionIO cameraIo : io) {
+      cameraIo.throttleCamera(throttleAmount);
+    }
+  }
+
   @Override
   public void periodic() {
     List<Pose3d> allTagPoses = new LinkedList<>();

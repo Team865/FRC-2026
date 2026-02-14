@@ -407,4 +407,8 @@ public class RobotContainer {
   public void updateComponentPoses() {
     ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.pivot, climber);
   }
+
+  public void throttleCameras(int throttleAmount) {
+    vision.throttleCameras(throttleAmount);
+  }
 }
