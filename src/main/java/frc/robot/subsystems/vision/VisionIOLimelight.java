@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.util.VisionUtil;
@@ -28,6 +29,7 @@ public class VisionIOLimelight implements VisionIO {
   private final DoubleArrayPublisher orientationPublisher;
 
   private final DoubleSubscriber latencySubscriber;
+  private final IntegerPublisher throttlePublisher;
   private final DoubleSubscriber txSubscriber;
   private final DoubleSubscriber tySubscriber;
   private final DoubleArraySubscriber megatag2Subscriber;
@@ -35,6 +37,7 @@ public class VisionIOLimelight implements VisionIO {
   private final String name;
   private final boolean isLL4;
   private boolean imuSeeded = false;
+  private int throttleAmount = 0;
 
   /**
    * Creates a new VisionIOLimelight.
@@ -52,6 +55,7 @@ public class VisionIOLimelight implements VisionIO {
     if (isLL4) VisionUtil.registerLimelight4IO(this);
 
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
+    throttlePublisher = table.getIntegerTopic("throttle_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
@@ -131,5 +135,10 @@ public class VisionIOLimelight implements VisionIO {
   @Override
   public String getName() {
     return this.name;
+  }
+
+  @Override
+  public void throttleCamera(int throttleAmount) {
+    throttlePublisher.accept(throttleAmount);
   }
 }
