@@ -9,6 +9,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.units.measure.Angle;
+import org.littletonrobotics.junction.Logger;
 
 public class PivotIOTalonFXWithCANcoder extends PivotIOTalonFX {
   private final CANcoder cancoder;
@@ -28,7 +29,6 @@ public class PivotIOTalonFXWithCANcoder extends PivotIOTalonFX {
     cancoder = new CANcoder(cancoderCanId, canBus);
 
     CANcoderConfiguration config = new CANcoderConfiguration();
-    config.MagnetSensor.MagnetOffset = CANcoderSpecs.gearRatio() / (2.0 * Math.PI);
     config.MagnetSensor.SensorDirection =
         CANcoderSpecs.clockwisePositive()
             ? SensorDirectionValue.Clockwise_Positive
@@ -57,6 +57,8 @@ public class PivotIOTalonFXWithCANcoder extends PivotIOTalonFX {
 
     double cancoderRotations = absolutePositionSignal.getValue().in(Rotations);
     double mechanismRotations = cancoderRotations * cancoderToMechanismRatio;
+
+    Logger.recordOutput("Expected Mechanism Rotations", mechanismRotations);
 
     tryUntilOk(5, () -> motor.setPosition(mechanismRotations));
   }

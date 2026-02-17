@@ -38,13 +38,13 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                0.24, 0.01, 0.62, 0.0, 200.0, 0.0, Optional.of(10.0), Optional.of(500.0)),
+                0.24, 0.01, 0.62, 0.0, 200.0, 0.0, Optional.of(0.5), Optional.of(500.0)),
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(52.0, false);
     public static final CANcoderSpecifications CANCODER_SPECS =
-        new CANcoderSpecifications(400.0 / 360.0, 0.0, false);
+        new CANcoderSpecifications(360.0 / 400, false);
 
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);

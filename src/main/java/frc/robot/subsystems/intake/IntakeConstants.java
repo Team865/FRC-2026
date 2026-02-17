@@ -47,7 +47,7 @@ public final class IntakeConstants {
 
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(1.0, true);
     public static final CANcoderSpecifications CANCODER_SPECS =
-        new CANcoderSpecifications(1.0, 0.0, true);
+        new CANcoderSpecifications(1.0, true);
   }
 
   private IntakeConstants() {}

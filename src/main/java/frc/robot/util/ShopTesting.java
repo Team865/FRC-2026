@@ -17,6 +17,7 @@ public class ShopTesting {
     LoggedTunableNumber flywheelTestVoltage = new LoggedTunableNumber("Test/FlywheelVoltage", 0.0);
     LoggedTunableNumber flywheelTestVelocityRadsPerSec =
         new LoggedTunableNumber("Test/FlywheelVelocityRadsPerSec", 0.0);
+    LoggedTunableNumber turretTestAngle = new LoggedTunableNumber("Test/turretAngleDeg", 0.0);
 
     driverController.leftBumper().onTrue(hood.setTargetAngle(Degrees.zero()));
 
@@ -27,5 +28,8 @@ public class ShopTesting {
             flywheel.runVelocity(() -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get())));
 
     hood.setDefaultCommand(hood.runVoltage(() -> -driverController.getLeftY()));
+    driverController
+        .y()
+        .onTrue(turret.lockOntoTarget(() -> Degrees.of(turretTestAngle.get()), () -> 0.0));
   }
 }

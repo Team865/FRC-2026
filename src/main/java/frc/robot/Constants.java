@@ -69,8 +69,7 @@ public final class Constants {
       REAL_CONTEXT = realContext;
       SIM_CONTEXT = simContext;
 
-      ControlSystemContext context = 
-        (currentMode.equals(Mode.REAL)) ? realContext : simContext;
+      ControlSystemContext context = (currentMode.equals(Mode.REAL)) ? realContext : simContext;
 
       kV = context.kV();
       kA = context.kA();
