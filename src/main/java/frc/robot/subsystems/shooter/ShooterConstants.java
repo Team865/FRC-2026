@@ -27,7 +27,7 @@ public final class ShooterConstants {
     public static final double GEAR_RATIO = 1;
     public static final double WHEEL_RADIUS_METERS = 0.05;
 
-    public static final AngularVelocity SHOOTING_SPEED = RadiansPerSecond.of(5.0);
+    public static final AngularVelocity SHOOTING_SPEED = RadiansPerSecond.of(560);
     public static final double SETPOINT_TOLERANCE_RADS = Math.PI / 4;
   }
 

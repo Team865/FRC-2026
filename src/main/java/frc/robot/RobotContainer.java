@@ -7,8 +7,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -260,8 +258,7 @@ public class RobotContainer {
 
         break;
     }
-    NamedCommands.registerCommand("StowIntake", intake.pivot.setTargetAngle(Degrees.of(0)));
-    NamedCommands.registerCommand("DeployIntake", intake.pivot.setTargetAngle(Degrees.of(-90)));
+
     this.superstructure =
         new Superstructure(
             drive,
@@ -272,6 +269,28 @@ public class RobotContainer {
             hood,
             flywheel,
             () -> getAllianceHubPose());
+
+    NamedCommands.registerCommand("StowIntake", superstructure.requestState(IntakingState.STOWED));
+    NamedCommands.registerCommand(
+        "DeployIntake", superstructure.requestState(IntakingState.INTAKE_READY));
+
+    NamedCommands.registerCommand(
+        "StopIntaking", superstructure.requestState(IntakingState.INTAKE_READY));
+    NamedCommands.registerCommand(
+        "StartIntaking", superstructure.requestState(IntakingState.INTAKING));
+
+    NamedCommands.registerCommand("EnableShooting", superstructure.toggleShootingMode());
+    NamedCommands.registerCommand(
+        "DisableShooting", superstructure.requestState(ShootingState.IDLE));
+
+    NamedCommands.registerCommand(
+        "StartShooting", superstructure.requestState(ShootingState.SHOOTING));
+    NamedCommands.registerCommand(
+        "StopShooting", superstructure.requestState(ShootingState.READY_TO_SHOOT));
+
+    NamedCommands.registerCommand("ExtendClimber", climber.extend());
+    NamedCommands.registerCommand("RetractClimber", climber.retract());
+
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 

@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.7350000000000003,
-        "y": 0.8437037037037056
+        "x": 3.5989499999999994,
+        "y": 6.279825000000001
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.1121937321937323,
-        "y": 0.921225071225072
+        "x": 1.9058833333333332,
+        "y": 6.226916666666667
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.14,
-        "y": 2.93
+        "x": 1.142491666666667,
+        "y": 4.556525000000001
       },
       "prevControl": {
-        "x": 1.2413960113960116,
-        "y": 1.4321139601139619
+        "x": 2.941374999999999,
+        "y": 4.541408333333333
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,30 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "ExtendClimber",
+      "waypointRelativePos": 0.3365131578947361,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ExtendClimber"
+        }
+      }
+    },
+    {
+      "name": "RetractClimber",
+      "waypointRelativePos": 1.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "RetractClimber"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 18.0,
     "maxAcceleration": 5.0,
@@ -42,7 +65,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -178.88760038370216
   },
   "reversed": false,
   "folder": null,
