@@ -56,38 +56,6 @@ public class Vision extends SubsystemBase {
 
     cameraConsumers.put(camera0Name, drivetrainConsumer);
     cameraConsumers.put(camera1Name, drivetrainConsumer);
-
-    // Turret Camera consumer, outputs the horizontal offset from the current alliances hub tag
-    // debounced
-    cameraConsumers.put(
-        camera2Name,
-        (pose, ts, stdDevs) -> {
-          int cameraIndex = cameraNameToIndex.get(camera2Name);
-          VisionIOInputsAutoLogged inputs2 = inputs[cameraIndex];
-          int[] seenTags = inputs2.tagIds;
-
-          double tx = 0.0;
-          int newCandidate = -1;
-          for (int hubTagId : AllianceFlipUtil.apply(FieldConstants.hubTagIds)) {
-            if (IntStream.of(seenTags).anyMatch(t -> t == hubTagId)) {
-              newCandidate = hubTagId;
-              if (inputs2.latestTargetObservation != null) {
-                tx = inputs2.latestTargetObservation.tx().getDegrees();
-              }
-              break;
-            }
-          }
-          if (newCandidate == turretCandidateTagId) {
-            turretTagFrames++;
-          } else {
-            turretCandidateTagId = newCandidate;
-            turretTagFrames = 1;
-          }
-          if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
-            turretSeenTagId = turretCandidateTagId;
-            turretTxDegrees = tx;
-          }
-        });
   }
 
   public VisionIOInputsAutoLogged getInputs(int cameraIndex) {
@@ -108,12 +76,6 @@ public class Vision extends SubsystemBase {
 
   public int getTurretSeenTagId() {
     return turretSeenTagId;
-  }
-
-  public void throttleCameras(int throttleAmount) {
-    for (VisionIO cameraIo : io) {
-      cameraIo.throttleCamera(throttleAmount);
-    }
   }
 
   @Override
@@ -154,12 +116,52 @@ public class Vision extends SubsystemBase {
       allRobotPosesRejected.addAll(poseResult.rejected);
     }
 
+    updateTurretTracking();
+
     Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
     Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
+  }
+
+  private void updateTurretTracking() {
+    int cameraIndex = cameraNameToIndex.get(camera2Name);
+    VisionIOInputsAutoLogged inputs2 = inputs[cameraIndex];
+
+    int newCandidate = -1;
+    double tx = 0.0;
+
+    for (int hubTagId : AllianceFlipUtil.apply(FieldConstants.hubTagIds)) {
+      if (IntStream.of(inputs2.tagIds).anyMatch(t -> t == hubTagId)) {
+        newCandidate = hubTagId;
+        if (inputs2.latestTargetObservation != null) {
+          tx = inputs2.latestTargetObservation.tx().getDegrees();
+        }
+        break;
+      }
+    }
+
+    if (newCandidate == -1) {
+      turretCandidateTagId = -1;
+      turretSeenTagId = -1;
+      turretTagFrames = 0;
+      turretTxDegrees = 0.0;
+      return;
+    }
+
+    if (newCandidate == turretCandidateTagId) {
+      turretTagFrames++;
+    } else {
+      turretCandidateTagId = newCandidate;
+      turretTagFrames = 1;
+    }
+
+    if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
+      turretSeenTagId = turretCandidateTagId;
+      turretTxDegrees = tx;
+    }
   }
 
   @FunctionalInterface
