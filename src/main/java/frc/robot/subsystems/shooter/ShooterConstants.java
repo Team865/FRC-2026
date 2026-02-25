@@ -44,10 +44,10 @@ public final class ShooterConstants {
 
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(52.0, false);
     public static final CANcoderSpecifications CANCODER_SPECS =
-        new CANcoderSpecifications(360.0 / 400, false);
+        new CANcoderSpecifications(360.0 / 400, false, 0.344482);
 
-    public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
-    public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);
+    public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-200);
+    public static final double MAX_ANGLE_RADS = Units.degreesToRadians(200);
   }
 
   public static final class Hood {

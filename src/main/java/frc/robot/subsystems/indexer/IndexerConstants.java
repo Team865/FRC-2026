@@ -10,7 +10,7 @@ import frc.robot.subsystems.rollers.RollersSpecifications;
 import java.util.Optional;
 
 public final class IndexerConstants {
-  public static final String CANBUS = "rio";
+  public static final String CANBUS = "CANivore";
 
   public static final class Serializer {
     public static final int CAN_ID = 17;
@@ -23,7 +23,7 @@ public final class IndexerConstants {
         new ControlSystemConstants(
             ControlSystemConstants.EMPTY_CONTEXT,
             new ControlSystemContext(
-                2.5, 5.0, 0.15, 0.0, 5.0, 0.0, Optional.empty(), Optional.empty()));
+                2.5, 0.1, 0.25, 0.0, 5.0, 0.0, Optional.empty(), Optional.empty()));
   }
 
   public static final class BallTunneler {

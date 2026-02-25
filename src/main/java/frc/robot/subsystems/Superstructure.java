@@ -3,8 +3,6 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -251,20 +249,6 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
-    Logger.recordOutput(
-        "Superstructure/Components/TurretTarget",
-        new Pose2d(
-            drive
-                .getPose()
-                .getTranslation()
-                .plus(
-                    new Translation2d(
-                        drive
-                            .getPose()
-                            .getTranslation()
-                            .getDistance(hubPoseSupplier.get().getTranslation()),
-                        drive.getRotation().plus(new Rotation2d(turret.getOrientation())))),
-            Rotation2d.kZero));
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());

@@ -84,7 +84,7 @@ public class PivotIOTalonFX implements PivotIO {
 
     motor.setControl(
         positionRequest
-            .withPosition(Radians.of(omegaRadPerSec))
+            .withPosition(Radians.of(angleRads))
             .withFeedForward(motorConfig.Slot0.kV * omegaRPS));
   }
 

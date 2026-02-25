@@ -33,10 +33,12 @@ public class PivotIOTalonFXWithCANcoder extends PivotIOTalonFX {
         CANcoderSpecs.clockwisePositive()
             ? SensorDirectionValue.Clockwise_Positive
             : SensorDirectionValue.CounterClockwise_Positive;
+    config.MagnetSensor.MagnetOffset = CANcoderSpecs.magnetOffsetRots();
 
     tryUntilOk(5, () -> cancoder.getConfigurator().apply(config));
 
     absolutePositionSignal = cancoder.getAbsolutePosition();
+    Logger.recordOutput("Initial Offset", absolutePositionSignal.getValue());
 
     cancoderToMechanismRatio = CANcoderSpecs.gearRatio();
 
@@ -56,10 +58,15 @@ public class PivotIOTalonFXWithCANcoder extends PivotIOTalonFX {
     if (!refreshSignalSuccessful) return;
 
     double cancoderRotations = absolutePositionSignal.getValue().in(Rotations);
-    double mechanismRotations = cancoderRotations * cancoderToMechanismRatio;
-
-    Logger.recordOutput("Expected Mechanism Rotations", mechanismRotations);
+    double mechanismRotations = cancoderRotations / cancoderToMechanismRatio;
 
     tryUntilOk(5, () -> motor.setPosition(mechanismRotations));
+  }
+
+  @Override
+  public Angle getEncoderAngle() {
+    absolutePositionSignal.refresh();
+
+    return absolutePositionSignal.getValue().div(cancoderToMechanismRatio);
   }
 }

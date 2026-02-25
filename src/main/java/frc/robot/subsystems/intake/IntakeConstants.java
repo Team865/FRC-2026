@@ -14,7 +14,7 @@ import frc.robot.subsystems.rollers.RollersSpecifications;
 import java.util.Optional;
 
 public final class IntakeConstants {
-  public static final String CANBUS = "rio";
+  public static final String CANBUS = "CANivore";
 
   public static final class Rollers {
     public static final int CAN_ID = 14;
@@ -47,7 +47,7 @@ public final class IntakeConstants {
 
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(1.0, true);
     public static final CANcoderSpecifications CANCODER_SPECS =
-        new CANcoderSpecifications(1.0, true);
+        new CANcoderSpecifications(1.0, true, 0);
   }
 
   private IntakeConstants() {}

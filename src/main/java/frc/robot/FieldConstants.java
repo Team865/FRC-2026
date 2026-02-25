@@ -37,7 +37,7 @@ public class FieldConstants {
   public static final int aprilTagCount = aprilTagLayout.getTags().size();
   public static final double aprilTagWidth = Units.inchesToMeters(6.5);
   public static final List<Integer> hubTagIds =
-      Arrays.asList(18, 19, 20, 21, 24, 25, 26, 27); // tags for blue hub
+      Arrays.asList(18, 19, 20, 21, 24, 25, 26, 27, 23); // tags for blue hub
   // Scoring element positions
   public static final Pose2d allianceHubPose =
       new Pose2d(

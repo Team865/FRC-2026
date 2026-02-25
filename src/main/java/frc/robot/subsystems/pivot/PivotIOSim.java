@@ -25,6 +25,9 @@ public class PivotIOSim implements PivotIO {
     this.motorSim =
         new DCMotorSim(LinearSystemId.createDCMotorSystem(constants.kV, constants.kA), motor);
 
+    motorSim.setAngle(0.0);
+    this.targetAngleRads = 0.0;
+
     setControlConstants(constants.kS, constants.kV, constants.kA, constants.kP, constants.kD);
     setMotionProfile(constants.maxVelocity.get(), constants.maxAcceleration.get());
   }

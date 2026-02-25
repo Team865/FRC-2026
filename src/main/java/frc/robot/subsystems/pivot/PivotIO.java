@@ -1,5 +1,8 @@
 package frc.robot.subsystems.pivot;
 
+import static edu.wpi.first.units.Units.Rotations;
+
+import edu.wpi.first.units.measure.Angle;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface PivotIO {
@@ -29,4 +32,9 @@ public interface PivotIO {
   public default void setControlConstants(double kS, double kV, double kA, double kP, double kD) {}
 
   public default void setMotionProfile(double maxVelocity, double maxAcceleration) {}
+
+  public default Angle getEncoderAngle() {
+    return Rotations.zero();
+  }
+  ;
 }
