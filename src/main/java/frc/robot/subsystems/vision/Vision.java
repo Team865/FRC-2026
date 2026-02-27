@@ -175,4 +175,10 @@ public class Vision extends SubsystemBase {
   public static Vision createPerCameraVision(Drive drive, VisionIO... io) {
     return new Vision(drive, io);
   }
+
+  public void throttleCameras(int throttleAmount) {
+    for (VisionIO visionIO : io) {
+      visionIO.throttleCamera(throttleAmount);
+    }
+  }
 }

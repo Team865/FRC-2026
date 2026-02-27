@@ -30,13 +30,13 @@ public class VisionIOLimelight implements VisionIO {
 
   private final DoubleSubscriber latencySubscriber;
   private final IntegerPublisher throttlePublisher;
+  private final IntegerPublisher imuModePublisher;
   private final DoubleSubscriber txSubscriber;
   private final DoubleSubscriber tySubscriber;
   private final DoubleArraySubscriber megatag2Subscriber;
 
   private final String name;
   private final boolean isLL4;
-  private boolean imuSeeded = false;
   private int throttleAmount = 0;
 
   /**
@@ -56,6 +56,7 @@ public class VisionIOLimelight implements VisionIO {
 
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     throttlePublisher = table.getIntegerTopic("throttle_set").publish();
+    imuModePublisher = table.getIntegerTopic("imumode_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
@@ -75,17 +76,10 @@ public class VisionIOLimelight implements VisionIO {
             Rotation2d.fromDegrees(txSubscriber.get()), Rotation2d.fromDegrees(tySubscriber.get()));
 
     Rotation2d yaw = rotationSupplier.get();
+    orientationPublisher.accept(new double[] {yaw.getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
 
     if (isLL4) {
-      // Seed then run ll4 off internal imu
-      if (!imuSeeded) {
-        orientationPublisher.accept(new double[] {yaw.getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
-        NetworkTableInstance.getDefault().flush();
-        imuSeeded = true;
-      }
-    } else {
-      // Non ll4, always seed
-      orientationPublisher.accept(new double[] {yaw.getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
+      imuModePublisher.accept(4);
     }
 
     // Read new pose observations from NetworkTables
@@ -129,7 +123,14 @@ public class VisionIOLimelight implements VisionIO {
   }
 
   public void reseed() {
-    this.imuSeeded = false;
+    if (!isLL4) {
+      return;
+    }
+    imuModePublisher.accept(1);
+    orientationPublisher.accept(
+        new double[] {rotationSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
+    NetworkTableInstance.getDefault().flush();
+    imuModePublisher.accept(4);
   }
 
   @Override

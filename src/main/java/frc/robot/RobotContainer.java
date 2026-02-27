@@ -438,6 +438,6 @@ public class RobotContainer {
   }
 
   public void throttleCameras(int throttleAmount) {
-    // vision.throttleCameras(throttleAmount);
+    vision.throttleCameras(throttleAmount);
   }
 }
