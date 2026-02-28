@@ -132,9 +132,10 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   }
 
   @Override
-  public void setControlConstants(double kS, double kV, double kP, double kD) {
+  public void setControlConstants(double kV, double kA, double kS, double kP, double kD) {
     config.Slot0.kS = kS;
     config.Slot0.kV = kV;
+    config.Slot0.kA = kA;
     config.Slot0.kP = kP;
     config.Slot0.kD = kD;
 

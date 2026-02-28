@@ -24,7 +24,7 @@ public interface RollersIO {
 
   public default void setLinearVelocity(double velocityMetersPerSec) {}
 
-  public default void setControlConstants(double kS, double kV, double kP, double kD) {}
+  public default void setControlConstants(double kV, double kA, double kS, double kP, double kD) {}
 
   public default double getVelocityRadPerSec() {
     return 0.0;

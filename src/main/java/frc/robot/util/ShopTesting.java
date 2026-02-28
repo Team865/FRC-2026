@@ -3,81 +3,130 @@ package frc.robot.util;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class ShopTesting {
   private ShopTesting() {}
 
   public static void enable(
       CommandXboxController driverController,
+      Drive drive,
       Serializer serializer,
       BallTunneler ballTunneler,
       Flywheel flywheel,
       Hood hood,
       Turret turret,
-      DoubleSupplier turretCameraTXGetter) {
-    LoggedTunableNumber hoodTestAngle = new LoggedTunableNumber("Test/HoodAngleDeg", 0.0);
+      DoubleSupplier turretCameraTXGetter,
+      IntSupplier turretTagSeenGetter,
+      Supplier<Pose2d> hubPoseSupplier,
+      DoubleSupplier hubDistanceSupplier) {
+    LoggedTunableNumber ballTunnelerTestVoltage =
+        new LoggedTunableNumber("Test/BalTunnelerVoltage", 0.0);
     LoggedTunableNumber flywheelTestVelocityRadsPerSec =
         new LoggedTunableNumber("Test/FlywheelVelocityRadsPerSec", 0.0);
     LoggedTunableNumber turretTestAngle = new LoggedTunableNumber("Test/turretAngleDeg", 0.0);
     Angle turretAngleIncrementRate = Degrees.of(90.0).times(0.020);
-
-    driverController
-        .rightTrigger()
-        .whileTrue(
-            new ParallelCommandGroup(
-                serializer.runSerializer(),
-                ballTunneler.runVolts(9),
-                flywheel.runVelocity(
-                    () -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get()))));
-
-    driverController.leftBumper().onTrue(hood.setTargetAngle(Degrees.zero()));
-
-    // driverController.rightTrigger().whileTrue(flywheel.runVolts(() ->
-    // flywheelTestVoltage.get()));
-
-    hood.setDefaultCommand(hood.runVoltage(() -> -driverController.getLeftY()));
-    turret.setDefaultCommand(
-        turret
-            .setTargetAngle(turret.getOrientation())
-            .andThen(
-                turret.lockOntoTarget(
-                    new Supplier<Angle>() {
-                      Angle currentTargetAngle = turret.getOrientation();
-
-                      @Override
-                      public Angle get() {
-                        if (driverController.povLeft().getAsBoolean()) {
-                          currentTargetAngle = currentTargetAngle.plus(turretAngleIncrementRate);
-                        }
-
-                        if (driverController.povRight().getAsBoolean()) {
-                          currentTargetAngle = currentTargetAngle.minus(turretAngleIncrementRate);
-                        }
-
-                        return currentTargetAngle;
-                      }
-                    },
-                    () -> 0.0)));
+    LoggedTunableNumber turretTestVoltage = new LoggedTunableNumber("Test/TurretVoltage", 0.0);
+    LoggedTunableNumber hoodTestAngleDeg = new LoggedTunableNumber("Test/HoodAngleDeg", 0.0);
 
     driverController
         .leftTrigger()
         .whileTrue(
+            new ParallelCommandGroup(
+                serializer.runSerializer(),
+                ballTunneler.runTunneler(),
+                flywheel.runVelocity(
+                    () -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get()))));
+
+    // driverController.leftBumper().onTrue(hood.setTargetAngle(Degrees.zero()));
+
+    // driverController
+    //     .rightTrigger()
+    //     .whileTrue(ballTunneler.runVolts(() -> ballTunnelerTestVoltage.get()));
+
+    driverController
+        .y()
+        .whileTrue(
             turret.lockOntoTarget(
                 () ->
-                    turret
-                        .getOrientation()
-                        .plus(Degrees.of(Math.round(turretCameraTXGetter.getAsDouble()))),
-                () -> 0.0));
+                    ShootingUtil.calculateTurretRelativeAngle(
+                        drive::getPose, hubPoseSupplier::get)))
+        .onTrue(hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())));
+
+    // hood.setDefaultCommand(hood.runVoltage(() -> -driverController.getLeftY()));
+    turret.setDefaultCommand(
+        turret.runVoltage(
+            new DoubleSupplier() {
+              private final Trigger left = driverController.povLeft();
+              private final Trigger right = driverController.povRight();
+
+              public double getAsDouble() {
+                return left.getAsBoolean()
+                    ? turretTestVoltage.get()
+                    : right.getAsBoolean() ? -turretTestVoltage.get() : 0.0;
+              }
+              ;
+            }));
+
+    ShootingLogger shootingLogger = new ShootingLogger();
+    Subsystem proxySubsystem = new Subsystem() {};
+
+    driverController
+        .a()
+        .onTrue(
+            Commands.runOnce(
+                new Runnable() {
+                  private int numMeasurements = 0;
+
+                  @Override
+                  public void run() {
+                    this.numMeasurements++;
+                    shootingLogger.addMeasurement(
+                        hubDistanceSupplier.getAsDouble(),
+                        flywheelTestVelocityRadsPerSec.get(),
+                        Units.degreesToRadians(hoodTestAngleDeg.get()));
+                    Logger.recordOutput("Number Of Shooting Measurements Taken", numMeasurements);
+                  }
+                }));
+
+    driverController
+        .back()
+        .onTrue(
+            Commands.runOnce(
+                () -> shootingLogger.writeToFile("/U/logs/measurements.txt"), proxySubsystem));
+
+    driverController
+        .rightTrigger()
+        .whileTrue(
+            turret.lockOntoTarget(
+                () ->
+                    ShootingUtil.calculateTurretRelativeAngle(
+                        drive::getPose, hubPoseSupplier::get)))
+        .onTrue(
+            hood.setTargetAngle(
+                () -> {
+                  Angle targetAngle =
+                      ShootingUtil.calculateHoodAngle(hubDistanceSupplier.getAsDouble());
+                  Logger.recordOutput("Calculated Hood Angle", targetAngle.in(Degrees));
+                  return targetAngle;
+                }));
 
     // driverController
     //     .y()

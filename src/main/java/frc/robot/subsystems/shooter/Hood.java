@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Radians;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -11,6 +12,7 @@ import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class Hood extends Pivot implements SysIdTestable {
   private final LoggedTunableNumber kS =
@@ -40,7 +42,11 @@ public class Hood extends Pivot implements SysIdTestable {
     io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     io.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
 
-    this.sysIdRoutine = new SysIdBuilder(this, io::setVolts).build();
+    this.sysIdRoutine =
+        new SysIdBuilder(this, io::setVolts)
+            .withDynamicStepVoltage(1)
+            .withQuasistaticRampRate(0.1)
+            .build();
   }
 
   public Command trackTarget(Supplier<Angle> angleSupplier) {
@@ -72,6 +78,10 @@ public class Hood extends Pivot implements SysIdTestable {
         maxAcceleration);
 
     super.periodic();
+    Logger.recordOutput(
+        "Hood/PositionRots", Units.radiansToRotations(inputsAutoLogged.positionRads));
+    Logger.recordOutput(
+        "Hood/VelocityRotsPerSec", Units.radiansToRotations(inputsAutoLogged.velocityRadsPerSec));
   }
 
   @Override

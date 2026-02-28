@@ -365,6 +365,7 @@ public class Drive extends SubsystemBase {
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
+    // gyroIO.setYaw(pose.getRotation());
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     VisionUtil.reseedAllLimelight4s();
   }

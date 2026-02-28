@@ -26,7 +26,8 @@ public class RollersIOTalonFX implements RollersIO {
   private final RollersSpecifications specs;
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(50.0);
-  private final VelocityVoltage velocityVoltage = new VelocityVoltage(0).withSlot(0);
+  private final VelocityVoltage velocityVoltage =
+      new VelocityVoltage(0).withEnableFOC(true).withUpdateFreqHz(50.0);
   private final NeutralOut neutralOut = new NeutralOut();
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
@@ -88,9 +89,10 @@ public class RollersIOTalonFX implements RollersIO {
   }
 
   @Override
-  public void setControlConstants(double kS, double kV, double kP, double kD) {
+  public void setControlConstants(double kV, double kA, double kS, double kP, double kD) {
     config.Slot0.kS = kS;
     config.Slot0.kV = kV;
+    config.Slot0.kA = kA;
     config.Slot0.kP = kP;
     config.Slot0.kD = kD;
     PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
@@ -103,7 +105,7 @@ public class RollersIOTalonFX implements RollersIO {
 
   @Override
   public void setAngularVelocity(double velocityRadPerSec) {
-    talon.setControl(velocityVoltage.withVelocity(velocityRadPerSec));
+    talon.setControl(velocityVoltage.withVelocity(RadiansPerSecond.of(velocityRadPerSec)));
   }
 
   @Override

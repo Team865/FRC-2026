@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.VisionUtil;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -97,6 +96,7 @@ public class Vision extends SubsystemBase {
       }
 
       VisionConsumer consumer = cameraConsumers.get(cameraName);
+      if (consumer == null) continue;
       VisionUtil.PoseProcessingResult poseResult =
           VisionUtil.processPoseObservations(inputs[i], consumer, i);
 
@@ -133,35 +133,37 @@ public class Vision extends SubsystemBase {
     int newCandidate = -1;
     double tx = 0.0;
 
-    for (int hubTagId : AllianceFlipUtil.apply(FieldConstants.hubTagIds)) {
+    for (int hubTagId : FieldConstants.hubTagIds) {
       if (IntStream.of(inputs2.tagIds).anyMatch(t -> t == hubTagId)) {
         newCandidate = hubTagId;
         if (inputs2.latestTargetObservation != null) {
           tx = inputs2.latestTargetObservation.tx().getDegrees();
+          turretSeenTagId = newCandidate;
+          turretTxDegrees = tx;
         }
         break;
       }
     }
 
-    if (newCandidate == -1) {
-      turretCandidateTagId = -1;
-      turretSeenTagId = -1;
-      turretTagFrames = 0;
-      turretTxDegrees = 0.0;
-      return;
-    }
+    // if (newCandidate == -1) {
+    //   turretCandidateTagId = -1;
+    //   turretSeenTagId = -1;
+    //   turretTagFrames = 0;
+    //   turretTxDegrees = 0.0;
+    //   return;
+    // }
 
-    if (newCandidate == turretCandidateTagId) {
-      turretTagFrames++;
-    } else {
-      turretCandidateTagId = newCandidate;
-      turretTagFrames = 1;
-    }
+    // if (newCandidate == turretCandidateTagId) {
+    //   turretTagFrames++;
+    // } else {
+    //   turretCandidateTagId = newCandidate;
+    //   turretTagFrames = 1;
+    // }
 
-    if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
-      turretSeenTagId = turretCandidateTagId;
-      turretTxDegrees = tx;
-    }
+    // if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
+    //   turretSeenTagId = turretCandidateTagId;
+    //   turretTxDegrees = tx;
+    // }
   }
 
   @FunctionalInterface

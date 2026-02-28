@@ -62,6 +62,7 @@ public class VisionIOLimelight implements VisionIO {
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
     megatag2Subscriber =
         table.getDoubleArrayTopic("botpose_orb_wpiblue").subscribe(new double[] {});
+    reseed();
   }
 
   @Override
@@ -123,14 +124,12 @@ public class VisionIOLimelight implements VisionIO {
   }
 
   public void reseed() {
-    if (!isLL4) {
-      return;
-    }
+    if (!isLL4) return;
+
     imuModePublisher.accept(1);
     orientationPublisher.accept(
         new double[] {rotationSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
     NetworkTableInstance.getDefault().flush();
-    imuModePublisher.accept(4);
   }
 
   @Override

@@ -22,6 +22,8 @@ public class Flywheel extends SubsystemBase {
 
   private final LoggedTunableNumber kV =
       new LoggedTunableNumber("Shooter/Flywheel/kV", ShooterConstants.Flywheel.SYSTEM_CONSTANTS.kV);
+  private final LoggedTunableNumber kA =
+      new LoggedTunableNumber("Shooter/Flywheel/kA", ShooterConstants.Flywheel.SYSTEM_CONSTANTS.kA);
   private final LoggedTunableNumber kS =
       new LoggedTunableNumber("Shooter/Flywheel/kS", ShooterConstants.Flywheel.SYSTEM_CONSTANTS.kS);
   private final LoggedTunableNumber kP =
@@ -32,7 +34,7 @@ public class Flywheel extends SubsystemBase {
   public Flywheel(FlywheelIO io) {
     this.io = io;
 
-    io.setControlConstants(kS.get(), kV.get(), kP.get(), kD.get());
+    io.setControlConstants(kV.get(), kA.get(), kS.get(), kP.get(), kD.get());
   }
 
   public Command setVolts(double volts) {
@@ -100,9 +102,11 @@ public class Flywheel extends SubsystemBase {
     LoggedTunableNumber.ifChanged(
         hashCode(),
         (constants) ->
-            io.setControlConstants(constants[0], constants[1], constants[2], constants[3]),
-        kS,
+            io.setControlConstants(
+                constants[0], constants[1], constants[2], constants[3], constants[4]),
         kV,
+        kA,
+        kS,
         kP,
         kD);
   }

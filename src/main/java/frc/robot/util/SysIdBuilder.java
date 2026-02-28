@@ -54,7 +54,7 @@ public class SysIdBuilder {
             timeout,
             state ->
                 Logger.recordOutput(
-                    String.format("%sSysIdTestState", mechanism.m_subsystem.getName()),
+                    String.format("%s/SysIdTestState", mechanism.m_subsystem.getName()),
                     state.toString())),
         mechanism);
   }

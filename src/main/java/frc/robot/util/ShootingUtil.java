@@ -1,6 +1,6 @@
 package frc.robot.util;
 
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,11 +12,11 @@ import java.util.function.Supplier;
 
 public class ShootingUtil {
   public static Angle calculateHoodAngle(double distanceFromHub) {
-    return Radians.of(
+    double angleDeg = (7.84808 * distanceFromHub) - 6.31405;
+
+    return Degrees.of(
         MathUtil.clamp(
-            distanceFromHub,
-            ShooterConstants.Hood.MIN_ANGLE_RADS,
-            ShooterConstants.Hood.MAX_ANGLE_RADS));
+            angleDeg, ShooterConstants.Hood.MIN_ANGLE_DEG, ShooterConstants.Hood.MAX_ANGLE_DEG));
   }
 
   public static Angle calculateHoodAngle(

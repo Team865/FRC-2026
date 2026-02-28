@@ -25,7 +25,7 @@ public interface FlywheelIO {
 
   public default void setVelocity(double velocityRadPerSec) {}
 
-  public default void setControlConstants(double kS, double kV, double kP, double kD) {}
+  public default void setControlConstants(double kV, double kA, double kS, double kP, double kD) {}
 
   public default void stop() {}
 }

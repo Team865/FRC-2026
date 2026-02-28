@@ -53,13 +53,13 @@ public class VisionConstants {
   public static double angularStdDevBaseline = 0.06; // Radians
   // Number of frames to skip when processing
   // Reccomended value taken from limelight docs
-  public static int disabledThrottleAmount = 200;
+  public static int disabledThrottleAmount = 2000;
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
   public static double[] cameraStdDevFactors =
       new double[] {
-        1.0, // Front
-        1.0, // Back
+        1.0, // Left
+        1.0, // Right
         1.0 // Turret
       };
 

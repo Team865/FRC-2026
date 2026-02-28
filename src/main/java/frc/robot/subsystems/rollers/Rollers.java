@@ -7,6 +7,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -31,6 +32,10 @@ public class Rollers extends SubsystemBase {
 
   public Command runVolts(double volts) {
     return this.runEnd(() -> io.setVolts(volts), () -> io.setVolts(0));
+  }
+
+  public Command runVolts(DoubleSupplier voltageSupplier) {
+    return this.runEnd(() -> io.setVolts(voltageSupplier.getAsDouble()), () -> io.setVolts(0));
   }
 
   public Command runAngularVelocity(AngularVelocity velocity) {

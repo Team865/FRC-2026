@@ -12,10 +12,12 @@ import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
 
 public class Intake extends Rollers {
-  private final LoggedTunableNumber rollers_kS =
-      new LoggedTunableNumber("Intake/kS", IntakeConstants.Rollers.SYSTEM_CONSTANTS.kS);
   private final LoggedTunableNumber rollers_kV =
       new LoggedTunableNumber("Intake/kV", IntakeConstants.Rollers.SYSTEM_CONSTANTS.kV);
+  private final LoggedTunableNumber rollers_kA =
+      new LoggedTunableNumber("Intake/kA", IntakeConstants.Rollers.SYSTEM_CONSTANTS.kA);
+  private final LoggedTunableNumber rollers_kS =
+      new LoggedTunableNumber("Intake/kS", IntakeConstants.Rollers.SYSTEM_CONSTANTS.kS);
   private final LoggedTunableNumber rollers_kP =
       new LoggedTunableNumber("Intake/kP", IntakeConstants.Rollers.SYSTEM_CONSTANTS.kP);
   private final LoggedTunableNumber rollers_kD =
@@ -38,7 +40,7 @@ public class Intake extends Rollers {
     this.pivot = new Pivot("IntakePivot", pivotIO);
 
     rollersIO.setControlConstants(
-        rollers_kS.get(), rollers_kV.get(), rollers_kP.get(), rollers_kD.get());
+        rollers_kV.get(), rollers_kA.get(), rollers_kS.get(), rollers_kP.get(), rollers_kD.get());
     pivotIO.setControlConstants(
         pivot_kS.get(), pivot_kV.get(), pivot_kA.get(), pivot_kP.get(), pivot_kD.get());
   }
@@ -67,9 +69,10 @@ public class Intake extends Rollers {
     // Update roller control constants if changed
     LoggedTunableNumber.ifChanged(
         id,
-        c -> getIO().setControlConstants(c[0], c[1], c[2], c[3]),
-        rollers_kS,
+        c -> getIO().setControlConstants(c[0], c[1], c[2], c[3], c[4]),
         rollers_kV,
+        rollers_kA,
+        rollers_kS,
         rollers_kP,
         rollers_kD);
 

@@ -98,13 +98,18 @@ public class RobotContainer {
   }
 
   @AutoLogOutput(key = "TurretTx Degrees")
-  public double getTurretTx() {
+  public double getTurretTxDegrees() {
     return vision != null ? -vision.getTurretTxDegrees() : 0.0;
   }
 
   @AutoLogOutput(key = "TurretCurrentTagID")
   public int getTurretSeesHubTag() {
     return vision.getTurretSeenTagId();
+  }
+
+  @AutoLogOutput(key = "Distance From Hub")
+  public double getDistanceFromHub() {
+    return getAllianceHubPose().getTranslation().getDistance(drive.getPose().getTranslation());
   }
 
   // Dashboard inputs
@@ -116,14 +121,6 @@ public class RobotContainer {
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
-        // drive =
-        //     new Drive(
-        //         new GyroIO() {},
-        //         new ModuleIO() {},
-        //         new ModuleIO() {},
-        //         new ModuleIO() {},
-        //         new ModuleIO() {});
-
         climber = new Climber(new ClimberIO() {});
 
         // hood = new Hood(new PivotIO() {});
@@ -315,8 +312,10 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    SysIdRegister.register(autoChooser, serializer, "Serializer");
-    // SysIdRegister.register(autoChooser, hood, "Hood");
+    // SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
+    // SysIdRegister.register(autoChooser, serializer, "Serializer");
+    // SysIdRegister.register(autoChooser, turret, "Turret");
+    SysIdRegister.register(autoChooser, hood, "Hood");
 
     // Configure the button bindings
     configureButtonBindings();
@@ -330,20 +329,30 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     ShopTesting.enable(
-        driverController, serializer, ballTunneler, flywheel, hood, turret, () -> getTurretTx());
+        driverController,
+        drive,
+        serializer,
+        ballTunneler,
+        flywheel,
+        hood,
+        turret,
+        () -> getTurretTxDegrees(),
+        () -> getTurretSeesHubTag(),
+        () -> getAllianceHubPose(),
+        () -> getDistanceFromHub());
 
     // [[[[[[[[RE-ADD THESE BINDINGS ONCE ROBOT IS COMPLETE]]]]]]]]
-    // // DRIVE CONTROLLER
-    // // Default command, normal field-relative drive
-    // drive.setDefaultCommand(
-    //     DriveCommands.joystickDrive(
-    //         drive,
-    //         () -> -driverController.getLeftY(),
-    //         () -> -driverController.getLeftX(),
-    //         () -> -driverController.getRightX()));
+    // DRIVE CONTROLLER
+    // Default command, normal field-relative drive
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
 
-    // // Reset gyro to 0° when B button is pressed
-    // driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
+    // Reset gyro to 0° when B button is pressed
+    driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
 
     // driverController
     //     .y()

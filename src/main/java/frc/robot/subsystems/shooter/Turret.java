@@ -3,16 +3,19 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SysIdBuilder;
+import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Turret extends Pivot {
+public class Turret extends Pivot implements SysIdTestable {
   private final LoggedTunableNumber kS =
       new LoggedTunableNumber("Shooter/Turret/kS", ShooterConstants.Turret.SYSTEM_CONSTANTS.kS);
   private final LoggedTunableNumber kV =
@@ -33,6 +36,7 @@ public class Turret extends Pivot {
           ShooterConstants.Turret.SYSTEM_CONSTANTS.maxAcceleration.get());
 
   private static final double TAU = 2 * Math.PI;
+  private final SysIdRoutine sysIdRoutine;
 
   public Turret(PivotIO pivotIO) {
     super("Shooter/Turret", pivotIO);
@@ -40,25 +44,34 @@ public class Turret extends Pivot {
     pivotIO.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     pivotIO.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
     pivotIO.updateInputs(inputsAutoLogged);
+
+    sysIdRoutine =
+        new SysIdBuilder(this, io::setVolts)
+            .withDynamicStepVoltage(3.0)
+            .withQuasistaticRampRate(0.2)
+            .build();
+
+    optimizeAngle(Degrees.of(0));
   }
 
   public Command lockOntoTarget(
       Supplier<Angle> relativeAngleSupplier, Supplier<Double> driveOmegaRadPerSecSupplier) {
     return this.runEnd(
         () -> {
-          Angle optimizedAngle = optimizeAngle(relativeAngleSupplier.get());
+          Angle rawAngle = relativeAngleSupplier.get();
+          Angle optimizedAngle = optimizeAngle(rawAngle);
 
-          if (MathUtil.isNear(inputsAutoLogged.positionRads, optimizedAngle.in(Radians), 0.1)) {
-            io.stop();
-            return;
-          }
           Logger.recordOutput(
               "Turret/Requested Angle Degrees", relativeAngleSupplier.get().in(Degrees));
           Logger.recordOutput("Turret/Optimized Turret Angle Degrees", optimizedAngle.in(Degrees));
 
-          this.io.setPosition(optimizedAngle.in(Radians));
+          io.setPosition(optimizedAngle.in(Radians));
         },
         () -> this.io.stop());
+  }
+
+  public Command lockOntoTarget(Supplier<Angle> relativeAngleSupplier) {
+    return lockOntoTarget(relativeAngleSupplier, () -> 0.0);
   }
 
   /**
@@ -83,17 +96,17 @@ public class Turret extends Pivot {
    * @return The optimized angle
    */
   public Angle optimizeAngle(Angle angle) {
-    double referenceAnglerads = angle.in(Radians);
-    referenceAnglerads =
-        referenceAnglerads
+    double referenceAngleRads = angle.in(Radians);
+    referenceAngleRads =
+        referenceAngleRads
             - TAU
                 * Math.floor(
-                    (referenceAnglerads + Math.PI) / (TAU)); // Limit it to within (-PI, PI)
+                    (referenceAngleRads + Math.PI) / (TAU)); // Limit it to within (-PI, PI)
 
     double positiveTargetAngleRads =
-        (referenceAnglerads > 0) ? referenceAnglerads : referenceAnglerads + TAU;
+        (referenceAngleRads >= 0) ? referenceAngleRads : referenceAngleRads + TAU;
     double negativeTargetAngleRads =
-        (referenceAnglerads < 0) ? referenceAnglerads : referenceAnglerads - TAU;
+        (referenceAngleRads <= 0) ? referenceAngleRads : referenceAngleRads - TAU;
 
     double absoluteAngleRads;
 
@@ -135,8 +148,16 @@ public class Turret extends Pivot {
         maxVelocity,
         maxAcceleration);
 
-    Logger.recordOutput("Encoder Mechanism Rotations", io.getEncoderAngle());
+    Logger.recordOutput(
+        "Turret/PositionRots", Units.radiansToRotations(inputsAutoLogged.positionRads));
+    Logger.recordOutput(
+        "Turret/VelocityRotsPerSec", Units.radiansToRotations(inputsAutoLogged.velocityRadsPerSec));
 
     super.periodic();
+  }
+
+  @Override
+  public SysIdRoutine getRoutine() {
+    return sysIdRoutine;
   }
 }
