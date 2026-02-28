@@ -45,6 +45,8 @@ public class ShopTesting {
     Angle turretAngleIncrementRate = Degrees.of(90.0).times(0.020);
     LoggedTunableNumber turretTestVoltage = new LoggedTunableNumber("Test/TurretVoltage", 0.0);
     LoggedTunableNumber hoodTestAngleDeg = new LoggedTunableNumber("Test/HoodAngleDeg", 0.0);
+    LoggedTunableNumber shootOnTheMoveFactor =
+        new LoggedTunableNumber("Test/ShootOnTheMoveFactor", 1.0);
 
     driverController
         .leftTrigger()
@@ -67,7 +69,7 @@ public class ShopTesting {
             turret.lockOntoTarget(
                 () ->
                     ShootingUtil.calculateTurretRelativeAngle(
-                        drive::getPose, hubPoseSupplier::get)))
+                        drive.getPose(), hubPoseSupplier.get())))
         .onTrue(hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())));
 
     // hood.setDefaultCommand(hood.runVoltage(() -> -driverController.getLeftY()));
@@ -82,7 +84,6 @@ public class ShopTesting {
                     ? turretTestVoltage.get()
                     : right.getAsBoolean() ? -turretTestVoltage.get() : 0.0;
               }
-              ;
             }));
 
     ShootingLogger shootingLogger = new ShootingLogger();
@@ -118,15 +119,33 @@ public class ShopTesting {
             turret.lockOntoTarget(
                 () ->
                     ShootingUtil.calculateTurretRelativeAngle(
-                        drive::getPose, hubPoseSupplier::get)))
-        .onTrue(
-            hood.setTargetAngle(
+                        drive.getPose(),
+                        ShootingUtil.correctTargetPoseWhileMoving(
+                            hubPoseSupplier.get(),
+                            drive.getFieldOrientedSpeeds(),
+                            shootOnTheMoveFactor.get()))))
+        .whileTrue(
+            hood.runTargetAngle(
                 () -> {
                   Angle targetAngle =
-                      ShootingUtil.calculateHoodAngle(hubDistanceSupplier.getAsDouble());
+                      ShootingUtil.calculateHoodAngle(
+                          drive.getPose(),
+                          ShootingUtil.correctTargetPoseWhileMoving(
+                              hubPoseSupplier.get(),
+                              drive.getFieldOrientedSpeeds(),
+                              shootOnTheMoveFactor.get()));
                   Logger.recordOutput("Calculated Hood Angle", targetAngle.in(Degrees));
                   return targetAngle;
                 }));
+
+    driverController
+        .x()
+        .whileTrue(
+            turret.lockOntoTarget(
+                () ->
+                    ShootingUtil.calculateTurretRelativeAngle(
+                        drive.getPose(), hubPoseSupplier.get()),
+                () -> drive.getAngularVelocityRadPerSec()));
 
     // driverController
     //     .y()

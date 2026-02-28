@@ -32,6 +32,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -93,6 +94,7 @@ public class Drive extends SubsystemBase {
               TunerConstants.FrontLeft.SlipCurrent,
               1),
           getModuleTranslations());
+  private static final double visionDenialThresholdRPS = 0.5;
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
@@ -121,6 +123,8 @@ public class Drive extends SubsystemBase {
   // For controlling drive speed
   private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts;
 
+  private boolean shouldReseedOnRotationStop = false;
+
   public Drive(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -147,7 +151,7 @@ public class Drive extends SubsystemBase {
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(100, 0.0, 0.0), new PIDConstants(2.5, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -244,6 +248,15 @@ public class Drive extends SubsystemBase {
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
 
+    double absOmegaRPS = Math.abs(Units.radiansToRotations(getAngularVelocityRadPerSec()));
+
+    if (absOmegaRPS >= visionDenialThresholdRPS) {
+      shouldReseedOnRotationStop = true;
+    } else if (shouldReseedOnRotationStop) {
+      shouldReseedOnRotationStop = false;
+      VisionUtil.reseedAllLimelight4s();
+    }
+
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
   }
@@ -254,6 +267,7 @@ public class Drive extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void runVelocity(ChassisSpeeds speeds) {
+    // System.out.printf("(%s, %s)\n", speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -334,6 +348,12 @@ public class Drive extends SubsystemBase {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
+  @AutoLogOutput(key = "SwerveChassisSpeeds/FieldOriented")
+  /** Returns the chassis speeds of the robot relative to the field */
+  public ChassisSpeeds getFieldOrientedSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
+  }
+
   /** Returns the position of each module in radians. */
   public double[] getWheelRadiusCharacterizationPositions() {
     double[] values = new double[4];
@@ -375,6 +395,10 @@ public class Drive extends SubsystemBase {
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
+
+    // Don't accept if the robot is rotating too quickly
+    if (shouldReseedOnRotationStop) return;
+
     poseEstimator.addVisionMeasurement(
         visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
   }

@@ -40,6 +40,10 @@ public class Pivot extends SubsystemBase {
     return this.runOnce(() -> io.setPosition(targetSupplier.get().in(Radians)));
   }
 
+  public Command runTargetAngle(Supplier<Angle> targetSupplier) {
+    return this.runEnd(() -> io.setPosition(targetSupplier.get().in(Radians)), io::stop);
+  }
+
   public Angle getOrientation() {
     return Radians.of(inputsAutoLogged.positionRads);
   }

@@ -16,9 +16,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.*;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.ShootingState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSim;
+import frc.robot.subsystems.climber.ClimberIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -50,7 +53,6 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.ShopTesting;
 import frc.robot.util.SysIdRegister;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -76,6 +78,8 @@ public class RobotContainer {
   private final Intake intake;
   private final Climber climber;
   private final LEDs leds;
+
+  private final Superstructure superstructure;
 
   // Controller
   private final CommandXboxController driverController = new CommandXboxController(0);
@@ -121,7 +125,7 @@ public class RobotContainer {
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
-        climber = new Climber(new ClimberIO() {});
+        climber = new Climber(new ClimberIOTalonFX());
 
         // hood = new Hood(new PivotIO() {});
         // Real robot, instantiate hardware IO implementations
@@ -222,7 +226,27 @@ public class RobotContainer {
                     DCMotor.getKrakenX44(1),
                     IndexerConstants.BallTunneler.SYSTEM_CONSTANTS,
                     IndexerConstants.BallTunneler.ROLLERS_SPECS));
-        vision = Vision.createPerCameraVision(drive);
+        vision =
+            Vision.createPerCameraVision(
+                drive,
+                new VisionIO() {
+                  @Override
+                  public String getName() {
+                    return "limelight-left";
+                  }
+                },
+                new VisionIO() {
+                  @Override
+                  public String getName() {
+                    return "limelight-right";
+                  }
+                },
+                new VisionIO() {
+                  @Override
+                  public String getName() {
+                    return "limelight-turret";
+                  }
+                });
         turret =
             new Turret(
                 new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.SYSTEM_CONSTANTS));
@@ -260,16 +284,16 @@ public class RobotContainer {
         break;
     }
 
-    // this.superstructure =
-    //     new Superstructure(
-    //         drive,
-    //         intake,
-    //         serializer,
-    //         ballTunneler,
-    //         turret,
-    //         hood,
-    //         flywheel,
-    //         () -> getAllianceHubPose());
+    this.superstructure =
+        new Superstructure(
+            drive,
+            intake,
+            serializer,
+            ballTunneler,
+            turret,
+            hood,
+            flywheel,
+            () -> getAllianceHubPose());
 
     // NamedCommands.registerCommand("StowIntake",
     // superstructure.requestState(IntakingState.STOWED));
@@ -328,18 +352,18 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    ShopTesting.enable(
-        driverController,
-        drive,
-        serializer,
-        ballTunneler,
-        flywheel,
-        hood,
-        turret,
-        () -> getTurretTxDegrees(),
-        () -> getTurretSeesHubTag(),
-        () -> getAllianceHubPose(),
-        () -> getDistanceFromHub());
+    // ShopTesting.enable(
+    //     driverController,
+    //     drive,
+    //     serializer,
+    //     ballTunneler,
+    //     flywheel,
+    //     hood,
+    //     turret,
+    //     () -> getTurretTxDegrees(),
+    //     () -> getTurretSeesHubTag(),
+    //     () -> getAllianceHubPose(),
+    //     () -> getDistanceFromHub());
 
     // [[[[[[[[RE-ADD THESE BINDINGS ONCE ROBOT IS COMPLETE]]]]]]]]
     // DRIVE CONTROLLER
@@ -402,24 +426,26 @@ public class RobotContainer {
     //               return new Rotation2d(lookatVector.getX(), lookatVector.getY());
     //             }));
 
-    // // Shooting state reset
-    // driverController.back().onTrue(superstructure.forceState(ShootingState.IDLE));
+    // Shooting state reset
+    driverController.back().onTrue(superstructure.forceState(ShootingState.IDLE));
 
     // // Toggle bump mode
     // driverController.rightBumper().onTrue(superstructure.toggleBumpMode());
 
-    // // Toggle shooting mode
-    // driverController.leftBumper().onTrue(superstructure.toggleShootingMode());
+    // Toggle shooting mode
+    driverController.leftBumper().onTrue(superstructure.toggleShootingMode());
 
-    // // Start shooting and stop when let go
-    // driverController
-    //     .rightTrigger()
-    //     .whileTrue(superstructure.continuouslyRequestState(ShootingState.SHOOTING))
-    //     .onFalse(superstructure.requestState(ShootingState.READY_TO_SHOOT));
+    // Start shooting and stop when let go
+    driverController
+        .rightTrigger()
+        .whileTrue(superstructure.continuouslyRequestState(ShootingState.SHOOTING))
+        .onFalse(superstructure.requestState(ShootingState.READY_TO_SHOOT));
 
     // // Climb
-    // driverController.povUp().onTrue(climber.extend());
-    // driverController.povDown().onTrue(climber.retract());
+    //
+    driverController.povUp().onTrue(climber.extend());
+    //
+    driverController.povDown().onTrue(climber.retract());
 
     // // OPERATOR CONTROLLER
     // // State reset

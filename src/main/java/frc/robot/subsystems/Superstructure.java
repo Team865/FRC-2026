@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -117,15 +118,24 @@ public class Superstructure extends SubsystemBase {
         .get(ShootingState.IDLE)
         .whileFalse( // When the shooting state isn't idle,
             turret.lockOntoTarget( // Have the turret track the target
-                () -> ShootingUtil.calculateTurretRelativeAngle(drive::getPose, hubPoseSupplier),
+                () ->
+                    ShootingUtil.calculateTurretRelativeAngle(
+                        drive.getPose(),
+                        ShootingUtil.correctTargetPoseWhileMoving(
+                            hubPoseSupplier.get(), drive.getFieldOrientedSpeeds())),
                 () -> drive.getAngularVelocityRadPerSec()))
         .whileFalse( // Have the hood track the target
             hood.trackTarget(
-                () -> ShootingUtil.calculateHoodAngle(hubPoseSupplier, drive::getPose)))
+                () ->
+                    ShootingUtil.calculateHoodAngle(
+                        drive.getPose(),
+                        ShootingUtil.correctTargetPoseWhileMoving(
+                            hubPoseSupplier.get(), drive.getFieldOrientedSpeeds()))))
         .whileFalse(
-            flywheel.runVelocity(ShooterConstants.Flywheel.SHOOTING_SPEED)) // Spin up the flywheels
-        .onTrue(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))
-        .onFalse(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
+            flywheel.runVelocity(
+                ShooterConstants.Flywheel.SHOOTING_SPEED)); // Spin up the flywheels
+    // .onTrue(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))
+    // .onFalse(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
 
     shootingStateMachine
         .stateTriggers
@@ -136,7 +146,8 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .whileTrue(ballTunneler.runTunneler());
+        .whileTrue(ballTunneler.runTunneler())
+        .whileTrue(serializer.runSerializer());
 
     // Intaking state
     intakingStateMachine
@@ -166,18 +177,21 @@ public class Superstructure extends SubsystemBase {
                                 * IntakeConstants.Rollers.DRIVETRAIN_TO_INTAKE_SPEED_FACTOR,
                             IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED.in(MetersPerSecond)))));
 
-    shootingStateMachine
-        .stateTriggers
-        .get(ShootingState.IDLE)
-        .and(intakingStateMachine.stateTriggers.get(IntakingState.INTAKING).negate())
-        // While we are running the shooter in anyway (not Idle), or while we are running the intake
-        // rollers
-        .whileFalse(serializer.runSerializer());
+    // shootingStateMachine
+    //     .stateTriggers
+    //     .get(ShootingState.IDLE)
+    //     .and(intakingStateMachine.stateTriggers.get(IntakingState.INTAKING).negate())
+    //     // While we are running the shooter in anyway (not Idle), or while we are running the
+    // intake
+    //     // rollers
+    //     .whileFalse(serializer.runSerializer());
   }
 
   /** A command that requests a state for the shooting state machine */
   public Command requestState(ShootingState targetState) {
-    return shootingStateMachine.requestStateCommand(targetState);
+    return shootingStateMachine
+        .requestStateCommand(targetState)
+        .alongWith(new PrintCommand("Requesting " + targetState.toString()));
   }
 
   /** A command that requests a state for the intaking state machine */

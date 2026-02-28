@@ -26,12 +26,20 @@ public class Climber extends SubsystemBase {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("Climber/kD", ClimberConstants.SYSTEM_CONSTANTS.kD);
 
+  private final LoggedTunableNumber maxVelocity =
+      new LoggedTunableNumber(
+          "Climber/maxVelocity", ClimberConstants.SYSTEM_CONSTANTS.maxVelocity.get());
+  private final LoggedTunableNumber maxAcceleration =
+      new LoggedTunableNumber(
+          "Climber/maxAcceleration", ClimberConstants.SYSTEM_CONSTANTS.maxAcceleration.get());
+
   private Distance target = Meters.of(0);
 
   public Climber(ClimberIO climberIO) {
     this.climberIO = climberIO;
 
     climberIO.setControlGains(kG.get(), kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
+    climberIO.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
   }
 
   public Command setPosition(Distance positionTarget) {
@@ -70,6 +78,12 @@ public class Climber extends SubsystemBase {
         kA,
         kP,
         kD);
+
+    LoggedTunableNumber.ifChanged(
+        hashCode(),
+        (constants) -> climberIO.setMotionProfile(constants[0], constants[1]),
+        maxVelocity,
+        maxAcceleration);
 
     Logger.recordOutput("Climber/targetMeters", target.in(Meters));
   }
