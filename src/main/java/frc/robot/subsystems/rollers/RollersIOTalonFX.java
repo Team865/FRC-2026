@@ -1,6 +1,6 @@
 package frc.robot.subsystems.rollers;
 
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -16,6 +16,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.PhoenixUtil;
 
@@ -81,8 +82,8 @@ public class RollersIOTalonFX implements RollersIO {
                     position, velocity, appliedVoltage, supplyCurrent, torqueCurrent)
                 .isOK());
 
-    inputs.positionRads = position.getValue().in(Radians);
-    inputs.velocityRadsPerSec = velocity.getValue().in(RadiansPerSecond);
+    inputs.position = position.getValue();
+    inputs.velocity = velocity.getValue();
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrent.getValueAsDouble();
     inputs.torqueCurrentAmps = torqueCurrent.getValueAsDouble();
@@ -104,14 +105,15 @@ public class RollersIOTalonFX implements RollersIO {
   }
 
   @Override
-  public void setAngularVelocity(double velocityRadPerSec) {
-    talon.setControl(velocityVoltage.withVelocity(RadiansPerSecond.of(velocityRadPerSec)));
+  public void setAngularVelocity(AngularVelocity velocity) {
+    talon.setControl(velocityVoltage.withVelocity(velocity));
   }
 
   @Override
-  public void setLinearVelocity(double velocityMetersPerSec) {
+  public void setLinearVelocity(LinearVelocity velocity) {
     talon.setControl(
-        velocityVoltage.withVelocity(velocityMetersPerSec / specs.rollerRadiusMeters()));
+        velocityVoltage.withVelocity(
+            RadiansPerSecond.of(velocity.in(MetersPerSecond) / specs.rollerRadiusMeters())));
   }
 
   @Override

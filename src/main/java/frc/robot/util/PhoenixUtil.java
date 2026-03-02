@@ -14,14 +14,15 @@ import java.util.function.Supplier;
 
 public class PhoenixUtil {
   /** Attempts to run the command until no error is produced. */
-  public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
+  public static boolean tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
     StatusCode lastError = command.get();
-    if (lastError.isOK()) return;
+    if (lastError.isOK()) return true;
 
     for (int i = 0; i < maxAttempts - 1; i++) {
       lastError = command.get();
-      if (lastError.isOK()) return;
+      if (lastError.isOK()) return true;
     }
     System.err.printf("Failed to apply config for %s: %s\n", command, lastError.getDescription());
+    return true;
   }
 }

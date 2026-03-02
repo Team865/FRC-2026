@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -28,7 +29,7 @@ public final class ShooterConstants {
     public static final double WHEEL_RADIUS_METERS = 0.05;
 
     public static final AngularVelocity SHOOTING_SPEED = RadiansPerSecond.of(350);
-    public static final double SETPOINT_TOLERANCE_RADS = Math.PI / 4;
+    public static final AngularVelocity SETPOINT_TOLERANCE = RotationsPerSecond.of(0.1);
   }
 
   public static final class Turret {
@@ -38,7 +39,7 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                6.1331, 0.01, 0.28023, 0.0, 50, 0.0, Optional.of(2.0), Optional.of(100.0)),
+                6.1331, 0, 0.28023, 0.0, 50, 0.0, Optional.of(2.0), Optional.of(5.0)),
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 

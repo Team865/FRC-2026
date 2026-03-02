@@ -257,6 +257,8 @@ public class Drive extends SubsystemBase {
       VisionUtil.reseedAllLimelight4s();
     }
 
+    field.setRobotPose(getPose());
+
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
   }

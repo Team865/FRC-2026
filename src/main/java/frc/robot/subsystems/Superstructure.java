@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -123,7 +124,7 @@ public class Superstructure extends SubsystemBase {
                         drive.getPose(),
                         ShootingUtil.correctTargetPoseWhileMoving(
                             hubPoseSupplier.get(), drive.getFieldOrientedSpeeds())),
-                () -> drive.getAngularVelocityRadPerSec()))
+                () -> RadiansPerSecond.of(drive.getAngularVelocityRadPerSec())))
         .whileFalse( // Have the hood track the target
             hood.trackTarget(
                 () ->

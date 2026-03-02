@@ -2,11 +2,16 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.subsystems.pivot.AbsoluteEncoderIO;
+import frc.robot.subsystems.pivot.AbsoluteEncoderInputsAutoLogged;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
@@ -36,14 +41,28 @@ public class Turret extends Pivot implements SysIdTestable {
           ShooterConstants.Turret.SYSTEM_CONSTANTS.maxAcceleration.get());
 
   private static final double TAU = 2 * Math.PI;
+
+  private final AbsoluteEncoderIO encoderIO;
+  private final AbsoluteEncoderInputsAutoLogged encoderInputs =
+      new AbsoluteEncoderInputsAutoLogged();
+
+  private final Alert encoderDisconnectedAlert =
+      new Alert("Turret encoder disconnected.", AlertType.kError);
   private final SysIdRoutine sysIdRoutine;
 
-  public Turret(PivotIO pivotIO) {
+  public Turret(PivotIO pivotIO, AbsoluteEncoderIO encoderIO) {
     super("Shooter/Turret", pivotIO);
+    this.encoderIO = encoderIO;
+    encoderIO.updateInputs(encoderInputs);
 
     pivotIO.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     pivotIO.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
-    pivotIO.updateInputs(inputsAutoLogged);
+    pivotIO.updateInputs(inputs);
+
+    try (Alert failedReseedAlert =
+        new Alert("Turret could not be seeded from encoder.", AlertType.kWarning)) {
+      failedReseedAlert.set(!pivotIO.seedPosition(encoderInputs.position));
+    }
 
     sysIdRoutine =
         new SysIdBuilder(this, io::setVolts)
@@ -55,7 +74,7 @@ public class Turret extends Pivot implements SysIdTestable {
   }
 
   public Command lockOntoTarget(
-      Supplier<Angle> relativeAngleSupplier, Supplier<Double> driveOmegaRadPerSecSupplier) {
+      Supplier<Angle> relativeAngleSupplier, Supplier<AngularVelocity> driveOmegaSupplier) {
     return this.runEnd(
         () -> {
           Angle rawAngle = relativeAngleSupplier.get();
@@ -65,13 +84,13 @@ public class Turret extends Pivot implements SysIdTestable {
               "Turret/Requested Angle Degrees", relativeAngleSupplier.get().in(Degrees));
           Logger.recordOutput("Turret/Optimized Turret Angle Degrees", optimizedAngle.in(Degrees));
 
-          io.setPosition(optimizedAngle.in(Radians));
+          io.setPosition(optimizedAngle);
         },
         () -> this.io.stop());
   }
 
   public Command lockOntoTarget(Supplier<Angle> relativeAngleSupplier) {
-    return lockOntoTarget(relativeAngleSupplier, () -> 0.0);
+    return lockOntoTarget(relativeAngleSupplier, () -> RotationsPerSecond.zero());
   }
 
   /**
@@ -109,16 +128,15 @@ public class Turret extends Pivot implements SysIdTestable {
         (referenceAngleRads <= 0) ? referenceAngleRads : referenceAngleRads - TAU;
 
     double absoluteAngleRads;
+    double currentPositionRads = inputs.position.in(Radians);
 
     if (positiveTargetAngleRads > ShooterConstants.Turret.MAX_ANGLE_RADS) {
       absoluteAngleRads = negativeTargetAngleRads;
     } else if (negativeTargetAngleRads < ShooterConstants.Turret.MIN_ANGLE_RADS) {
       absoluteAngleRads = positiveTargetAngleRads;
     } else {
-      double errorFromPositiveAngle =
-          Math.abs(positiveTargetAngleRads - inputsAutoLogged.positionRads);
-      double errorFromNegativeAngle =
-          Math.abs(negativeTargetAngleRads - inputsAutoLogged.positionRads);
+      double errorFromPositiveAngle = Math.abs(positiveTargetAngleRads - currentPositionRads);
+      double errorFromNegativeAngle = Math.abs(negativeTargetAngleRads - currentPositionRads);
       absoluteAngleRads =
           (errorFromPositiveAngle < errorFromNegativeAngle)
               ? positiveTargetAngleRads
@@ -148,12 +166,11 @@ public class Turret extends Pivot implements SysIdTestable {
         maxVelocity,
         maxAcceleration);
 
-    Logger.recordOutput(
-        "Turret/PositionRots", Units.radiansToRotations(inputsAutoLogged.positionRads));
-    Logger.recordOutput(
-        "Turret/VelocityRotsPerSec", Units.radiansToRotations(inputsAutoLogged.velocityRadsPerSec));
-
     super.periodic();
+
+    encoderIO.updateInputs(encoderInputs);
+    encoderDisconnectedAlert.set(!encoderInputs.connected);
+    Logger.processInputs("Shooter/Turret/AbsoluteEncoder", encoderInputs);
   }
 
   @Override

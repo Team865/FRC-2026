@@ -1,17 +1,19 @@
 package frc.robot.subsystems.pivot;
 
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface PivotIO {
   @AutoLog
   // velocity and position are measured in mechanism units not motor units
   public static class PivotIOInputs {
-    public double targetPositionRads = 0.0;
-    public double positionRads = 0.0;
-    public double velocityRadsPerSec = 0.0;
+    public Angle targetPosition = Rotations.zero();
+    public Angle position = Rotations.zero();
+    public AngularVelocity velocity = RotationsPerSecond.zero();
     public double appliedVoltage = 0.0;
     public double supplyCurrentAmps = 0.0;
     public double statorCurrentAmps = 0.0;
@@ -21,9 +23,9 @@ public interface PivotIO {
 
   public default void setVolts(double volts) {}
 
-  public default void setPosition(double angleRads) {}
+  public default void setPosition(Angle angleRads) {}
 
-  public default void setPositionWithExtraOmega(double angleRads, double omegaRadPerSec) {}
+  public default void setPositionWithExtraOmega(Angle angleRads, AngularVelocity omega) {}
 
   public default void stop() {}
 
@@ -33,8 +35,7 @@ public interface PivotIO {
 
   public default void setMotionProfile(double maxVelocity, double maxAcceleration) {}
 
-  public default Angle getEncoderAngle() {
-    return Rotations.zero();
+  public default boolean seedPosition(Angle position) {
+    return true;
   }
-  ;
 }

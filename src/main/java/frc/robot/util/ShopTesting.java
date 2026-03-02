@@ -17,6 +17,8 @@ import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -107,11 +109,17 @@ public class ShopTesting {
                   }
                 }));
 
+    SimpleDateFormat dateFormatter = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss");
+
     driverController
         .back()
         .onTrue(
             Commands.runOnce(
-                () -> shootingLogger.writeToFile("/U/logs/measurements.txt"), proxySubsystem));
+                () ->
+                    shootingLogger.writeToFile(
+                        String.format(
+                            "/U/logs/measurements_%s.txt", dateFormatter.format(new Date()))),
+                proxySubsystem));
 
     driverController
         .rightTrigger()
@@ -145,7 +153,7 @@ public class ShopTesting {
                 () ->
                     ShootingUtil.calculateTurretRelativeAngle(
                         drive.getPose(), hubPoseSupplier.get()),
-                () -> drive.getAngularVelocityRadPerSec()));
+                () -> RadiansPerSecond.of(drive.getAngularVelocityRadPerSec())));
 
     // driverController
     //     .y()

@@ -35,8 +35,10 @@ public class ShootingLogger {
               measurement.flywheelVelocityRadsPerSec()));
     }
 
+    String csv = csvBuilder.toString();
+
     System.out.println("FILE CONTENT:");
-    System.out.println(csvBuilder.toString());
+    System.out.println(csv);
 
     try {
       File file = new File(filePath);
@@ -44,7 +46,7 @@ public class ShootingLogger {
       if (!file.exists()) file.createNewFile();
       BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
 
-      writer.write(csvBuilder.toString());
+      writer.write(csv);
       writer.close();
       System.out.println("FILE SUCCESSFULLY SAVED");
     } catch (IOException e) {

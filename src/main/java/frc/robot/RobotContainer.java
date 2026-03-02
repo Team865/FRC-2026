@@ -34,10 +34,11 @@ import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
+import frc.robot.subsystems.pivot.AbsoluteEncoderIO;
+import frc.robot.subsystems.pivot.CANcoderIO;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOSim;
 import frc.robot.subsystems.pivot.PivotIOTalonFX;
-import frc.robot.subsystems.pivot.PivotIOTalonFXWithCANcoder;
 import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.subsystems.rollers.RollersIOSim;
 import frc.robot.subsystems.rollers.RollersIOTalonFX;
@@ -53,6 +54,8 @@ import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
+import frc.robot.util.ComponentPoseUtil;
+import frc.robot.util.ShopTesting;
 import frc.robot.util.SysIdRegister;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -119,8 +122,6 @@ public class RobotContainer {
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
 
-  // canbus
-
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     switch (Constants.currentMode) {
@@ -177,11 +178,13 @@ public class RobotContainer {
 
         turret =
             new Turret(
-                new PivotIOTalonFXWithCANcoder(
+                new PivotIOTalonFX(
                     ShooterConstants.Turret.MOTOR_ID,
+                    ShooterConstants.CANBUS,
+                    ShooterConstants.Turret.PIVOT_SPECS),
+                new CANcoderIO(
                     ShooterConstants.Turret.CANCODER_ID,
                     ShooterConstants.CANBUS,
-                    ShooterConstants.Turret.PIVOT_SPECS,
                     ShooterConstants.Turret.CANCODER_SPECS));
         hood =
             new Hood(
@@ -249,7 +252,8 @@ public class RobotContainer {
                 });
         turret =
             new Turret(
-                new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.SYSTEM_CONSTANTS));
+                new PivotIOSim(DCMotor.getKrakenX60(1), ShooterConstants.Turret.SYSTEM_CONSTANTS),
+                new AbsoluteEncoderIO() {});
         hood =
             new Hood(
                 new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.SYSTEM_CONSTANTS));
@@ -274,7 +278,7 @@ public class RobotContainer {
             Vision.createPerCameraVision(
                 drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
 
-        turret = new Turret(new PivotIO() {});
+        turret = new Turret(new PivotIO() {}, new AbsoluteEncoderIO() {});
         hood = new Hood(new PivotIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
         serializer = new Serializer(new RollersIO() {});
@@ -352,18 +356,18 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // ShopTesting.enable(
-    //     driverController,
-    //     drive,
-    //     serializer,
-    //     ballTunneler,
-    //     flywheel,
-    //     hood,
-    //     turret,
-    //     () -> getTurretTxDegrees(),
-    //     () -> getTurretSeesHubTag(),
-    //     () -> getAllianceHubPose(),
-    //     () -> getDistanceFromHub());
+    ShopTesting.enable(
+        driverController,
+        drive,
+        serializer,
+        ballTunneler,
+        flywheel,
+        hood,
+        turret,
+        () -> getTurretTxDegrees(),
+        () -> getTurretSeesHubTag(),
+        () -> getAllianceHubPose(),
+        () -> getDistanceFromHub());
 
     // [[[[[[[[RE-ADD THESE BINDINGS ONCE ROBOT IS COMPLETE]]]]]]]]
     // DRIVE CONTROLLER
@@ -378,6 +382,7 @@ public class RobotContainer {
     // Reset gyro to 0° when B button is pressed
     driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
 
+    if (true) return;
     // driverController
     //     .y()
     //     .whileTrue(
@@ -469,7 +474,7 @@ public class RobotContainer {
   }
 
   public void updateComponentPoses() {
-    // ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.pivot, climber);
+    ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.pivot, climber);
   }
 
   public void throttleCameras(int throttleAmount) {

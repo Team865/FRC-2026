@@ -1,10 +1,10 @@
 package frc.robot.subsystems.rollers;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
@@ -12,14 +12,16 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Rollers extends SubsystemBase {
-
   public final String name;
   protected final RollersIO io;
   protected final RollersIOInputsAutoLogged inputs = new RollersIOInputsAutoLogged();
 
+  protected final Alert motorDisconnectedAlert;
+
   public Rollers(String name, RollersIO io) {
     this.name = name;
     this.io = io;
+    this.motorDisconnectedAlert = new Alert(name + " motor disconnected.", AlertType.kError);
   }
 
   public Command setVolts(double volts) {
@@ -27,7 +29,7 @@ public class Rollers extends SubsystemBase {
   }
 
   public Command setAngularVelocity(AngularVelocity velocity) {
-    return this.runOnce(() -> io.setAngularVelocity(velocity.in(RadiansPerSecond)));
+    return this.runOnce(() -> io.setAngularVelocity(velocity));
   }
 
   public Command runVolts(double volts) {
@@ -39,29 +41,29 @@ public class Rollers extends SubsystemBase {
   }
 
   public Command runAngularVelocity(AngularVelocity velocity) {
-    return this.runEnd(() -> io.setAngularVelocity(velocity.in(RadiansPerSecond)), () -> io.stop());
+    return this.runEnd(() -> io.setAngularVelocity(velocity), () -> io.stop());
   }
 
   public Command runLinearVelocity(LinearVelocity velocity) {
-    return this.runEnd(() -> io.setLinearVelocity(velocity.in(MetersPerSecond)), () -> io.stop());
+    return this.runEnd(() -> io.setLinearVelocity(velocity), () -> io.stop());
   }
 
   public Command runLinearVelocity(Supplier<LinearVelocity> velocitySupplier) {
-    return this.runEnd(
-        () -> io.setLinearVelocity(velocitySupplier.get().in(MetersPerSecond)), () -> io.stop());
+    return this.runEnd(() -> io.setLinearVelocity(velocitySupplier.get()), () -> io.stop());
   }
 
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs(name, inputs);
+    motorDisconnectedAlert.set(!inputs.connected);
+    Logger.processInputs(name + "/Motor", inputs);
   }
 
   public RollersIO getIO() {
     return io;
   }
 
-  public double getPositionRads() {
-    return inputs.positionRads;
+  public Angle getPosition() {
+    return inputs.position;
   }
 }

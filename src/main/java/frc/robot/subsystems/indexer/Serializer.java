@@ -1,7 +1,5 @@
 package frc.robot.subsystems.indexer;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.RollersIO;
@@ -35,10 +33,7 @@ public class Serializer extends Rollers {
 
   public Command runSerializer() {
     return runEnd(
-        () ->
-            io.setAngularVelocity(
-                IndexerConstants.Serializer.SPINDEXING_SPEED.in(RadiansPerSecond)),
-        () -> io.stop());
+        () -> io.setAngularVelocity(IndexerConstants.Serializer.SPINDEXING_SPEED), () -> io.stop());
   }
 
   @Override

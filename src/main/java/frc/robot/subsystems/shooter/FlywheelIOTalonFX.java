@@ -1,8 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -119,8 +116,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
                     followerAppliedVoltage, followerSupplyCurrent, followerStatorCurrent)
                 .isOK());
 
-    inputs.positionRads = position.getValue().in(Radians);
-    inputs.velocityRadsPerSec = velocity.getValue().in(RadiansPerSecond);
+    inputs.position = position.getValue();
+    inputs.velocity = velocity.getValue();
 
     inputs.masterAppliedVoltage = masterAppliedVoltage.getValueAsDouble();
     inputs.masterSupplyCurrentAmps = masterSupplyCurrent.getValueAsDouble();
@@ -149,8 +146,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   }
 
   @Override
-  public void setVelocity(double velocityRadPerSec) {
-    masterMotor.setControl(velocityRequest.withVelocity(RadiansPerSecond.of(velocityRadPerSec)));
+  public void setVelocity(AngularVelocity velocity) {
+    masterMotor.setControl(velocityRequest.withVelocity(velocity));
   }
 
   @Override

@@ -1,10 +1,14 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants.ControlSystemConstants;
 
@@ -12,7 +16,7 @@ public class FlywheelIOSim implements FlywheelIO {
   private final DCMotorSim sim;
 
   private double appliedVoltage = 0.0;
-  private double targetVelocityRadPerSec = 0.0;
+  private AngularVelocity targetVelocity = RotationsPerSecond.zero();
 
   private SimpleMotorFeedforward feedforward;
   private PIDController feedback;
@@ -34,16 +38,16 @@ public class FlywheelIOSim implements FlywheelIO {
   public void updateInputs(FlywheelIOInputsAutoLogged inputs) {
     sim.update(0.02);
 
-    double motorTargetVel = targetVelocityRadPerSec / ShooterConstants.Flywheel.GEAR_RATIO;
+    double motorTargetVel =
+        targetVelocity.in(RadiansPerSecond) / ShooterConstants.Flywheel.GEAR_RATIO;
 
     double ffVolts = feedforward.calculate(motorTargetVel);
     double fbVolts = feedback.calculate(sim.getAngularVelocityRadPerSec(), motorTargetVel);
 
     setVolts(ffVolts + fbVolts);
 
-    inputs.positionRads = sim.getAngularPositionRad() * ShooterConstants.Flywheel.GEAR_RATIO;
-    inputs.velocityRadsPerSec =
-        sim.getAngularVelocityRadPerSec() * ShooterConstants.Flywheel.GEAR_RATIO;
+    inputs.position = sim.getAngularPosition().times(ShooterConstants.Flywheel.GEAR_RATIO);
+    inputs.velocity = sim.getAngularVelocity().times(ShooterConstants.Flywheel.GEAR_RATIO);
 
     inputs.masterConnected = true;
     inputs.masterAppliedVoltage = appliedVoltage;
@@ -63,8 +67,8 @@ public class FlywheelIOSim implements FlywheelIO {
   }
 
   @Override
-  public void setVelocity(double velocityRadPerSec) {
-    targetVelocityRadPerSec = velocityRadPerSec;
+  public void setVelocity(AngularVelocity velocity) {
+    targetVelocity = velocity;
   }
 
   @Override
@@ -75,6 +79,6 @@ public class FlywheelIOSim implements FlywheelIO {
 
   @Override
   public void stop() {
-    targetVelocityRadPerSec = 0;
+    targetVelocity = RotationsPerSecond.zero();
   }
 }

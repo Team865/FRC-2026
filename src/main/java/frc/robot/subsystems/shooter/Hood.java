@@ -1,8 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Radians;
-
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -12,7 +9,6 @@ import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 public class Hood extends Pivot implements SysIdTestable {
   private final LoggedTunableNumber kS =
@@ -52,7 +48,7 @@ public class Hood extends Pivot implements SysIdTestable {
   public Command trackTarget(Supplier<Angle> angleSupplier) {
     return runEnd(
         () -> {
-          io.setPosition(angleSupplier.get().in(Radians));
+          io.setPosition(angleSupplier.get());
         },
         () -> io.stop());
   }
@@ -61,16 +57,16 @@ public class Hood extends Pivot implements SysIdTestable {
   public void periodic() {
     int id = hashCode();
 
-    LoggedTunableNumber.ifChanged(
-        id,
-        (constants) ->
-            this.io.setControlConstants(
-                constants[0], constants[1], constants[2], constants[3], constants[4]),
-        kS,
-        kV,
-        kA,
-        kP,
-        kD);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     (constants) ->
+    //         this.io.setControlConstants(
+    //             constants[0], constants[1], constants[2], constants[3], constants[4]),
+    //     kS,
+    //     kV,
+    //     kA,
+    //     kP,
+    //     kD);
     LoggedTunableNumber.ifChanged(
         id,
         (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
@@ -78,10 +74,6 @@ public class Hood extends Pivot implements SysIdTestable {
         maxAcceleration);
 
     super.periodic();
-    Logger.recordOutput(
-        "Hood/PositionRots", Units.radiansToRotations(inputsAutoLogged.positionRads));
-    Logger.recordOutput(
-        "Hood/VelocityRotsPerSec", Units.radiansToRotations(inputsAutoLogged.velocityRadsPerSec));
   }
 
   @Override
