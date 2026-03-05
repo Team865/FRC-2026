@@ -89,6 +89,7 @@ public class ClimberIOTalonFX implements ClimberIO {
 
   @Override
   public void setPosition(double positionMeters) {
+    System.out.println(positionMeters);
     motor.setControl(positionRequest.withPosition(positionMeters));
   }
 

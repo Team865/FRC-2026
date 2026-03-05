@@ -1,7 +1,7 @@
 package frc.robot.subsystems.pivot;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -35,7 +35,7 @@ public class PivotIOTalonFX implements PivotIO {
   private final StatusSignal<Current> supplyCurrentSignal;
   private final StatusSignal<Current> statorCurrentSignal;
 
-  private double targetAngleRads = 0.0;
+  private Angle targetAngle = Rotations.zero();
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
 
@@ -73,19 +73,18 @@ public class PivotIOTalonFX implements PivotIO {
   }
 
   @Override
-  public void setPosition(double angleRads) {
-    motor.setControl(positionRequest.withPosition(Radians.of(angleRads)));
-    this.targetAngleRads = angleRads;
+  public void setPosition(Angle angle) {
+    motor.setControl(positionRequest.withPosition(angle));
+    this.targetAngle = angle;
   }
 
   @Override
-  public void setPositionWithExtraOmega(double angleRads, double omegaRadPerSec) {
-    double omegaRPS = omegaRadPerSec / (2 * Math.PI);
+  public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
+    double omegaRPS = omega.in(RotationsPerSecond);
 
+    this.targetAngle = angle;
     motor.setControl(
-        positionRequest
-            .withPosition(Radians.of(angleRads))
-            .withFeedForward(motorConfig.Slot0.kV * omegaRPS));
+        positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS));
   }
 
   @Override
@@ -105,9 +104,9 @@ public class PivotIOTalonFX implements PivotIO {
                     statorCurrentSignal)
                 .isOK());
 
-    inputs.targetPositionRads = targetAngleRads;
-    inputs.positionRads = positionSignal.getValue().in(Radians);
-    inputs.velocityRadsPerSec = velocitySignal.getValue().in(RadiansPerSecond);
+    inputs.targetPosition = targetAngle;
+    inputs.position = positionSignal.getValue();
+    inputs.velocity = velocitySignal.getValue();
     inputs.appliedVoltage = voltageSignal.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentSignal.getValueAsDouble();
@@ -130,5 +129,10 @@ public class PivotIOTalonFX implements PivotIO {
     motorConfig.MotionMagic.MotionMagicAcceleration = maxAcceleration;
 
     PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
+  }
+
+  @Override
+  public boolean seedPosition(Angle position) {
+    return PhoenixUtil.tryUntilOk(5, () -> motor.setPosition(position, 0.5));
   }
 }

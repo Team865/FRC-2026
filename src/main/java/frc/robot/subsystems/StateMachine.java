@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -41,7 +42,8 @@ public class StateMachine<State extends Enum<State>> extends SubsystemBase {
 
     // Initialize state triggers
     for (State state : initialState.getDeclaringClass().getEnumConstants()) {
-      modifiableStateTriggers.put(state, new Trigger(() -> this.currentState.equals(state)));
+      modifiableStateTriggers.put(
+          state, new Trigger(() -> this.currentState.equals(state) && DriverStation.isEnabled()));
     }
 
     this.stateTriggers = Collections.unmodifiableMap(modifiableStateTriggers);

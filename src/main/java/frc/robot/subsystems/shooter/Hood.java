@@ -1,7 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Radians;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -40,13 +38,17 @@ public class Hood extends Pivot implements SysIdTestable {
     io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     io.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
 
-    this.sysIdRoutine = new SysIdBuilder(this, io::setVolts).build();
+    this.sysIdRoutine =
+        new SysIdBuilder(this, io::setVolts)
+            .withDynamicStepVoltage(1)
+            .withQuasistaticRampRate(0.1)
+            .build();
   }
 
   public Command trackTarget(Supplier<Angle> angleSupplier) {
     return runEnd(
         () -> {
-          io.setPosition(angleSupplier.get().in(Radians));
+          io.setPosition(angleSupplier.get());
         },
         () -> io.stop());
   }
@@ -55,16 +57,16 @@ public class Hood extends Pivot implements SysIdTestable {
   public void periodic() {
     int id = hashCode();
 
-    LoggedTunableNumber.ifChanged(
-        id,
-        (constants) ->
-            this.io.setControlConstants(
-                constants[0], constants[1], constants[2], constants[3], constants[4]),
-        kS,
-        kV,
-        kA,
-        kP,
-        kD);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     (constants) ->
+    //         this.io.setControlConstants(
+    //             constants[0], constants[1], constants[2], constants[3], constants[4]),
+    //     kS,
+    //     kV,
+    //     kA,
+    //     kP,
+    //     kD);
     LoggedTunableNumber.ifChanged(
         id,
         (constants) -> this.io.setMotionProfile(constants[0], constants[1]),

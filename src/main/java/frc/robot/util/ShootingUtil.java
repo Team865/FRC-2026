@@ -1,39 +1,64 @@
 package frc.robot.util;
 
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.subsystems.shooter.ShooterConstants;
-import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class ShootingUtil {
   public static Angle calculateHoodAngle(double distanceFromHub) {
-    return Radians.of(
+    // Determined from experimental data and linear regression
+    double angleDeg = (7.84808 * distanceFromHub) - 6.31405;
+
+    return Degrees.of(
         MathUtil.clamp(
-            distanceFromHub,
-            ShooterConstants.Hood.MIN_ANGLE_RADS,
-            ShooterConstants.Hood.MAX_ANGLE_RADS));
+            angleDeg, ShooterConstants.Hood.MIN_ANGLE_DEG, ShooterConstants.Hood.MAX_ANGLE_DEG));
   }
 
-  public static Angle calculateHoodAngle(
-      Supplier<Pose2d> drivetrainPose, Supplier<Pose2d> targetPose) {
+  public static Angle calculateHoodAngle(Pose2d drivetrainPose, Pose2d targetPose) {
     return calculateHoodAngle(
-        targetPose.get().getTranslation().getDistance(drivetrainPose.get().getTranslation()));
+        targetPose.getTranslation().getDistance(drivetrainPose.getTranslation()));
   }
 
-  public static Angle calculateTurretRelativeAngle(
-      Supplier<Pose2d> drivetrainPose, Supplier<Pose2d> targetPose) {
-    Pose2d drivePose = drivetrainPose.get();
-    Rotation2d driveHeading = drivePose.getRotation();
+  public static Angle calculateTurretRelativeAngle(Pose2d drivetrainPose, Pose2d targetPose) {
+    Logger.recordOutput("Turret/Target Pose", targetPose);
+
+    Rotation2d driveHeading = drivetrainPose.getRotation();
     Translation2d driveToHubVector =
-        targetPose.get().getTranslation().minus(drivePose.getTranslation());
+        targetPose.getTranslation().minus(drivetrainPose.getTranslation());
     Rotation2d pointToHubRotation =
         new Rotation2d(driveToHubVector.getX(), driveToHubVector.getY());
 
     return pointToHubRotation.minus(driveHeading).getMeasure();
+  }
+
+  public static Pose2d correctTargetPoseWhileMoving(
+      Pose2d targetPose, ChassisSpeeds drivetrainFieldOrientedSpeeds, double correctionFactor) {
+
+    // Modify the targetPose based on drivetrain speed
+    Transform2d targetOffsetVector =
+        new Transform2d(
+                new Translation2d(
+                    -drivetrainFieldOrientedSpeeds.vxMetersPerSecond,
+                    -drivetrainFieldOrientedSpeeds.vyMetersPerSecond),
+                Rotation2d.kZero)
+            .times(correctionFactor);
+
+    return targetPose.plus(targetOffsetVector);
+  }
+
+  public static Pose2d correctTargetPoseWhileMoving(
+      Pose2d targetPose, ChassisSpeeds drivetrainFieldOrientedSpeeds) {
+    double correctionFactor = 0.85;
+
+    return correctTargetPoseWhileMoving(
+        targetPose, drivetrainFieldOrientedSpeeds, correctionFactor);
   }
 }

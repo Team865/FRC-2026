@@ -7,7 +7,7 @@ import java.util.Optional;
 public final class Constants {
   public static final Mode simMode = Mode.SIM;
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
-  private static final boolean enableLockoutZone = true;
+  private static final boolean enableLockoutZone = false;
 
   // Allow tuning in SIM or REAl, disallow in a competition match or REPLAY
   public static boolean tuningMode() {
@@ -47,7 +47,11 @@ public final class Constants {
       double kP,
       double kD,
       Optional<Double> maxVelocity,
-      Optional<Double> maxAcceleration) {}
+      Optional<Double> maxAcceleration) {
+    public ControlSystemContext(double kV, double kA, double kS, double kG, double kP, double kD) {
+      this(kV, kA, kS, kG, kP, kD, Optional.empty(), Optional.empty());
+    }
+  }
 
   public static class ControlSystemConstants {
     public static final ControlSystemContext EMPTY_CONTEXT =

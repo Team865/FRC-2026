@@ -1,6 +1,6 @@
 package frc.robot.subsystems.rollers;
 
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -16,6 +16,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.PhoenixUtil;
 
@@ -26,7 +27,8 @@ public class RollersIOTalonFX implements RollersIO {
   private final RollersSpecifications specs;
 
   private final VoltageOut voltageOut = new VoltageOut(0.0).withUpdateFreqHz(50.0);
-  private final VelocityVoltage velocityVoltage = new VelocityVoltage(0).withSlot(0);
+  private final VelocityVoltage velocityVoltage =
+      new VelocityVoltage(0).withEnableFOC(true).withUpdateFreqHz(50.0);
   private final NeutralOut neutralOut = new NeutralOut();
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
@@ -80,17 +82,18 @@ public class RollersIOTalonFX implements RollersIO {
                     position, velocity, appliedVoltage, supplyCurrent, torqueCurrent)
                 .isOK());
 
-    inputs.positionRads = position.getValue().in(Radians);
-    inputs.velocityRadsPerSec = velocity.getValue().in(RadiansPerSecond);
+    inputs.position = position.getValue();
+    inputs.velocity = velocity.getValue();
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrent.getValueAsDouble();
     inputs.torqueCurrentAmps = torqueCurrent.getValueAsDouble();
   }
 
   @Override
-  public void setControlConstants(double kS, double kV, double kP, double kD) {
+  public void setControlConstants(double kV, double kA, double kS, double kP, double kD) {
     config.Slot0.kS = kS;
     config.Slot0.kV = kV;
+    config.Slot0.kA = kA;
     config.Slot0.kP = kP;
     config.Slot0.kD = kD;
     PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
@@ -102,14 +105,15 @@ public class RollersIOTalonFX implements RollersIO {
   }
 
   @Override
-  public void setAngularVelocity(double velocityRadPerSec) {
-    talon.setControl(velocityVoltage.withVelocity(velocityRadPerSec));
+  public void setAngularVelocity(AngularVelocity velocity) {
+    talon.setControl(velocityVoltage.withVelocity(velocity));
   }
 
   @Override
-  public void setLinearVelocity(double velocityMetersPerSec) {
+  public void setLinearVelocity(LinearVelocity velocity) {
     talon.setControl(
-        velocityVoltage.withVelocity(velocityMetersPerSec / specs.rollerRadiusMeters()));
+        velocityVoltage.withVelocity(
+            RadiansPerSecond.of(velocity.in(MetersPerSecond) / specs.rollerRadiusMeters())));
   }
 
   @Override

@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -27,8 +28,8 @@ public final class ShooterConstants {
     public static final double GEAR_RATIO = 1;
     public static final double WHEEL_RADIUS_METERS = 0.05;
 
-    public static final AngularVelocity SHOOTING_SPEED = RadiansPerSecond.of(560);
-    public static final double SETPOINT_TOLERANCE_RADS = Math.PI / 4;
+    public static final AngularVelocity SHOOTING_SPEED = RadiansPerSecond.of(350);
+    public static final AngularVelocity SETPOINT_TOLERANCE = RotationsPerSecond.of(0.1);
   }
 
   public static final class Turret {
@@ -38,13 +39,13 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                0.24, 0.01, 0.62, 0.0, 200.0, 0.0, Optional.of(0.5), Optional.of(500.0)),
+                6.1331, 0, 0.28023, 0.0, 50, 0.0, Optional.of(2.0), Optional.of(5.0)),
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(52.0, false);
     public static final CANcoderSpecifications CANCODER_SPECS =
-        new CANcoderSpecifications(360.0 / 400, false, 0.344482);
+        new CANcoderSpecifications(360.0 / 400, false, 0.241699);
 
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-200);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(200);
@@ -56,13 +57,13 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                0.24, 0.01, 0.32, 0.0, 100.0, 0.0, Optional.of(0.2), Optional.of(50.0)),
+                0.24, 0.01, 0.32, 0.0, 600.0, 0.0, Optional.of(5.0), Optional.of(5000.0)),
             new ControlSystemContext(
                 4.44, 0.1, 0.0, 0.0, 1.0, 0.0, Optional.of(1.0), Optional.of(1.0)));
 
     public static final PivotSpecifications SPECS = new PivotSpecifications(96.0, true);
 
-    public static final double MIN_ANGLE_RADS = 0;
-    public static final double MAX_ANGLE_RADS = Units.degreesToRadians(26.5);
+    public static final double MIN_ANGLE_DEG = 0;
+    public static final double MAX_ANGLE_DEG = 26.5;
   }
 }
