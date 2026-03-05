@@ -1,16 +1,46 @@
 package frc.robot.subsystems.leds;
 
+import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.util.AllianceFlipUtil;
+
 public final class LEDConstants {
   private LEDConstants() {}
 
-  public static final int pwmPort = 1;
+  public static final int pwmPort = 1; // Pwm port the leds are running on
+  public static final int numLeds = 60; // Number of leds, this is 1 meter of lights by default
 
-  public static final double OFF = 0.99;
+  public static final Color RED = new Color(1.0, 0.0, 0.0);
+  public static final Color GREEN = new Color(0.0, 1.0, 0.0);
+  public static final Color BLUE = new Color(0.0, 0.0, 1.0);
+  public static final Color YELLOW = new Color(1.0, 1.0, 0.0);
+  public static final Color MAGENTA = new Color(1.0, 0.0, 1.0);
+  public static final Color CYAN = new Color(0.0, 1.0, 1.0);
+  public static final Color WHITE = new Color(1.0, 1.0, 1.0);
+  public static final Color OFF = new Color(0.0, 0.0, 0.0);
+  public static final Color ORANGE = new Color(1.0, 0.5, 0.0);
+  public static final Color PURPLE = new Color(0.5, 0.0, 0.5);
+  public static final Color PINK = new Color(1.0, 0.4, 0.7);
+  public static final Color LIGHT_BLUE = new Color(0.0, 0.7, 1.0);
+  public static final Color LIME = new Color(0.5, 1.0, 0.0);
+  public static final Color TEAL = new Color(0.0, 0.5, 0.5);
+  public static final Color GREY = new Color(0.5, 0.5, 0.5);
+  public static final Color ALLIANCE_COLOR = AllianceFlipUtil.shouldFlip() ? RED : BLUE;
 
-  public static final double RED = 0.61;
-  public static final double BLUE = 0.87;
-  public static final double GREEN = 0.77;
+  public enum Quarter {
+    TurretSide(0),
+    RightSide(1),
+    IntakeSide(2),
+    LeftSide(3);
 
-  public static final double RAINBOW = -0.99;
-  public static final double BREATH_RED = -0.17;
+    private final int index;
+
+    Quarter(int index) {
+      this.index = index;
+    }
+
+    // Getter
+    public int getIndex() {
+      return index;
+    }
+  }
 }
