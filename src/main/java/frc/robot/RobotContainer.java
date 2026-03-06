@@ -7,8 +7,11 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Radians;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -55,7 +58,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
-import frc.robot.util.ShopTesting;
 import frc.robot.util.SysIdRegister;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -102,16 +104,6 @@ public class RobotContainer {
   @AutoLogOutput(key = "currentAllianceLeftClimbPose")
   public Pose2d getAllianceLeftClimbPose() {
     return AllianceFlipUtil.apply(FieldConstants.allianceLeftClimbPose);
-  }
-
-  @AutoLogOutput(key = "TurretTx Degrees")
-  public double getTurretTxDegrees() {
-    return vision != null ? -vision.getTurretTxDegrees() : 0.0;
-  }
-
-  @AutoLogOutput(key = "TurretCurrentTagID")
-  public int getTurretSeesHubTag() {
-    return vision.getTurretSeenTagId();
   }
 
   @AutoLogOutput(key = "Distance From Hub")
@@ -166,15 +158,6 @@ public class RobotContainer {
                     IndexerConstants.BallTunneler.ROLLERS_SPECS));
 
         // hood = new Hood(new PivotIO() {});
-        vision =
-            Vision.createPerCameraVision(
-                drive,
-                new VisionIOLimelight(
-                    VisionConstants.camera0Name, () -> drive.getPose().getRotation(), true),
-                new VisionIOLimelight(
-                    VisionConstants.camera1Name, () -> drive.getPose().getRotation(), true),
-                new VisionIOLimelight(
-                    VisionConstants.camera2Name, () -> drive.getPose().getRotation(), false));
 
         turret =
             new Turret(
@@ -186,6 +169,19 @@ public class RobotContainer {
                     ShooterConstants.Turret.CANCODER_ID,
                     ShooterConstants.CANBUS,
                     ShooterConstants.Turret.CANCODER_SPECS));
+
+        vision =
+            Vision.createPerCameraVision(
+                drive,
+                new VisionIOLimelight(
+                    VisionConstants.camera0Name, () -> drive.getPose().getRotation(), true),
+                new VisionIOLimelight(
+                    VisionConstants.camera1Name, () -> drive.getPose().getRotation(), true),
+                new VisionIOLimelight(
+                    VisionConstants.camera2Name,
+                    () ->
+                        drive.getPose().getRotation().plus(new Rotation2d(turret.getOrientation())),
+                    false));
         hood =
             new Hood(
                 new PivotIOTalonFX(
@@ -356,18 +352,16 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    ShopTesting.enable(
-        driverController,
-        drive,
-        serializer,
-        ballTunneler,
-        flywheel,
-        hood,
-        turret,
-        () -> getTurretTxDegrees(),
-        () -> getTurretSeesHubTag(),
-        () -> getAllianceHubPose(),
-        () -> getDistanceFromHub());
+    // ShopTesting.enable(
+    //     driverController,
+    //     drive,
+    //     serializer,
+    //     ballTunneler,
+    //     flywheel,
+    //     hood,
+    //     turret,
+    //     () -> getAllianceHubPose(),
+    //     () -> getDistanceFromHub());
 
     // [[[[[[[[RE-ADD THESE BINDINGS ONCE ROBOT IS COMPLETE]]]]]]]]
     // DRIVE CONTROLLER

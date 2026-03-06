@@ -10,14 +10,12 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.VisionUtil;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
@@ -48,13 +46,14 @@ public class Vision extends SubsystemBase {
     }
 
     // Drivetrain camera consumer, outputs to the drivetrain pose
-    VisionConsumer drivetrainConsumer =
+    VisionConsumer positionConsumer =
         (pose, ts, stdDevs) -> {
           drive.addVisionMeasurement(pose, ts, stdDevs);
         };
 
-    cameraConsumers.put(camera0Name, drivetrainConsumer);
-    cameraConsumers.put(camera1Name, drivetrainConsumer);
+    cameraConsumers.put(camera0Name, positionConsumer);
+    cameraConsumers.put(camera1Name, positionConsumer);
+    cameraConsumers.put(camera2Name, positionConsumer);
   }
 
   public VisionIOInputsAutoLogged getInputs(int cameraIndex) {
@@ -69,13 +68,13 @@ public class Vision extends SubsystemBase {
     return idx;
   }
 
-  public double getTurretTxDegrees() {
-    return turretTxDegrees;
-  }
+  // public double getTurretTxDegrees() {
+  //   return turretTxDegrees;
+  // }
 
-  public int getTurretSeenTagId() {
-    return turretSeenTagId;
-  }
+  // public int getTurretSeenTagId() {
+  //   return turretSeenTagId;
+  // }
 
   @Override
   public void periodic() {
@@ -116,8 +115,6 @@ public class Vision extends SubsystemBase {
       allRobotPosesRejected.addAll(poseResult.rejected);
     }
 
-    updateTurretTracking();
-
     Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
     Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
     Logger.recordOutput(
@@ -126,45 +123,45 @@ public class Vision extends SubsystemBase {
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
   }
 
-  private void updateTurretTracking() {
-    int cameraIndex = cameraNameToIndex.get(camera2Name);
-    VisionIOInputsAutoLogged inputs2 = inputs[cameraIndex];
+  // private void updateTurretTracking() {
+  //   int cameraIndex = cameraNameToIndex.get(camera2Name);
+  //   VisionIOInputsAutoLogged inputs2 = inputs[cameraIndex];
 
-    int newCandidate = -1;
-    double tx = 0.0;
+  //   int newCandidate = -1;
+  //   double tx = 0.0;
 
-    for (int hubTagId : FieldConstants.hubTagIds) {
-      if (IntStream.of(inputs2.tagIds).anyMatch(t -> t == hubTagId)) {
-        newCandidate = hubTagId;
-        if (inputs2.latestTargetObservation != null) {
-          tx = inputs2.latestTargetObservation.tx().getDegrees();
-          turretSeenTagId = newCandidate;
-          turretTxDegrees = tx;
-        }
-        break;
-      }
-    }
+  //   for (int hubTagId : FieldConstants.hubTagIds) {
+  //     if (IntStream.of(inputs2.tagIds).anyMatch(t -> t == hubTagId)) {
+  //       newCandidate = hubTagId;
+  //       if (inputs2.latestTargetObservation != null) {
+  //         tx = inputs2.latestTargetObservation.tx().getDegrees();
+  //         turretSeenTagId = newCandidate;
+  //         turretTxDegrees = tx;
+  //       }
+  //       break;
+  //     }
+  //   }
 
-    // if (newCandidate == -1) {
-    //   turretCandidateTagId = -1;
-    //   turretSeenTagId = -1;
-    //   turretTagFrames = 0;
-    //   turretTxDegrees = 0.0;
-    //   return;
-    // }
+  //   // if (newCandidate == -1) {
+  //   //   turretCandidateTagId = -1;
+  //   //   turretSeenTagId = -1;
+  //   //   turretTagFrames = 0;
+  //   //   turretTxDegrees = 0.0;
+  //   //   return;
+  //   // }
 
-    // if (newCandidate == turretCandidateTagId) {
-    //   turretTagFrames++;
-    // } else {
-    //   turretCandidateTagId = newCandidate;
-    //   turretTagFrames = 1;
-    // }
+  //   // if (newCandidate == turretCandidateTagId) {
+  //   //   turretTagFrames++;
+  //   // } else {
+  //   //   turretCandidateTagId = newCandidate;
+  //   //   turretTagFrames = 1;
+  //   // }
 
-    // if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
-    //   turretSeenTagId = turretCandidateTagId;
-    //   turretTxDegrees = tx;
-    // }
-  }
+  //   // if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
+  //   //   turretSeenTagId = turretCandidateTagId;
+  //   //   turretTxDegrees = tx;
+  //   // }
+  // }
 
   @FunctionalInterface
   public interface VisionConsumer {

@@ -60,7 +60,7 @@ public class VisionConstants {
       new double[] {
         1.0, // Left
         1.0, // Right
-        1.0 // Turret
+        0.5 // Turret
       };
 
   // Multipliers to apply for MegaTag 2 observations
