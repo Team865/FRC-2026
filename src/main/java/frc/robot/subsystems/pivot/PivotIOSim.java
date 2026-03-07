@@ -52,11 +52,13 @@ public class PivotIOSim implements PivotIO {
   public void setPosition(Angle angle) {
     this.targetAngle = angle;
     this.voltageOverridesTarget = false;
+    // this.extraOmega = RotationsPerSecond.zero();
   }
 
   @Override
   public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
-    setPosition(angle);
+    this.targetAngle = angle;
+    this.voltageOverridesTarget = false;
     this.extraOmega = omega;
   }
 
@@ -72,6 +74,7 @@ public class PivotIOSim implements PivotIO {
       double angRad = motorSim.getAngularPositionRad();
 
       double pidOutput = this.pidController.calculate(angRad, this.targetAngle.in(Radians));
+
       double feedforwardOutput =
           this.feedforwardController.calculate(pidOutput + extraOmega.in(RadiansPerSecond));
 

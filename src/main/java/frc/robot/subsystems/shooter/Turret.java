@@ -84,7 +84,7 @@ public class Turret extends Pivot implements SysIdTestable {
               "Turret/Requested Angle Degrees", relativeAngleSupplier.get().in(Degrees));
           Logger.recordOutput("Turret/Optimized Turret Angle Degrees", optimizedAngle.in(Degrees));
 
-          io.setPosition(optimizedAngle);
+          io.setPositionWithExtraOmega(optimizedAngle, driveOmegaSupplier.get());
         },
         () -> this.io.stop());
   }

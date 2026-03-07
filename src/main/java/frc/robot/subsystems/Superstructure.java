@@ -6,7 +6,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
@@ -84,9 +83,9 @@ public class Superstructure extends SubsystemBase {
     this.flywheel = flywheel;
     this.hubPoseSupplier = hubPoseSupplier;
 
-    configureStateRequirements();
-    configureStateBehaviours();
-    configureGameStateTriggers();
+    // configureStateRequirements();
+    // configureStateBehaviours();
+    // configureGameStateTriggers();
   }
 
   /** Configure the requirements of each state */
@@ -186,9 +185,7 @@ public class Superstructure extends SubsystemBase {
 
   /** A command that requests a state for the shooting state machine */
   public Command requestState(ShootingState targetState) {
-    return shootingStateMachine
-        .requestStateCommand(targetState)
-        .alongWith(new PrintCommand("Requesting " + targetState.toString()));
+    return shootingStateMachine.requestStateCommand(targetState);
   }
 
   /** A command that requests a state for the intaking state machine */

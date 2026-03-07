@@ -67,6 +67,7 @@ public class RollersIOTalonFX implements RollersIO {
     supplyCurrent = talon.getSupplyCurrent();
     torqueCurrent = talon.getTorqueCurrent();
 
+    talon.optimizeBusUtilization();
     PhoenixUtil.tryUntilOk(
         5,
         () ->

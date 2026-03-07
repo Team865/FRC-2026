@@ -44,7 +44,7 @@ public final class IntakeConstants {
                 0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(5.0), Optional.of(20.0)));
 
     public static final ExtensionSpecifications EXTENSION_SPECS =
-        new ExtensionSpecifications(15.0, Units.inchesToMeters(1.0), true);
+        new ExtensionSpecifications(20.0, Units.inchesToMeters(1.0), true);
   }
 
   private IntakeConstants() {}

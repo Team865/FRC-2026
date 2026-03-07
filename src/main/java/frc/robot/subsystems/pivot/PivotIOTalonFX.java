@@ -1,5 +1,6 @@
 package frc.robot.subsystems.pivot;
 
+import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -20,7 +21,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.PhoenixUtil;
 
 public class PivotIOTalonFX implements PivotIO {
-  public final TalonFX motor;
+  public final TalonFX talon;
   private final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
   private final VoltageOut voltageRequest =
@@ -41,7 +42,7 @@ public class PivotIOTalonFX implements PivotIO {
 
   @SuppressWarnings("removal")
   public PivotIOTalonFX(int canId, String canBus, PivotSpecifications specs) {
-    motor = new TalonFX(canId, canBus);
+    talon = new TalonFX(canId, canBus);
 
     motorConfig.MotorOutput.Inverted =
         specs.clockwisePositive()
@@ -57,24 +58,28 @@ public class PivotIOTalonFX implements PivotIO {
 
     motorConfig.Feedback.SensorToMechanismRatio = specs.gearRatio();
     motorConfig.CurrentLimits.SupplyCurrentLimit = 60.0;
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
-    PhoenixUtil.tryUntilOk(5, () -> motor.setPosition(0));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(motorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(0));
 
-    positionSignal = motor.getPosition();
-    velocitySignal = motor.getVelocity();
-    voltageSignal = motor.getMotorVoltage();
-    supplyCurrentSignal = motor.getSupplyCurrent();
-    statorCurrentSignal = motor.getStatorCurrent();
+    positionSignal = talon.getPosition();
+    velocitySignal = talon.getVelocity();
+    voltageSignal = talon.getMotorVoltage();
+    supplyCurrentSignal = talon.getSupplyCurrent();
+    statorCurrentSignal = talon.getStatorCurrent();
+    
+    talon.optimizeBusUtilization();
+    PhoenixUtil.tryUntilOk(5, 
+      () -> BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50.0), positionSignal, velocitySignal, voltageSignal, supplyCurrentSignal, statorCurrentSignal));
   }
 
   @Override
   public void setVolts(double volts) {
-    motor.setControl(voltageRequest.withOutput(volts));
+    talon.setControl(voltageRequest.withOutput(volts));
   }
 
   @Override
   public void setPosition(Angle angle) {
-    motor.setControl(positionRequest.withPosition(angle));
+    talon.setControl(positionRequest.withPosition(angle));
     this.targetAngle = angle;
   }
 
@@ -83,13 +88,13 @@ public class PivotIOTalonFX implements PivotIO {
     double omegaRPS = omega.in(RotationsPerSecond);
 
     this.targetAngle = angle;
-    motor.setControl(
+    talon.setControl(
         positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS));
   }
 
   @Override
   public void stop() {
-    motor.setControl(neutralRequest);
+    talon.setControl(neutralRequest);
   }
 
   @Override
@@ -120,7 +125,7 @@ public class PivotIOTalonFX implements PivotIO {
     motorConfig.Slot0.kP = kP;
     motorConfig.Slot0.kD = kD;
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(motorConfig));
   }
 
   @Override
@@ -128,11 +133,11 @@ public class PivotIOTalonFX implements PivotIO {
     motorConfig.MotionMagic.MotionMagicCruiseVelocity = maxVelocity;
     motorConfig.MotionMagic.MotionMagicAcceleration = maxAcceleration;
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(motorConfig));
   }
 
   @Override
   public boolean seedPosition(Angle position) {
-    return PhoenixUtil.tryUntilOk(5, () -> motor.setPosition(position, 0.5));
+    return PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(position, 0.5));
   }
 }
