@@ -112,11 +112,9 @@ public class DriveToPose extends Command {
         linAccelMPS2);
     LoggedTunableNumber.ifChanged(
         id,
-        c -> {
-          rotationController.setConstraints(
-              new Constraints(Units.degreesToRadians(c[0]), Units.degreesToRadians(c[1])));
-          System.out.println(rotationController.getConstraints().maxVelocity);
-        },
+        c ->
+            rotationController.setConstraints(
+                new Constraints(Units.degreesToRadians(c[0]), Units.degreesToRadians(c[1]))),
         maxOmegaDPS,
         angAccelDPS2);
 

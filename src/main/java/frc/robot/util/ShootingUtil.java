@@ -69,11 +69,11 @@ public class ShootingUtil {
   }
 
   public static double angleRadsBetweenTwoVectors(Translation2d vector1, Translation2d vector2) {
-    return Math.acos(vector1.dot(vector2) / (vector1.getNorm() * vector2.getNorm()));
+    return vector2.getAngle().minus(vector1.getAngle()).getRadians();
   }
 
   public static AngularVelocity getAngularVelocityCompensation(
-      Pose2d targetPose, Pose2d drivetrainPose, ChassisSpeeds drivetrainSpeeds) {
+      Pose2d drivetrainPose, Pose2d targetPose, ChassisSpeeds drivetrainSpeeds) {
     Translation2d pointToTargetVector =
         targetPose.getTranslation().minus(drivetrainPose.getTranslation());
     Translation2d linearVelocityVector =
@@ -81,14 +81,20 @@ public class ShootingUtil {
     double angleRadsBetweenLookVectorAndVelocity =
         angleRadsBetweenTwoVectors(pointToTargetVector, linearVelocityVector);
 
-    double linearVelocityMagnitudeMeters = linearVelocityVector.getNorm();
-    double distanceToTargetMeters = pointToTargetVector.getNorm();
+    double linearVelocityCompensationRadsPerSec;
 
-    double linearVelocityCompensationRadsPerSec =
-        (Math.sin(angleRadsBetweenLookVectorAndVelocity) * linearVelocityMagnitudeMeters)
-            / distanceToTargetMeters;
+    if (Double.isNaN(angleRadsBetweenLookVectorAndVelocity)) {
+      linearVelocityCompensationRadsPerSec = 0.0;
+    } else {
+      double linearVelocityMagnitudeMeters = linearVelocityVector.getNorm();
+      double distanceToTargetMeters = pointToTargetVector.getNorm();
+
+      linearVelocityCompensationRadsPerSec =
+          (Math.sin(angleRadsBetweenLookVectorAndVelocity) * linearVelocityMagnitudeMeters)
+              / distanceToTargetMeters;
+    }
 
     return RadiansPerSecond.of(
-        drivetrainSpeeds.omegaRadiansPerSecond + linearVelocityCompensationRadsPerSec);
+        -drivetrainSpeeds.omegaRadiansPerSecond + linearVelocityCompensationRadsPerSec);
   }
 }
