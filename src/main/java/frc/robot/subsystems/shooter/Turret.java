@@ -150,21 +150,21 @@ public class Turret extends Pivot implements SysIdTestable {
   public void periodic() {
     int id = hashCode();
 
-    LoggedTunableNumber.ifChanged(
-        id,
-        (constants) ->
-            this.io.setControlConstants(
-                constants[0], constants[1], constants[2], constants[3], constants[4]),
-        kS,
-        kV,
-        kA,
-        kP,
-        kD);
-    LoggedTunableNumber.ifChanged(
-        id,
-        (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
-        maxVelocity,
-        maxAcceleration);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     (constants) ->
+    //         this.io.setControlConstants(
+    //             constants[0], constants[1], constants[2], constants[3], constants[4]),
+    //     kS,
+    //     kV,
+    //     kA,
+    //     kP,
+    //     kD);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
+    //     maxVelocity,
+    //     maxAcceleration);
 
     super.periodic();
 

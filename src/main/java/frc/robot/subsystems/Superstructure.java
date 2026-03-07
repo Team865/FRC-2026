@@ -1,23 +1,22 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
-import frc.robot.subsystems.shooter.ShooterConstants;
 import frc.robot.subsystems.shooter.Turret;
 import frc.robot.util.ShootingUtil;
 import java.util.function.Supplier;
@@ -64,6 +63,9 @@ public class Superstructure extends SubsystemBase {
   private final Flywheel flywheel;
   private final Supplier<Pose2d> hubPoseSupplier;
 
+  private Pose2d shootingTarget = Pose2d.kZero;
+  private double distanceFromShootingTarget = 0.0;
+
   public Superstructure(
       Drive drive,
       Intake intake,
@@ -84,6 +86,7 @@ public class Superstructure extends SubsystemBase {
 
     configureStateRequirements();
     configureStateBehaviours();
+    configureGameStateTriggers();
   }
 
   /** Configure the requirements of each state */
@@ -119,24 +122,17 @@ public class Superstructure extends SubsystemBase {
         .get(ShootingState.IDLE)
         .whileFalse( // When the shooting state isn't idle,
             turret.lockOntoTarget( // Have the turret track the target
-                () ->
-                    ShootingUtil.calculateTurretRelativeAngle(
-                        drive.getPose(),
-                        ShootingUtil.correctTargetPoseWhileMoving(
-                            hubPoseSupplier.get(), drive.getFieldOrientedSpeeds())),
+                () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
                 () -> RadiansPerSecond.of(drive.getAngularVelocityRadPerSec())))
         .whileFalse( // Have the hood track the target
-            hood.trackTarget(
-                () ->
-                    ShootingUtil.calculateHoodAngle(
-                        drive.getPose(),
-                        ShootingUtil.correctTargetPoseWhileMoving(
-                            hubPoseSupplier.get(), drive.getFieldOrientedSpeeds()))))
+            hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromShootingTarget)))
         .whileFalse(
             flywheel.runVelocity(
-                ShooterConstants.Flywheel.SHOOTING_SPEED)); // Spin up the flywheels
-    // .onTrue(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))
-    // .onFalse(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
+                () ->
+                    ShootingUtil.getFlywheelVelocity(
+                        distanceFromShootingTarget))) // Spin up the flywheels
+        .onTrue(runOnce(() -> drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts)))
+        .onFalse(runOnce(() -> drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed)));
 
     shootingStateMachine
         .stateTriggers
@@ -147,15 +143,15 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .whileTrue(ballTunneler.runTunneler())
-        .whileTrue(serializer.runSerializer());
+        .whileTrue(ballTunneler.runTunneler());
+    // .whileTrue(serializer.runSerializer());
 
     // Intaking state
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWING)
         .onTrue(intake.stow()) // Stow the intake
-        .and(intake.pivotAtSetpoint()) // If the intake is stowed,
+        .and(intake.extensionAtSetpoint()) // If the intake is stowed,
         .onTrue(forceState(IntakingState.STOWED)); // move to appropriate state
 
     intakingStateMachine.stateTriggers.get(IntakingState.DEPLOYING).onTrue(intake.deploy());
@@ -163,20 +159,14 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYING) // Deploy the intake
-        .and(intake.pivotAtSetpoint()) // If the intake arm is deployed,
+        .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
         .onTrue(forceState(IntakingState.INTAKE_READY)); // Move to appropriate state
 
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.INTAKING)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.runLinearVelocity(
-                () ->
-                    MetersPerSecond.of(
-                        Math.max(
-                            drive.getLinearSpeedMetersPerSec()
-                                * IntakeConstants.Rollers.DRIVETRAIN_TO_INTAKE_SPEED_FACTOR,
-                            IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED.in(MetersPerSecond)))));
+            intake.runRollers(() -> drive.getChassisSpeeds()));
 
     // shootingStateMachine
     //     .stateTriggers
@@ -186,6 +176,12 @@ public class Superstructure extends SubsystemBase {
     // intake
     //     // rollers
     //     .whileFalse(serializer.runSerializer());
+  }
+
+  private void configureGameStateTriggers() {
+    new Trigger(() -> DriverStation.isTeleopEnabled())
+        .onTrue(forceState(ShootingState.IDLE))
+        .onTrue(forceState(IntakingState.DEPLOYING));
   }
 
   /** A command that requests a state for the shooting state machine */
@@ -234,7 +230,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   public Command toggleBumpMode() {
-    return Commands.runOnce(
+    return runOnce(
         () -> {
           if (drive.getMaxLinearSpeed().equals(DriveConstants.bumpModeMaxSpeed)) {
             if (shootingStateMachine.isInState(ShootingState.IDLE)) {
@@ -245,8 +241,7 @@ public class Superstructure extends SubsystemBase {
           } else {
             drive.setMaxLinearSpeed(DriveConstants.bumpModeMaxSpeed);
           }
-        },
-        drive);
+        });
   }
 
   public Command toggleIntakeArm() {
@@ -264,6 +259,14 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (!shootingStateMachine.isInState(ShootingState.IDLE)) {
+      shootingTarget =
+          ShootingUtil.correctTargetPoseWhileMoving(
+              hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
+
+      distanceFromShootingTarget =
+          shootingTarget.getTranslation().getDistance(drive.getPose().getTranslation());
+    }
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());

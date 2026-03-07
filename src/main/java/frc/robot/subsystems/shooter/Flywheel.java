@@ -40,7 +40,7 @@ public class Flywheel extends SubsystemBase {
   public Flywheel(FlywheelIO io) {
     this.io = io;
 
-    io.setControlConstants(kV.get(), kA.get(), kS.get(), kP.get(), kD.get());
+    io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
   }
 
   public Command setVolts(double volts) {
@@ -105,15 +105,15 @@ public class Flywheel extends SubsystemBase {
 
     Logger.processInputs("Shooter/Flywheel", inputs);
 
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        (constants) ->
-            io.setControlConstants(
-                constants[0], constants[1], constants[2], constants[3], constants[4]),
-        kV,
-        kA,
-        kS,
-        kP,
-        kD);
+    // LoggedTunableNumber.ifChanged(
+    //     hashCode(),
+    //     (constants) ->
+    //         io.setControlConstants(
+    //             constants[0], constants[1], constants[2], constants[3], constants[4]),
+    //     kS,
+    //     kV,
+    //     kA,
+    //     kP,
+    //     kD);
   }
 }

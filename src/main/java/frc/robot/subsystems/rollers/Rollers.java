@@ -13,7 +13,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Rollers extends SubsystemBase {
   public final String name;
-  protected final RollersIO io;
+  public final RollersIO io;
   protected final RollersIOInputsAutoLogged inputs = new RollersIOInputsAutoLogged();
 
   protected final Alert motorDisconnectedAlert;
@@ -57,10 +57,6 @@ public class Rollers extends SubsystemBase {
     io.updateInputs(inputs);
     motorDisconnectedAlert.set(!inputs.connected);
     Logger.processInputs(name + "/Motor", inputs);
-  }
-
-  public RollersIO getIO() {
-    return io;
   }
 
   public Angle getPosition() {

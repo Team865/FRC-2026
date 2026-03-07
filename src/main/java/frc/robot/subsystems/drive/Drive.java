@@ -410,11 +410,6 @@ public class Drive extends SubsystemBase {
     currentMaxSpeed = maxSpeed;
   }
 
-  /** Command wrapper for {@link #setMaxLinearSpeed(LinearVelocity)} */
-  public Command setMaxLinearSpeedCmd(LinearVelocity maxSpeed) {
-    return runOnce(() -> setMaxLinearSpeed(maxSpeed));
-  }
-
   /** Returns the maximum linear speed */
   public LinearVelocity getMaxLinearSpeed() {
     return currentMaxSpeed;

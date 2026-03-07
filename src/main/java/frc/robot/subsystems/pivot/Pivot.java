@@ -12,7 +12,7 @@ import org.littletonrobotics.junction.Logger;
 public class Pivot extends SubsystemBase {
   public final String name;
 
-  protected final PivotIO io;
+  public final PivotIO io;
   protected final PivotIOInputsAutoLogged inputs = new PivotIOInputsAutoLogged();
 
   protected final Alert motorDisconnectedAlert;
@@ -53,10 +53,6 @@ public class Pivot extends SubsystemBase {
 
   public Angle getTargetOrientation() {
     return inputs.targetPosition;
-  }
-
-  public PivotIO getIO() {
-    return io;
   }
 
   @Override

@@ -30,7 +30,7 @@ public interface FlywheelIO {
 
   public default void setVelocity(AngularVelocity velocity) {}
 
-  public default void setControlConstants(double kV, double kA, double kS, double kP, double kD) {}
+  public default void setControlConstants(double kS, double kV, double kA, double kP, double kD) {}
 
   public default void stop() {}
 }

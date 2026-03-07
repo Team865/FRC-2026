@@ -7,8 +7,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Radians;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +29,8 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
+import frc.robot.subsystems.extension.ExtensionIO;
+import frc.robot.subsystems.extension.ExtensionIOSim;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.indexer.Serializer;
@@ -58,7 +58,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
-import frc.robot.util.SysIdRegister;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -82,7 +81,7 @@ public class RobotContainer {
 
   private final Intake intake;
   private final Climber climber;
-  private final LEDs leds;
+  public final LEDs leds;
 
   private final Superstructure superstructure;
 
@@ -118,9 +117,6 @@ public class RobotContainer {
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
-        climber = new Climber(new ClimberIOTalonFX());
-
-        // hood = new Hood(new PivotIO() {});
         // Real robot, instantiate hardware IO implementations
         // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
         // a CANcoder
@@ -132,17 +128,18 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
 
-        // vision =
-        //     Vision.createPerCameraVision(
-        //         drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
+        // intake =
+        //     new Intake(
+        //         new RollersIOTalonFX(
+        //             IntakeConstants.Rollers.CAN_ID,
+        //             IntakeConstants.CANBUS,
+        //             IntakeConstants.Rollers.ROLLER_SPECS),
+        //         new ExtensionIOTalonFX(
+        //             IntakeConstants.Extension.MOTOR_CAN_ID,
+        //             IntakeConstants.CANBUS,
+        //             IntakeConstants.Extension.EXTENSION_SPECS));
 
-        intake =
-            new Intake(
-                new RollersIO() {},
-                new PivotIOTalonFX(
-                    IntakeConstants.Pivot.MOTOR_CAN_ID,
-                    IntakeConstants.CANBUS,
-                    IntakeConstants.Pivot.PIVOT_SPECS));
+        intake = new Intake(new RollersIO() {}, new ExtensionIO() {});
 
         serializer =
             new Serializer(
@@ -156,8 +153,6 @@ public class RobotContainer {
                     IndexerConstants.BallTunneler.CAN_ID,
                     IndexerConstants.CANBUS,
                     IndexerConstants.BallTunneler.ROLLERS_SPECS));
-
-        // hood = new Hood(new PivotIO() {});
 
         turret =
             new Turret(
@@ -189,8 +184,9 @@ public class RobotContainer {
                     ShooterConstants.CANBUS,
                     ShooterConstants.Hood.SPECS));
         flywheel = new Flywheel(new FlywheelIOTalonFX());
-        // turret = new Turret(new PivotIO() {});
-        leds = new LEDs();
+
+        climber = new Climber(new ClimberIOTalonFX());
+
         break;
 
       case SIM:
@@ -210,8 +206,9 @@ public class RobotContainer {
                 new RollersIOSim(
                     DCMotor.getKrakenX60(1),
                     IntakeConstants.Rollers.SYSTEM_CONSTANTS,
-                    IntakeConstants.Rollers.SPECS),
-                new PivotIOSim(DCMotor.getKrakenX60(1), IntakeConstants.Pivot.SYSTEM_CONSTANTS));
+                    IntakeConstants.Rollers.ROLLER_SPECS),
+                new ExtensionIOSim(
+                    DCMotor.getKrakenX60(1), IntakeConstants.Extension.SYSTEM_CONSTANTS));
 
         serializer =
             new Serializer(
@@ -254,8 +251,6 @@ public class RobotContainer {
             new Hood(
                 new PivotIOSim(DCMotor.getKrakenX44(1), ShooterConstants.Hood.SYSTEM_CONSTANTS));
         flywheel = new Flywheel(new FlywheelIOSim());
-
-        leds = new LEDs();
         break;
 
       default:
@@ -269,7 +264,7 @@ public class RobotContainer {
                 new ModuleIO() {});
 
         climber = new Climber(new ClimberIO() {});
-        intake = new Intake(new RollersIO() {}, new PivotIO() {});
+        intake = new Intake(new RollersIO() {}, new ExtensionIO() {});
         vision =
             Vision.createPerCameraVision(
                 drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
@@ -278,11 +273,12 @@ public class RobotContainer {
         hood = new Hood(new PivotIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
         serializer = new Serializer(new RollersIO() {});
-        leds = new LEDs();
         ballTunneler = new BallTunneler(new RollersIO() {});
 
         break;
     }
+
+    leds = new LEDs();
 
     this.superstructure =
         new Superstructure(
@@ -339,7 +335,7 @@ public class RobotContainer {
     // SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
     // SysIdRegister.register(autoChooser, serializer, "Serializer");
     // SysIdRegister.register(autoChooser, turret, "Turret");
-    SysIdRegister.register(autoChooser, hood, "Hood");
+    // SysIdRegister.register(autoChooser, hood, "Hood");
 
     // Configure the button bindings
     configureButtonBindings();
@@ -360,8 +356,15 @@ public class RobotContainer {
     //     flywheel,
     //     hood,
     //     turret,
+    //     () -> getTurretTxDegrees(),
+    //     () -> getTurretSeesHubTag(),
     //     () -> getAllianceHubPose(),
     //     () -> getDistanceFromHub());
+
+    // driverController.y().toggleOnTrue(leds.allianceColorWaveCommand());
+    // driverController.a().toggleOnTrue(leds.testColour());
+
+    // if (true) return;
 
     // [[[[[[[[RE-ADD THESE BINDINGS ONCE ROBOT IS COMPLETE]]]]]]]]
     // DRIVE CONTROLLER
@@ -376,7 +379,17 @@ public class RobotContainer {
     // Reset gyro to 0° when B button is pressed
     driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
 
-    if (true) return;
+    // driverController.y().whileTrue(new DriveToPose(() -> getAllianceRightClimbPose(), drive));
+
+    // turret.setDefaultCommand(turret.runVoltage(() -> -driverController.getLeftX()));
+    // hood.setDefaultCommand(hood.runVoltage(() -> driverController.getRightY()));
+
+    // driverController
+    //     .rightTrigger()
+    //     .whileTrue(ballTunneler.runTunneler())
+    //     .whileTrue(flywheel.runVelocity(RadiansPerSecond.of(350)));
+
+    // if (true) return;
     // driverController
     //     .y()
     //     .whileTrue(
@@ -468,7 +481,7 @@ public class RobotContainer {
   }
 
   public void updateComponentPoses() {
-    ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.pivot, climber);
+    ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.extension, climber);
   }
 
   public void throttleCameras(int throttleAmount) {

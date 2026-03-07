@@ -1,40 +1,52 @@
 package frc.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.util.Color;
-import frc.robot.util.AllianceFlipUtil;
 
 public final class LEDConstants {
   private LEDConstants() {}
 
   public static final int pwmPort = 1; // Pwm port the leds are running on
-  public static final int numLeds = 60; // Number of leds, this is 1 meter of lights by default
+  public static final int totalNumLeds =
+      300; // Number of leds, this is 1 meter of lights by default
+  public static final int numTableLeds = 240;
+  public static final int numBellyPanLeds = 60;
 
-  public static final Color RED = new Color(1.0, 0.0, 0.0);
-  public static final Color GREEN = new Color(0.0, 1.0, 0.0);
-  public static final Color BLUE = new Color(0.0, 0.0, 1.0);
-  public static final Color YELLOW = new Color(1.0, 1.0, 0.0);
-  public static final Color MAGENTA = new Color(1.0, 0.0, 1.0);
-  public static final Color CYAN = new Color(0.0, 1.0, 1.0);
-  public static final Color WHITE = new Color(1.0, 1.0, 1.0);
-  public static final Color OFF = new Color(0.0, 0.0, 0.0);
-  public static final Color ORANGE = new Color(1.0, 0.5, 0.0);
-  public static final Color PURPLE = new Color(0.5, 0.0, 0.5);
-  public static final Color PINK = new Color(1.0, 0.4, 0.7);
-  public static final Color LIGHT_BLUE = new Color(0.0, 0.7, 1.0);
-  public static final Color LIME = new Color(0.5, 1.0, 0.0);
-  public static final Color TEAL = new Color(0.0, 0.5, 0.5);
-  public static final Color GREY = new Color(0.5, 0.5, 0.5);
-  public static final Color ALLIANCE_COLOR = AllianceFlipUtil.shouldFlip() ? RED : BLUE;
+  public enum PresetColor {
+    RED(new Color(1.0, 0.0, 0.0)),
+    GREEN(new Color(0.0, 1.0, 0.0)),
+    BLUE(new Color(0.0, 0.0, 1.0)),
+    YELLOW(new Color(1.0, 1.0, 0.0)),
+    MAGENTA(new Color(1.0, 0.0, 1.0)),
+    CYAN(new Color(0.0, 1.0, 1.0)),
+    WHITE(new Color(1.0, 1.0, 1.0)),
+    OFF(new Color(0.0, 0.0, 0.0)),
+    ORANGE(new Color(1.0, 0.2, 0.0)),
+    PURPLE(new Color(0.5, 0.0, 0.5)),
+    PINK(new Color(1.0, 0.4, 0.7)),
+    LIGHT_BLUE(new Color(0.0, 0.7, 1.0)),
+    LIME(new Color(0.5, 1.0, 0.0)),
+    TEAL(new Color(0.0, 0.5, 0.5)),
+    GREY(new Color(0.5, 0.5, 0.5)),
 
-  public enum Quarter {
+    IDLE(new Color(120.0 / 255, 0, 200.0 / 255));
+
+    public final Color color;
+
+    private PresetColor(Color color) {
+      this.color = color;
+    }
+  }
+
+  public enum Section {
     TurretSide(0),
     RightSide(1),
     IntakeSide(2),
-    LeftSide(3);
+    LeftSide(3),
+    BellyPan(4);
 
     private final int index;
 
-    Quarter(int index) {
+    Section(int index) {
       this.index = index;
     }
 

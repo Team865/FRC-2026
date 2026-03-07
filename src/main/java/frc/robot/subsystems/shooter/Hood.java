@@ -67,11 +67,11 @@ public class Hood extends Pivot implements SysIdTestable {
     //     kA,
     //     kP,
     //     kD);
-    LoggedTunableNumber.ifChanged(
-        id,
-        (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
-        maxVelocity,
-        maxAcceleration);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
+    //     maxVelocity,
+    //     maxAcceleration);
 
     super.periodic();
   }

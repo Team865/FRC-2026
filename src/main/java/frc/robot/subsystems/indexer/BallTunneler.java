@@ -25,7 +25,7 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   public BallTunneler(RollersIO io) {
     super("BallTunneler", io);
 
-    io.setControlConstants(kV.get(), kA.get(), kS.get(), kP.get(), kD.get());
+    io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     sysIdRoutine = new SysIdBuilder(this, io::setVolts).withDynamicStepVoltage(6.0).build();
   }
 
@@ -40,7 +40,7 @@ public class BallTunneler extends Rollers implements SysIdTestable {
     int id = hashCode();
 
     LoggedTunableNumber.ifChanged(
-        id, c -> getIO().setControlConstants(c[0], c[1], c[2], c[3], c[4]), kV, kA, kS, kP, kD);
+        id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
     super.periodic();
   }
 

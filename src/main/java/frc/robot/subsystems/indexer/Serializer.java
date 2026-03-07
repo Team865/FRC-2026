@@ -1,11 +1,18 @@
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SysIdBuilder;
+import frc.robot.util.SysIdRegister.SysIdTestable;
+import org.littletonrobotics.junction.Logger;
 
-public class Serializer extends Rollers {
+public class Serializer extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kV =
       new LoggedTunableNumber("Serializer/kV", IndexerConstants.Serializer.SYSTEM_CONSTANTS.kV);
   private final LoggedTunableNumber kA =
@@ -17,18 +24,17 @@ public class Serializer extends Rollers {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("Serializer/kD", IndexerConstants.Serializer.SYSTEM_CONSTANTS.kD);
 
-  //   private final SysIdRoutine sysIdRoutine;
+  private final SysIdRoutine sysIdRoutine;
 
   public Serializer(RollersIO io) {
     super("Serializer", io);
 
-    // sysIdRoutine =
-    //     new SysIdBuilder(this, io::setVolts)
-    //         .withDynamicStepVoltage(3.0)
-    //         .withQuasistaticRampRate(0.3)
-    //         .build();
-
-    io.setControlConstants(kV.get(), kA.get(), kS.get(), kP.get(), kD.get());
+    io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
+    sysIdRoutine =
+        new SysIdBuilder(this, io::setVolts)
+            .withDynamicStepVoltage(6)
+            .withQuasistaticRampRate(0.6)
+            .build();
   }
 
   public Command runSerializer() {
@@ -40,9 +46,17 @@ public class Serializer extends Rollers {
   public void periodic() {
     int id = hashCode();
 
-    // LoggedTunableNumber.ifChanged(
-    //     id, c -> getIO().setControlConstants(c[0], c[1], c[2], c[3], c[4]), kV, kA, kS, kP, kD);
+    LoggedTunableNumber.ifChanged(
+        id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
+
+    Logger.recordOutput("Serializer/PosRots", inputs.position.in(Rotations));
+    Logger.recordOutput("Serializer/VelRotsPerSec", inputs.velocity.in(RotationsPerSecond));
 
     super.periodic();
+  }
+
+  @Override
+  public SysIdRoutine getRoutine() {
+    return sysIdRoutine;
   }
 }

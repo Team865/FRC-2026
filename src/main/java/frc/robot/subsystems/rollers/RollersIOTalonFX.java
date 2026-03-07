@@ -90,7 +90,7 @@ public class RollersIOTalonFX implements RollersIO {
   }
 
   @Override
-  public void setControlConstants(double kV, double kA, double kS, double kP, double kD) {
+  public void setControlConstants(double kS, double kV, double kA, double kP, double kD) {
     config.Slot0.kS = kS;
     config.Slot0.kV = kV;
     config.Slot0.kA = kA;

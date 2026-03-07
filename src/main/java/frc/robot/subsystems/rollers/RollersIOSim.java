@@ -79,7 +79,7 @@ public class RollersIOSim implements RollersIO {
   }
 
   @Override
-  public void setControlConstants(double kV, double kA, double kS, double kP, double kD) {
+  public void setControlConstants(double kS, double kV, double kA, double kP, double kD) {
     feedforward = new SimpleMotorFeedforward(kS, kV);
     feedback.setPID(kP, 0.0, kD);
   }

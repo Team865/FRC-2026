@@ -55,7 +55,7 @@ public final class Constants {
 
   public static class ControlSystemConstants {
     public static final ControlSystemContext EMPTY_CONTEXT =
-        new ControlSystemContext(0, 0, 0, 0, 0, 0, Optional.empty(), Optional.empty());
+        new ControlSystemContext(0, 0, 0, 0, 0, 0, Optional.of(0.0), Optional.of(0.0));
     public final ControlSystemContext REAL_CONTEXT;
     public final ControlSystemContext SIM_CONTEXT;
 

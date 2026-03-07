@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.leds.LEDConstants.PresetColor;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.HubActive;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -34,7 +35,6 @@ public class Robot extends LoggedRobot {
   private double teleopStartTime;
 
   public Robot() {
-
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
     Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -71,6 +71,8 @@ public class Robot extends LoggedRobot {
         break;
     }
 
+    SmartDashboard.putBoolean("MATCH WON", false);
+
     // Start AdvantageKit logger
     Logger.start();
 
@@ -102,7 +104,6 @@ public class Robot extends LoggedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
-
     robotContainer.throttleCameras(VisionConstants.disabledThrottleAmount);
   }
 
@@ -111,6 +112,12 @@ public class Robot extends LoggedRobot {
   public void disabledPeriodic() {
     SmartDashboard.putBoolean("RobotEnabled", false);
     SmartDashboard.putBoolean("Hub Active", false);
+
+    if (SmartDashboard.getBoolean("MATCH WON", false)) {
+      robotContainer.leds.updateRainbowWave();
+    } else {
+      robotContainer.leds.updateAllianceColorWave();
+    }
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -134,6 +141,7 @@ public class Robot extends LoggedRobot {
   public void teleopInit() {
     robotContainer.throttleCameras(0);
     SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
+
     teleopStartTime = Timer.getFPGATimestamp();
     HubActive.randomizeOnTeleop();
     if (autonomousCommand != null) {
@@ -144,6 +152,12 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    robotContainer.leds.updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.3, 2);
+
+    // var colors = PresetColor.values();
+    // int colorIndex = (int) (Timer.getFPGATimestamp() * 2) % colors.length;
+    // robotContainer.leds.setAll(colors[colorIndex].color);
+
     SmartDashboard.putBoolean("RobotEnabled", DriverStation.isEnabled());
     double teleopTimeElapsedSeconds;
     boolean isFMSAttached = DriverStation.isFMSAttached();

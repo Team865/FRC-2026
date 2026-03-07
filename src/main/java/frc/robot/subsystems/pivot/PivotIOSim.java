@@ -63,6 +63,7 @@ public class PivotIOSim implements PivotIO {
   @Override
   public void stop() {
     this.appliedVolts = 0.0;
+    this.voltageOverridesTarget = true;
   }
 
   @Override
