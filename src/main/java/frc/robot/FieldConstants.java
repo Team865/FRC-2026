@@ -38,12 +38,19 @@ public class FieldConstants {
   public static final double aprilTagWidth = Units.inchesToMeters(6.5);
   public static final List<Integer> hubTagIds =
       Arrays.asList(18, 19, 20, 21, 24, 25, 26, 27, 23); // tags for blue hub
+
+      
   // Scoring element positions
-  public static final Pose2d allianceHubPose =
+  public static final Pose2d allianceHubPoseBlue =
       new Pose2d(
           Units.inchesToMeters(182.11),
-          fieldWidth / 2.0,
+          Units.inchesToMeters(158.845),
           Rotation2d.fromDegrees(180)); // Towards origin
+    public static final Pose2d allianceHubPoseRed =
+      new Pose2d(
+          Units.inchesToMeters(469.11),
+          Units.inchesToMeters(158.845),
+          Rotation2d.fromDegrees(0)); // Away from origin
 
   public static final Pose2d allianceRightClimbPose =
       new Pose2d(

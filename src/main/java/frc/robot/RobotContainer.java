@@ -89,10 +89,10 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandXboxController operatorController = new CommandXboxController(1);
 
-  // Log field element positions
+  // Log field element positions 
   @AutoLogOutput(key = "currentAllianceHubPose")
   public Pose2d getAllianceHubPose() {
-    return AllianceFlipUtil.apply(FieldConstants.allianceHubPose);
+    return (AllianceFlipUtil.shouldFlip()? FieldConstants.allianceHubPoseRed: FieldConstants.allianceHubPoseBlue) ;
   }
 
   @AutoLogOutput(key = "currentAllianceRightClimbPose")
