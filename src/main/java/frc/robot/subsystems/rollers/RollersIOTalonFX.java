@@ -2,6 +2,8 @@ package frc.robot.subsystems.rollers;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -84,10 +86,17 @@ public class RollersIOTalonFX implements RollersIO {
                 .isOK());
 
     inputs.position = position.getValue();
-    inputs.velocity = velocity.getValue();
+    inputs.angularVelocity = velocity.getValue();
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrent.getValueAsDouble();
     inputs.torqueCurrentAmps = torqueCurrent.getValueAsDouble();
+
+    inputs.linearVelocity =
+        MetersPerSecond.of(
+            inputs.angularVelocity.in(RadiansPerSecond) * specs.rollerRadiusMeters());
+
+    // inputs.positionRots = inputs.position.in(Rotations);
+    // inputs.velocityRotsPerSec = inputs.angularVelocity.in(RotationsPerSecond);
   }
 
   @Override

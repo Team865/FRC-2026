@@ -1,5 +1,6 @@
 package frc.robot.subsystems.rollers;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -13,11 +14,15 @@ public interface RollersIO {
   @AutoLog
   class RollersIOInputs {
     public Angle position = Rotations.zero();
-    public AngularVelocity velocity = RotationsPerSecond.zero();
+    public AngularVelocity angularVelocity = RotationsPerSecond.zero();
+    public LinearVelocity linearVelocity = MetersPerSecond.zero();
     public double appliedVoltage = 0.0;
     public double supplyCurrentAmps = 0.0;
     public double torqueCurrentAmps = 0.0;
     public boolean connected = false;
+
+    // public double positionRots = 0.0;
+    // public double velocityRotsPerSec = 0.0;
   }
 
   public default void updateInputs(RollersIOInputsAutoLogged inputs) {}

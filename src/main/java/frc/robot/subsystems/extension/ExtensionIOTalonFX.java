@@ -71,10 +71,18 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     voltageSignal = talon.getMotorVoltage();
     supplyCurrentSignal = talon.getSupplyCurrent();
     statorCurrentSignal = talon.getStatorCurrent();
-    
+    PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(0.0));
     talon.optimizeBusUtilization();
-    PhoenixUtil.tryUntilOk(5, 
-      () -> BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50.0), positionAngleSignal, angularVelocitySignal, voltageSignal, supplyCurrentSignal, statorCurrentSignal));
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                Hertz.of(50.0),
+                positionAngleSignal,
+                angularVelocitySignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal));
   }
 
   @Override
@@ -113,6 +121,9 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     inputs.appliedVoltage = voltageSignal.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentSignal.getValueAsDouble();
+
+    // inputs.positionRots = positionAngleSignal.getValue().in(Rotations);
+    // inputs.velocityRotsPerSec = angularVelocitySignal.getValue().in(RotationsPerSecond);
   }
 
   @Override
@@ -122,11 +133,15 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     config.Slot0.kA = kA;
     config.Slot0.kP = kP;
     config.Slot0.kD = kD;
+
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
   }
 
   @Override
   public void setMotionProfile(double maxVelocity, double maxAcceleration) {
     config.MotionMagic.MotionMagicCruiseVelocity = maxVelocity;
     config.MotionMagic.MotionMagicAcceleration = maxAcceleration;
+
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
   }
 }

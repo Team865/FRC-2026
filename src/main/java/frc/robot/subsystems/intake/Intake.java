@@ -98,5 +98,10 @@ public class Intake extends SubsystemBase {
         extensionKa,
         extensionKp,
         extensionKd);
+    LoggedTunableNumber.ifChanged(
+        id,
+        c -> extension.io.setMotionProfile(c[0], c[1]),
+        extensionMaxVelocity,
+        extensionMaxAcceleration);
   }
 }

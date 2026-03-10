@@ -65,8 +65,16 @@ public class ClimberIOTalonFX implements ClimberIO {
     statorCurrentSignal = talon.getStatorCurrent();
 
     talon.optimizeBusUtilization();
-    PhoenixUtil.tryUntilOk(5, 
-      () -> BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50.0), positionMetersSignal, velocityMetersPerSecSignal, voltageSignal, supplyCurrentSignal, statorCurrentSignal));
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                Hertz.of(50.0),
+                positionMetersSignal,
+                velocityMetersPerSecSignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal));
   }
 
   @Override

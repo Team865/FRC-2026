@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
@@ -20,12 +21,11 @@ public final class IntakeConstants {
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
-            ControlSystemConstants.EMPTY_CONTEXT,
-            new ControlSystemContext(
-                0.12, 0.01, 0.2, 0.0, 0.1, 0.0, Optional.empty(), Optional.empty()));
+            new ControlSystemContext(0.24252, 0.005021, 0.30791, 0.0, 1.0, 0.0),
+            new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 0.1, 0.0));
 
     public static final RollersSpecifications ROLLER_SPECS =
-        new RollersSpecifications(16.0 / 24.0, false, Units.inchesToMeters(1.0));
+        new RollersSpecifications(2.0, false, Units.inchesToMeters(1.0));
 
     public static final LinearVelocity MINIMUM_INTAKE_SPEED = MetersPerSecond.of(1.0);
     public static final double DRIVETRAIN_TO_INTAKE_SPEED_FACTOR = 2;
@@ -35,16 +35,17 @@ public final class IntakeConstants {
     public static final int MOTOR_CAN_ID = 15;
 
     public static final Distance STOWED_POSITION = Meters.zero();
-    public static final Distance DEPLOYED_POSITION = Meters.of(0.5);
+    public static final Distance DEPLOYED_POSITION = Inches.of(12.25);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
-            ControlSystemConstants.EMPTY_CONTEXT,
+            new ControlSystemContext(
+                1.58, 0.77978, 0.47165, 0.0, 1, 0, Optional.of(0.5), Optional.of(10.0)),
             new ControlSystemContext(
                 0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(5.0), Optional.of(20.0)));
 
     public static final ExtensionSpecifications EXTENSION_SPECS =
-        new ExtensionSpecifications(20.0, Units.inchesToMeters(1.0), true);
+        new ExtensionSpecifications(20.0, Units.inchesToMeters(1.0), false);
   }
 
   private IntakeConstants() {}

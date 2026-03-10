@@ -26,6 +26,13 @@ public class ShootingLogger {
     csvBuilder.append(
         "DISTANCE (METERS),HOOD ANGLE (RADIANS),FLYWHEEL VELOCITY (RADIANS PER SECOND)\n");
 
+    // Sort measurements
+    measurements.sort(
+        (m1, m2) ->
+            (int)
+                ((m2.flywheelVelocityRadsPerSec() - m1.flywheelVelocityRadsPerSec()) * 1000000000
+                    + (m2.distanceMeters() - m1.distanceMeters()) * 1000));
+
     for (Measurement measurement : measurements) {
       csvBuilder.append(
           String.format(

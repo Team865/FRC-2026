@@ -50,7 +50,7 @@ public class Serializer extends Rollers implements SysIdTestable {
         id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
 
     Logger.recordOutput("Serializer/PosRots", inputs.position.in(Rotations));
-    Logger.recordOutput("Serializer/VelRotsPerSec", inputs.velocity.in(RotationsPerSecond));
+    Logger.recordOutput("Serializer/VelRotsPerSec", inputs.angularVelocity.in(RotationsPerSecond));
 
     super.periodic();
   }

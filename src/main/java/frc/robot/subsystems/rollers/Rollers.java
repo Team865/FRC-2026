@@ -7,6 +7,9 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.SysIdBuilder;
+import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -18,10 +21,18 @@ public class Rollers extends SubsystemBase {
 
   protected final Alert motorDisconnectedAlert;
 
+  // private final SysIdRoutine sysIdRoutine;
+
   public Rollers(String name, RollersIO io) {
     this.name = name;
     this.io = io;
     this.motorDisconnectedAlert = new Alert(name + " motor disconnected.", AlertType.kError);
+
+    // sysIdRoutine =
+    //     new SysIdBuilder(this, io::setVolts)
+    //         .withDynamicStepVoltage(9.0)
+    //         .withQuasistaticRampRate(0.5)
+    //         .build();
   }
 
   public Command setVolts(double volts) {
@@ -62,4 +73,9 @@ public class Rollers extends SubsystemBase {
   public Angle getPosition() {
     return inputs.position;
   }
+
+  // @Override
+  // public SysIdRoutine getRoutine() {
+  //   return sysIdRoutine;
+  // }
 }
