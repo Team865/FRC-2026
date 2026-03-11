@@ -100,7 +100,8 @@ public class Drive extends SubsystemBase {
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-  private final SysIdRoutine sysId;
+  private final SysIdRoutine driveSysId;
+  private final SysIdRoutine turnSysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
@@ -121,7 +122,7 @@ public class Drive extends SubsystemBase {
           new Pose2d(FieldConstants.fieldLength, FieldConstants.fieldWidth, Rotation2d.k180deg));
 
   // For controlling drive speed
-  private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts;
+  private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts.times(0.8);
 
   private boolean shouldReseedOnRotationStop = false;
 
@@ -182,15 +183,25 @@ public class Drive extends SubsystemBase {
           field.getObject("Path").setPoses(poses);
         });
     // Configure SysId
-    sysId =
+    driveSysId =
         new SysIdRoutine(
             new SysIdRoutine.Config(
+                Volts.of(3.0).per(Second),
+                Volts.of(15.0),
                 null,
-                null,
-                null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                (state) -> Logger.recordOutput("Drive/DriveSysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+                (voltage) -> runDriveCharacterization(voltage.in(Volts)), null, this));
+
+    turnSysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                Volts.of(3.0).per(Second),
+                Volts.of(15.0),
+                null,
+                (state) -> Logger.recordOutput("Drive/TurnSysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> runTurnCharacterization(voltage.in(Volts)), null, this));
   }
 
   @Override
@@ -289,9 +300,15 @@ public class Drive extends SubsystemBase {
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
-  public void runCharacterization(double output) {
+  public void runDriveCharacterization(double output) {
     for (int i = 0; i < 4; i++) {
-      modules[i].runCharacterization(output);
+      modules[i].runDriveCharacterization(output);
+    }
+  }
+
+  public void runTurnCharacterization(double output) {
+    for (int i = 0; i < 4; i++) {
+      modules[i].runTurnCharacterization(output);
     }
   }
 
@@ -314,15 +331,31 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns a command to run a quasistatic test in the specified direction. */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0))
+  public Command driveSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> runDriveCharacterization(0.0))
         .withTimeout(1.0)
-        .andThen(sysId.quasistatic(direction));
+        .andThen(driveSysId.quasistatic(direction));
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
+  public Command driveSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> runDriveCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(driveSysId.dynamic(direction));
+  }
+
+  /** Returns a command to run a quasistatic test in the specified direction. */
+  public Command turnSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> runTurnCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(turnSysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command turnSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> runTurnCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(turnSysId.dynamic(direction));
   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */

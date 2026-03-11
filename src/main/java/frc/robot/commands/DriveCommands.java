@@ -12,7 +12,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -48,7 +47,7 @@ public class DriveCommands {
 
   private DriveCommands() {}
 
-  private static Translation2d getLinearVelocityFromJoysticks(Drive drive, double x, double y) {
+  public static Translation2d getLinearVelocityFromJoysticks(Drive drive, double x, double y) {
     if (Constants.shouldUseLockoutZones()) {
       // Apply lockout
       Translation2d robotTranslation = drive.getPose().getTranslation();
@@ -70,13 +69,17 @@ public class DriveCommands {
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
-    // Square magnitude for more precise control
-    linearMagnitude = linearMagnitude * linearMagnitude;
+    // Cube magnitude for more precise control
+    linearMagnitude = Math.abs(linearMagnitude * linearMagnitude * linearMagnitude);
 
     // Return new linear velocity
-    return new Pose2d(Translation2d.kZero, linearDirection)
-        .transformBy(new Transform2d(linearMagnitude, 0.0, Rotation2d.kZero))
-        .getTranslation();
+    return new Translation2d(linearMagnitude, linearDirection);
+  }
+
+  public static double getLinearVelocityMagnitude(double x, double y) {
+    double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+
+    return Math.abs(linearMagnitude * linearMagnitude * linearMagnitude);
   }
 
   public static Command resetGyro(Drive drive) {
@@ -95,34 +98,7 @@ public class DriveCommands {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    return Commands.run(
-        () -> {
-          // Get linear velocity
-          Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(
-                  drive, xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-          // Apply rotation deadband
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-
-          // Square rotation value for more precise control
-          omega = Math.copySign(omega * omega, omega);
-
-          // Convert to field relative speeds & send command
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega * drive.getMaxAngularSpeedRadPerSec());
-          boolean isFlipped = AllianceFlipUtil.shouldFlip();
-          drive.runVelocity(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  speeds,
-                  isFlipped
-                      ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                      : drive.getRotation()));
-        },
-        drive);
+    return new JoystickDrive(drive, xSupplier, ySupplier, omegaSupplier);
   }
 
   /**
@@ -217,7 +193,7 @@ public class DriveCommands {
         // Allow modules to orient
         Commands.run(
                 () -> {
-                  drive.runCharacterization(0.0);
+                  drive.runDriveCharacterization(0.0);
                 },
                 drive)
             .withTimeout(FF_START_DELAY),
@@ -229,7 +205,7 @@ public class DriveCommands {
         Commands.run(
                 () -> {
                   double voltage = timer.get() * FF_RAMP_RATE;
-                  drive.runCharacterization(voltage);
+                  drive.runDriveCharacterization(voltage);
                   velocitySamples.add(drive.getFFCharacterizationVelocity());
                   voltageSamples.add(voltage);
                 },

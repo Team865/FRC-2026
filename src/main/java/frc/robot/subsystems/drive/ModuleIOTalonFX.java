@@ -208,6 +208,12 @@ public class ModuleIOTalonFX implements ModuleIO {
     inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
     inputs.turnCurrentAmps = turnCurrent.getValueAsDouble();
 
+    inputs.drivePositionRots = drivePosition.getValueAsDouble();
+    inputs.driveVelocityRotsPerSec = drivePosition.getValueAsDouble();
+
+    inputs.steerPositionRots = turnPosition.getValueAsDouble();
+    inputs.steerPositionRotsPerSec = turnVelocity.getValueAsDouble();
+
     // Update odometry inputs
     inputs.odometryTimestamps =
         timestampQueue.stream().mapToDouble((Double value) -> value).toArray();

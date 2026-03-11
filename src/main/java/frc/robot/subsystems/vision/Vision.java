@@ -4,14 +4,19 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.VisionUtil;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
   private final VisionIO[] io;
@@ -63,59 +68,51 @@ public class Vision extends SubsystemBase {
     return idx;
   }
 
-  // public double getTurretTxDegrees() {
-  //   return turretTxDegrees;
-  // }
-
-  // public int getTurretSeenTagId() {
-  //   return turretSeenTagId;
-  // }
-
   @Override
   public void periodic() {
-    // List<Pose3d> allTagPoses = new LinkedList<>();
-    // List<Pose3d> allRobotPoses = new LinkedList<>();
-    // List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-    // List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+    List<Pose3d> allTagPoses = new LinkedList<>();
+    List<Pose3d> allRobotPoses = new LinkedList<>();
+    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
+    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
 
-    // for (int i = 0; i < io.length; i++) {
-    //   io[i].updateInputs(inputs[i]);
-    //   String cameraName = io[i].getName();
-    //   Logger.processInputs("Vision/" + cameraName, inputs[i]);
-    //   disconnectedAlerts[i].set(!inputs[i].connected);
+    for (int i = 0; i < io.length; i++) {
+      io[i].updateInputs(inputs[i]);
+      String cameraName = io[i].getName();
+      Logger.processInputs("Vision/" + cameraName, inputs[i]);
+      disconnectedAlerts[i].set(!inputs[i].connected);
 
-    //   List<Pose3d> tagPoses = new LinkedList<>();
-    //   for (int tagId : inputs[i].tagIds) {
-    //     VisionConstants.aprilTagLayout.getTagPose(tagId).ifPresent(tagPoses::add);
-    //   }
+      List<Pose3d> tagPoses = new LinkedList<>();
+      for (int tagId : inputs[i].tagIds) {
+        VisionConstants.aprilTagLayout.getTagPose(tagId).ifPresent(tagPoses::add);
+      }
 
-    //   VisionConsumer consumer = cameraConsumers.get(cameraName);
-    //   if (consumer == null) continue;
-    //   VisionUtil.PoseProcessingResult poseResult =
-    //       VisionUtil.processPoseObservations(inputs[i], consumer, i);
+      VisionConsumer consumer = cameraConsumers.get(cameraName);
+      if (consumer == null) continue;
+      VisionUtil.PoseProcessingResult poseResult =
+          VisionUtil.processPoseObservations(inputs[i], consumer, i);
 
-    //   Logger.recordOutput("Vision/" + cameraName + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
-    //   Logger.recordOutput(
-    //       "Vision/" + cameraName + "/RobotPoses", poseResult.all.toArray(new Pose3d[0]));
-    //   Logger.recordOutput(
-    //       "Vision/" + cameraName + "/RobotPosesAccepted",
-    //       poseResult.accepted.toArray(new Pose3d[0]));
-    //   Logger.recordOutput(
-    //       "Vision/" + cameraName + "/RobotPosesRejected",
-    //       poseResult.rejected.toArray(new Pose3d[0]));
+      Logger.recordOutput("Vision/" + cameraName + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
+      Logger.recordOutput(
+          "Vision/" + cameraName + "/RobotPoses", poseResult.all.toArray(new Pose3d[0]));
+      Logger.recordOutput(
+          "Vision/" + cameraName + "/RobotPosesAccepted",
+          poseResult.accepted.toArray(new Pose3d[0]));
+      Logger.recordOutput(
+          "Vision/" + cameraName + "/RobotPosesRejected",
+          poseResult.rejected.toArray(new Pose3d[0]));
 
-    //   allTagPoses.addAll(tagPoses);
-    //   allRobotPoses.addAll(poseResult.all);
-    //   allRobotPosesAccepted.addAll(poseResult.accepted);
-    //   allRobotPosesRejected.addAll(poseResult.rejected);
-    // }
+      allTagPoses.addAll(tagPoses);
+      allRobotPoses.addAll(poseResult.all);
+      allRobotPosesAccepted.addAll(poseResult.accepted);
+      allRobotPosesRejected.addAll(poseResult.rejected);
+    }
 
-    // Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
-    // Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
-    // Logger.recordOutput(
-    //     "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
-    // Logger.recordOutput(
-    //     "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
+    Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
+    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
+    Logger.recordOutput(
+        "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
+    Logger.recordOutput(
+        "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
   }
 
   // private void updateTurretTracking() {

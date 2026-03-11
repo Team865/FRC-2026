@@ -97,7 +97,9 @@ public class PivotIOTalonFX implements PivotIO {
 
     this.targetAngle = angle;
     talon.setControl(
-        positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS));
+        positionRequest
+            // .withPosition(angle)
+            .withFeedForward(motorConfig.Slot0.kV * omegaRPS));
   }
 
   @Override

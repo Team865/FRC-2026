@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -83,9 +81,9 @@ public class Superstructure extends SubsystemBase {
     this.flywheel = flywheel;
     this.hubPoseSupplier = hubPoseSupplier;
 
-    // configureStateRequirements();
-    // configureStateBehaviours();
-    // configureGameStateTriggers();
+    configureStateRequirements();
+    configureStateBehaviours();
+    configureGameStateTriggers();
   }
 
   /** Configure the requirements of each state */
@@ -104,7 +102,7 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine.stateRequirements.put(
         IntakingState.STOWING, StateMachine.STATE_ALWAYS_AVAILABLE);
     intakingStateMachine.stateRequirements.put(
-        IntakingState.DEPLOYING, () -> !intakingStateMachine.isInState(IntakingState.INTAKING));
+        IntakingState.DEPLOYING, StateMachine.STATE_ALWAYS_AVAILABLE);
     intakingStateMachine.stateRequirements.put(
         IntakingState.INTAKE_READY, () -> intakingStateMachine.isInState(IntakingState.INTAKING));
     intakingStateMachine.stateRequirements.put(
@@ -122,7 +120,9 @@ public class Superstructure extends SubsystemBase {
         .whileFalse( // When the shooting state isn't idle,
             turret.lockOntoTarget( // Have the turret track the target
                 () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
-                () -> RadiansPerSecond.of(drive.getAngularVelocityRadPerSec())))
+                () ->
+                    ShootingUtil.getAngularVelocityCompensation(
+                        drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds())))
         .whileFalse( // Have the hood track the target
             hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromShootingTarget)))
         .whileFalse(
@@ -142,8 +142,8 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .whileTrue(ballTunneler.runTunneler());
-    // .whileTrue(serializer.runSerializer());
+        .whileTrue(ballTunneler.runTunneler())
+        .whileTrue(serializer.runSerializer());
 
     // Intaking state
     intakingStateMachine
@@ -178,9 +178,8 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void configureGameStateTriggers() {
-    new Trigger(() -> DriverStation.isTeleopEnabled())
-        .onTrue(forceState(ShootingState.IDLE))
-        .onTrue(forceState(IntakingState.DEPLOYING));
+    new Trigger(() -> DriverStation.isTeleopEnabled()).onTrue(forceState(ShootingState.IDLE));
+    // .onTrue(forceState(IntakingState.DEPLOYING));
   }
 
   /** A command that requests a state for the shooting state machine */

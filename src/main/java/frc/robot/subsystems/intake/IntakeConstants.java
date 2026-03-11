@@ -40,9 +40,9 @@ public final class IntakeConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                1.58, 0.77978, 0.47165, 0.0, 1, 0, Optional.of(0.5), Optional.of(10.0)),
+                1.9, 0.0, 0.47165, 0.0, 2.0, 0, Optional.of(12.0), Optional.of(48.0)),
             new ControlSystemContext(
-                0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(5.0), Optional.of(20.0)));
+                0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(2.0), Optional.of(20.0)));
 
     public static final ExtensionSpecifications EXTENSION_SPECS =
         new ExtensionSpecifications(20.0, Units.inchesToMeters(1.0), false);
