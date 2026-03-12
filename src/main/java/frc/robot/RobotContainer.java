@@ -8,13 +8,14 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
@@ -129,6 +130,7 @@ public class RobotContainer {
         //         new ModuleIO() {},
         //         new ModuleIO() {},
         //         new ModuleIO() {});
+
         // Real robot, instantiate hardware IO implementations
         // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
         // a CANcoder
@@ -143,11 +145,13 @@ public class RobotContainer {
         intake =
             new Intake(
                 new RollersIOTalonFX(
-                    IntakeConstants.Rollers.CAN_ID, "rio", IntakeConstants.Rollers.ROLLER_SPECS),
+                    IntakeConstants.Rollers.CAN_ID,
+                    IntakeConstants.Rollers.CANBUS,
+                    IntakeConstants.Rollers.ROLLER_SPECS),
                 // new ExtensionIO() {
                 new ExtensionIOTalonFX(
                     IntakeConstants.Extension.MOTOR_CAN_ID,
-                    IntakeConstants.CANBUS,
+                    IntakeConstants.Extension.CANBUS,
                     IntakeConstants.Extension.EXTENSION_SPECS));
 
         serializer =
@@ -192,27 +196,7 @@ public class RobotContainer {
         //     () ->
         //         drive.getPose().getRotation().plus(new Rotation2d(turret.getOrientation())),
         //     false));
-        // vision =
-        //     Vision.createPerCameraVision(
-        //         drive,
-        //         new VisionIO() {
-        //           @Override
-        //           public String getName() {
-        //             return "limelight-left";
-        //           }
-        //         },
-        //         new VisionIO() {
-        //           @Override
-        //           public String getName() {
-        //             return "limelight-right";
-        //           }
-        //         },
-        //         new VisionIO() {
-        //           @Override
-        //           public String getName() {
-        //             return "limelight-turret";
-        //           }
-        //         });
+
         hood =
             new Hood(
                 new PivotIOTalonFX(
@@ -325,26 +309,16 @@ public class RobotContainer {
             turret,
             hood,
             flywheel,
+            leds,
             () -> getAllianceHubPose());
 
-    // NamedCommands.registerCommand("StowIntake",
-    // superstructure.requestState(IntakingState.STOWED));
-    // NamedCommands.registerCommand(
-    //     "DeployIntake", superstructure.requestState(IntakingState.INTAKE_READY));
+    NamedCommands.registerCommand("StowIntake", superstructure.requestState(IntakingState.STOWED));
+    NamedCommands.registerCommand(
+        "DeployIntake", superstructure.requestState(IntakingState.INTAKING));
 
-    // NamedCommands.registerCommand(
-    //     "StopIntaking", superstructure.requestState(IntakingState.INTAKE_READY));
-    // NamedCommands.registerCommand(
-    //     "StartIntaking", superstructure.requestState(IntakingState.INTAKING));
-
-    // NamedCommands.registerCommand("EnableShooting", superstructure.toggleShootingMode());
-    // NamedCommands.registerCommand(
-    //     "DisableShooting", superstructure.requestState(ShootingState.IDLE));
-
-    // NamedCommands.registerCommand(
-    //     "StartShooting", superstructure.requestState(ShootingState.SHOOTING));
-    // NamedCommands.registerCommand(
-    //     "StopShooting", superstructure.requestState(ShootingState.READY_TO_SHOOT));
+    NamedCommands.registerCommand(
+        "StartShooting", superstructure.requestState(ShootingState.SHOOTING));
+    NamedCommands.registerCommand("StopShooting", superstructure.requestState(ShootingState.IDLE));
 
     // NamedCommands.registerCommand("ExtendClimber", climber.extend());
     // NamedCommands.registerCommand("RetractClimber", climber.retract());
@@ -352,32 +326,31 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // Set up SysId routines
-    // autoChooser.addOption(
-    //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    // autoChooser.addOption(
-    //     "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.driveSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.driveSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.driveSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.driveSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // // Set up SysId routines
 
-    autoChooser.addOption(
-        "Turn SysId (Quasistatic Forward)",
-        drive.turnSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turn SysId (Quasistatic Reverse)",
-        drive.turnSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Turn SysId (Dynamic Forward)", drive.turnSysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Turn SysId (Dynamic Reverse)", drive.turnSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Forward)",
+    //     drive.driveSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Reverse)",
+    //     drive.driveSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Forward)",
+    // drive.driveSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Reverse)",
+    // drive.driveSysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+    // autoChooser.addOption(
+    //     "Turn SysId (Quasistatic Forward)",
+    //     drive.turnSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Turn SysId (Quasistatic Reverse)",
+    //     drive.turnSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Turn SysId (Dynamic Forward)", drive.turnSysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Turn SysId (Dynamic Reverse)", drive.turnSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
     // SysIdRegister.register(autoChooser, serializer, "Serializer");
@@ -409,12 +382,6 @@ public class RobotContainer {
         () -> getAllianceHubPose(),
         () -> getDistanceFromHub());
 
-    // driverController.y().toggleOnTrue(leds.allianceColorWaveCommand());
-    // driverController.a().toggleOnTrue(leds.testColour());
-
-    // if (true) return;
-
-    // [[[[[[[[RE-ADD THESE BINDINGS ONCE ROBOT IS COMPLETE]]]]]]]]
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
@@ -446,97 +413,59 @@ public class RobotContainer {
     //                 ShootingUtil.getAngularVelocityCompensation(
     //                     drive.getPose(), getAllianceHubPose(), drive.getChassisSpeeds())));
 
-    // driverController.y().whileTrue(new DriveToPose(() -> getAllianceRightClimbPose(), drive));
-
-    // turret.setDefaultCommand(turret.runVoltage(() -> -driverController.getLeftX()));
-    // hood.setDefaultCommand(hood.runVoltage(() -> driverController.getRightY()));
-
-    // driverController
-    //     .rightTrigger()
-    //     .whileTrue(ballTunneler.runTunneler())
-    //     .whileTrue(flywheel.runVelocity(RadiansPerSecond.of(350)));
-
-    // if (true) return;
-    // driverController
-    //     .y()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -driverController.getLeftY(),
-    //             () -> -driverController.getLeftX(),
-    //             () -> Rotation2d.kZero));
-    // driverController
-    //     .a()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -driverController.getLeftY(),
-    //             () -> -driverController.getLeftX(),
-    //             () -> Rotation2d.k180deg));
-    // driverController
-    //     .x()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -driverController.getLeftY(),
-    //             () -> -driverController.getLeftX(),
-    //             () -> Rotation2d.kCCW_90deg));
-    // driverController
-    //     .b()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -driverController.getLeftY(),
-    //             () -> -driverController.getLeftX(),
-    //             () -> Rotation2d.kCW_90deg));
-
-    // driverController
-    //     .rightTrigger()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -driverController.getLeftY(),
-    //             () -> -driverController.getLeftX(),
-    //             () -> {
-    //               Translation2d lookatVector =
-    //
-    // getAllianceHubPose().getTranslation().minus(drive.getPose().getTranslation());
-
-    //               return new Rotation2d(lookatVector.getX(), lookatVector.getY());
-    //             }));
-
-    // Shooting state reset
-    driverController.back().onTrue(superstructure.forceState(ShootingState.IDLE));
+    driverController
+        .y()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> Rotation2d.kZero));
+    driverController
+        .a()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> Rotation2d.k180deg));
+    driverController
+        .x()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> Rotation2d.kCCW_90deg));
+    driverController
+        .b()
+        .whileTrue(
+            DriveCommands.joystickDriveAtAngle(
+                drive,
+                () -> -driverController.getLeftY(),
+                () -> -driverController.getLeftX(),
+                () -> Rotation2d.kCW_90deg));
 
     // // Toggle bump mode
-    // driverController.rightBumper().onTrue(superstructure.toggleBumpMode());
-
-    // Toggle shooting mode
-    driverController.leftBumper().onTrue(superstructure.toggleShootingMode());
+    driverController.leftBumper().onTrue(superstructure.toggleBumpMode());
 
     // Start shooting and stop when let go
     driverController
         .rightTrigger()
         .whileTrue(superstructure.continuouslyRequestState(ShootingState.SHOOTING))
-        .onFalse(superstructure.requestState(ShootingState.READY_TO_SHOOT));
+        .onFalse(superstructure.requestState(ShootingState.IDLE));
 
-    // Climb
     driverController.povUp().onTrue(superstructure.forceState(IntakingState.STOWING));
     driverController.povDown().onTrue(superstructure.forceState(IntakingState.DEPLOYING));
 
-    driverController.y().onTrue(superstructure.requestState(IntakingState.INTAKING));
-    driverController.b().onTrue(superstructure.requestState(IntakingState.INTAKE_READY));
-
     // // OPERATOR CONTROLLER
-    // // State reset
-    // operatorController.back().onTrue(superstructure.requestState(IntakingState.STOWED));
-
-    // // Intake Slapdown
-    // operatorController.a().onTrue(superstructure.toggleIntakeArm());
-
-    // // Intake Rollers
-    // operatorController.y().onTrue(superstructure.requestState(IntakingState.INTAKING));
-    // operatorController.b().onTrue(superstructure.requestState(IntakingState.INTAKE_READY));
+    // turret.setDefaultCommand(turret.runVoltage(() -> -operatorController.getLeftX()));
+    // hood.setDefaultCommand(hood.runVoltage(() -> operatorController.getRightY()));
+    operatorController
+        .y()
+        .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
+    operatorController.a().whileTrue(serializer.runSerializer());
+    operatorController.x().whileTrue(ballTunneler.runTunneler());
   }
 
   /**

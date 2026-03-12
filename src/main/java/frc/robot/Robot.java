@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.leds.LEDConstants.PresetColor;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.HubActive;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -152,7 +151,6 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    robotContainer.leds.updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.3, 2);
 
     // var colors = PresetColor.values();
     // int colorIndex = (int) (Timer.getFPGATimestamp() * 2) % colors.length;

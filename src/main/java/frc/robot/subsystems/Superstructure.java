@@ -7,11 +7,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Superstructure.ShootingState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
+import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
@@ -24,11 +27,7 @@ public class Superstructure extends SubsystemBase {
   public static enum ShootingState {
     /** Requestable: Completely idle */
     IDLE,
-    /** Requestable: Start running flywheels and tracking target */
-    READYING_SHOOTER,
-    /** Intermediate & Requestable: Flywheels are at correct speed, still tracking target */
-    READY_TO_SHOOT,
-    /** Requestable: Run ball tunneler to start shooting, still tracking target */
+    /** Requestable: Rollers, Flywheels, Indexer running */
     SHOOTING
   }
 
@@ -58,6 +57,7 @@ public class Superstructure extends SubsystemBase {
   private final Turret turret;
   private final Hood hood;
   private final Flywheel flywheel;
+  private final LEDs leds;
   private final Supplier<Pose2d> hubPoseSupplier;
 
   private Pose2d shootingTarget = Pose2d.kZero;
@@ -71,6 +71,7 @@ public class Superstructure extends SubsystemBase {
       Turret turret,
       Hood hood,
       Flywheel flywheel,
+      LEDs leds,
       Supplier<Pose2d> hubPoseSupplier) {
     this.drive = drive;
     this.intake = intake;
@@ -79,6 +80,7 @@ public class Superstructure extends SubsystemBase {
     this.turret = turret;
     this.hood = hood;
     this.flywheel = flywheel;
+    this.leds = leds;
     this.hubPoseSupplier = hubPoseSupplier;
 
     configureStateRequirements();
@@ -91,12 +93,9 @@ public class Superstructure extends SubsystemBase {
     // Shooting
     shootingStateMachine.stateRequirements.put(
         ShootingState.IDLE, StateMachine.STATE_ALWAYS_AVAILABLE);
+
     shootingStateMachine.stateRequirements.put(
-        ShootingState.READYING_SHOOTER, () -> shootingStateMachine.isInState(ShootingState.IDLE));
-    shootingStateMachine.stateRequirements.put(
-        ShootingState.READY_TO_SHOOT, () -> shootingStateMachine.isInState(ShootingState.SHOOTING));
-    shootingStateMachine.stateRequirements.put(
-        ShootingState.SHOOTING, () -> shootingStateMachine.isInState(ShootingState.READY_TO_SHOOT));
+        ShootingState.SHOOTING, StateMachine.STATE_ALWAYS_AVAILABLE);
 
     // Intaking
     intakingStateMachine.stateRequirements.put(
@@ -104,46 +103,30 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine.stateRequirements.put(
         IntakingState.DEPLOYING, StateMachine.STATE_ALWAYS_AVAILABLE);
     intakingStateMachine.stateRequirements.put(
-        IntakingState.INTAKE_READY, () -> intakingStateMachine.isInState(IntakingState.INTAKING));
-    intakingStateMachine.stateRequirements.put(
-        IntakingState.INTAKING, () -> intakingStateMachine.isInState(IntakingState.INTAKE_READY));
+        IntakingState.INTAKING, StateMachine.STATE_ALWAYS_AVAILABLE);
   }
 
   /** Configure what the behaviours of each state are */
   private void configureStateBehaviours() {
     // Stop the flywheels when in Idle shooting state
-    shootingStateMachine.stateTriggers.get(ShootingState.IDLE).onTrue(flywheel.stop());
-
+    shootingStateMachine.stateTriggers.get(ShootingState.IDLE).onTrue(leds.idleWaveCommand());
     shootingStateMachine
         .stateTriggers
-        .get(ShootingState.IDLE)
-        .whileFalse( // When the shooting state isn't idle,
-            turret.lockOntoTarget( // Have the turret track the target
-                () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
-                () ->
-                    ShootingUtil.getAngularVelocityCompensation(
-                        drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds())))
-        .whileFalse( // Have the hood track the target
-            hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromShootingTarget)))
-        .whileFalse(
+        .get(ShootingState.SHOOTING)
+        .whileTrue(
             flywheel.runVelocity(
-                () ->
-                    ShootingUtil.getFlywheelVelocity(
-                        distanceFromShootingTarget))) // Spin up the flywheels
-        .onTrue(runOnce(() -> drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts)))
-        .onFalse(runOnce(() -> drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed)));
-
-    shootingStateMachine
-        .stateTriggers
-        .get(ShootingState.READYING_SHOOTER) // When the flywheels are getting spun up
-        .and(flywheel.atTargetVelocity()) // And they are at their target velocity
-        .onTrue(forceState(ShootingState.READY_TO_SHOOT)); // then we are ready to shoot
+                () -> ShootingUtil.getFlywheelVelocity(distanceFromShootingTarget)))
+        .whileTrue(ballTunneler.runTunneler())
+        .whileTrue(serializer.runSerializer())
+        .onFalse(runOnce(() -> drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts)))
+        .onTrue(runOnce(() -> drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed)))
+        .onTrue(runOnce(() -> leds.shootingWaveCommand()));
 
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .whileTrue(ballTunneler.runTunneler())
-        .whileTrue(serializer.runSerializer());
+        .and(intakingStateMachine.stateTriggers.get(IntakingState.STOWED))
+        .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
 
     // Intaking state
     intakingStateMachine
@@ -163,23 +146,16 @@ public class Superstructure extends SubsystemBase {
 
     intakingStateMachine
         .stateTriggers
-        .get(IntakingState.INTAKING)
+        .get(IntakingState.STOWED)
+        .negate()
         .whileTrue( // Run the intake based on drivetrain speed
             intake.runRollers(() -> drive.getChassisSpeeds()));
-
-    // shootingStateMachine
-    //     .stateTriggers
-    //     .get(ShootingState.IDLE)
-    //     .and(intakingStateMachine.stateTriggers.get(IntakingState.INTAKING).negate())
-    //     // While we are running the shooter in anyway (not Idle), or while we are running the
-    // intake
-    //     // rollers
-    //     .whileFalse(serializer.runSerializer());
   }
 
   private void configureGameStateTriggers() {
-    new Trigger(() -> DriverStation.isTeleopEnabled()).onTrue(forceState(ShootingState.IDLE));
-    // .onTrue(forceState(IntakingState.DEPLOYING));
+    new Trigger(() -> DriverStation.isTeleopEnabled())
+        .onTrue(forceState(ShootingState.IDLE))
+        .onTrue(forceState(IntakingState.DEPLOYING));
   }
 
   /** A command that requests a state for the shooting state machine */
@@ -212,19 +188,6 @@ public class Superstructure extends SubsystemBase {
     return intakingStateMachine.forceStateCommand(targetState);
   }
 
-  /** Toggles Shooting Mode */
-  public Command toggleShootingMode() {
-    return Commands.runOnce(
-        () -> {
-          if (shootingStateMachine.isInState(ShootingState.IDLE)) {
-            shootingStateMachine.requestState(ShootingState.READYING_SHOOTER);
-          } else {
-            shootingStateMachine.requestState(ShootingState.IDLE);
-          }
-        },
-        shootingStateMachine);
-  }
-
   public Command toggleBumpMode() {
     return runOnce(
         () -> {
@@ -240,7 +203,7 @@ public class Superstructure extends SubsystemBase {
         });
   }
 
-  public Command toggleIntakeArm() {
+  public Command toggleIntakeExtension() {
     return Commands.runOnce(
         () -> {
           if (intakingStateMachine.isInState(IntakingState.STOWING)
@@ -255,14 +218,19 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (!shootingStateMachine.isInState(ShootingState.IDLE)) {
-      shootingTarget =
-          ShootingUtil.correctTargetPoseWhileMoving(
-              hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
-      distanceFromShootingTarget =
-          shootingTarget.getTranslation().getDistance(drive.getPose().getTranslation());
-    }
+    shootingTarget =
+        ShootingUtil.correctTargetPoseWhileMoving(
+            hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
+
+    distanceFromShootingTarget =
+        shootingTarget.getTranslation().getDistance(drive.getPose().getTranslation());
+    turret.lockOntoTarget( // Have the turret track the target
+        () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
+        () ->
+            ShootingUtil.getAngularVelocityCompensation(
+                drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds()));
+    hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromShootingTarget));
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());

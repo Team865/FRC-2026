@@ -1,7 +1,6 @@
 package frc.robot.util;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
@@ -65,10 +64,10 @@ public class ShopTesting {
     // driverController
     //     .rightTrigger()
     //     .whileTrue(intake.rollers.runVolts(() -> rollersTestVoltage.get()));
-    driverController
-        .rightTrigger()
-        .whileTrue(
-            intake.rollers.runLinearVelocity(() -> MetersPerSecond.of(rollersTestVelMPS.get())));
+    // driverController
+    //     .rightTrigger()
+    //     .whileTrue(
+    //         intake.rollers.runLinearVelocity(() -> MetersPerSecond.of(rollersTestVelMPS.get())));
     // driverController.povUp().whileTrue(intake.stow());
     // driverController.povDown().onTrue(intake.deploy());
 
@@ -105,7 +104,7 @@ public class ShopTesting {
     Subsystem proxySubsystem = new Subsystem() {};
 
     driverController
-        .a()
+        .rightBumper()
         .onTrue(
             Commands.runOnce(
                 new Runnable() {

@@ -14,10 +14,10 @@ import frc.robot.subsystems.rollers.RollersSpecifications;
 import java.util.Optional;
 
 public final class IntakeConstants {
-  public static final String CANBUS = "CANivore";
 
   public static final class Rollers {
     public static final int CAN_ID = 14;
+    public static final String CANBUS = "rio";
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
@@ -28,11 +28,13 @@ public final class IntakeConstants {
         new RollersSpecifications(2.0, false, Units.inchesToMeters(1.0));
 
     public static final LinearVelocity MINIMUM_INTAKE_SPEED = MetersPerSecond.of(1.0);
+    public static final LinearVelocity AGITATING_VELOCITY = MetersPerSecond.of(4.0);
     public static final double DRIVETRAIN_TO_INTAKE_SPEED_FACTOR = 2;
   }
 
   public static final class Extension {
     public static final int MOTOR_CAN_ID = 15;
+    public static final String CANBUS = "CANivore";
 
     public static final Distance STOWED_POSITION = Meters.zero();
     public static final Distance DEPLOYED_POSITION = Inches.of(12.25);

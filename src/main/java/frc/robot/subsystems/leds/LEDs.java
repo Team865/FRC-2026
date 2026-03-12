@@ -166,6 +166,14 @@ public class LEDs extends SubsystemBase {
     return run(() -> updateAllianceColorWave());
   }
 
+  public Command shootingWaveCommand() {
+    return run(() -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.9, 2));
+  }
+
+  public Command idleWaveCommand() {
+    return run(() -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.3, 2));
+  }
+
   public Command testColour() {
     return runEnd(
         () -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.3, 2), () -> setAll(Color.kBlack));
