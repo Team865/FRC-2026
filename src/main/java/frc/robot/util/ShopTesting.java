@@ -66,6 +66,15 @@ public class ShopTesting {
                         drive.getPose(), hubPoseSupplier.get())))
         .onTrue(hood.setTargetAngle(Degrees.of(hoodTestAngleDeg.get())));
 
+    // Turret tracking only when this is held down. Used for velocity compensation testing
+    driverController.b()
+        .whileTrue(
+            turret.lockOntoTarget(
+                () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), hubPoseSupplier.get()),
+                () ->
+                    ShootingUtil.getAngularVelocityCompensation(
+                        drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds())));
+
     // driverController
     //     .rightTrigger()
     //     .whileTrue(intake.rollers.runVolts(() -> rollersTestVoltage.get()));

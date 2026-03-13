@@ -52,7 +52,7 @@ public class PivotIOSim implements PivotIO {
   public void setPosition(Angle angle) {
     this.targetAngle = angle;
     this.voltageOverridesTarget = false;
-    // this.extraOmega = RotationsPerSecond.zero();
+    this.extraOmega = RotationsPerSecond.zero();
   }
 
   @Override

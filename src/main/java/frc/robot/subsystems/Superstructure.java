@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -10,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.Superstructure.ShootingState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
@@ -269,7 +270,7 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
 
-    shootingTarget =
+    shootingTarget = // hubPoseSupplier.get();
         ShootingUtil.correctTargetPoseWhileMoving(
             hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
@@ -278,5 +279,13 @@ public class Superstructure extends SubsystemBase {
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());
+
+    // Render a Pose showing where the turret (thinks it) is pointing
+    Logger.recordOutput(
+        "RobotRendering/TurretHeading",
+        drive
+            .getPose()
+            .plus(new Transform2d(0, 0, new Rotation2d(turret.getOrientation())))
+            .plus(new Transform2d(distanceFromShootingTarget, 0, Rotation2d.kZero)));
   }
 }
