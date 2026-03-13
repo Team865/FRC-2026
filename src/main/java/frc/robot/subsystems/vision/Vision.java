@@ -5,6 +5,8 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -24,12 +26,6 @@ public class Vision extends SubsystemBase {
   private final Alert[] disconnectedAlerts;
   private final Map<String, VisionConsumer> cameraConsumers;
   private final Map<String, Integer> cameraNameToIndex = new HashMap<>();
-
-  private double turretTxDegrees = 0.0;
-  private int turretSeenTagId = -1;
-  private int turretCandidateTagId = -1;
-  private int turretTagFrames = 0;
-  private static final int TURRET_DEBOUNCE_FRAMES = 3;
 
   public Vision(Drive drive, VisionIO... io) {
     this.io = io;
@@ -51,9 +47,15 @@ public class Vision extends SubsystemBase {
           drive.addVisionMeasurement(pose, ts, stdDevs);
         };
 
+    VisionConsumer turretConsumer =
+        (pose, ts, stdDevs) -> {
+          pose = pose.plus(new Transform2d(-turretForwardOffsetMeters, 0, Rotation2d.kZero));
+          drive.addVisionMeasurement(pose, ts, stdDevs);
+        };
+
     cameraConsumers.put(camera0Name, positionConsumer);
     cameraConsumers.put(camera1Name, positionConsumer);
-    cameraConsumers.put(camera2Name, positionConsumer);
+    cameraConsumers.put(camera2Name, turretConsumer);
   }
 
   public VisionIOInputsAutoLogged getInputs(int cameraIndex) {
@@ -114,46 +116,6 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
   }
-
-  // private void updateTurretTracking() {
-  //   int cameraIndex = cameraNameToIndex.get(camera2Name);
-  //   VisionIOInputsAutoLogged inputs2 = inputs[cameraIndex];
-
-  //   int newCandidate = -1;
-  //   double tx = 0.0;
-
-  //   for (int hubTagId : FieldConstants.hubTagIds) {
-  //     if (IntStream.of(inputs2.tagIds).anyMatch(t -> t == hubTagId)) {
-  //       newCandidate = hubTagId;
-  //       if (inputs2.latestTargetObservation != null) {
-  //         tx = inputs2.latestTargetObservation.tx().getDegrees();
-  //         turretSeenTagId = newCandidate;
-  //         turretTxDegrees = tx;
-  //       }
-  //       break;
-  //     }
-  //   }
-
-  //   // if (newCandidate == -1) {
-  //   //   turretCandidateTagId = -1;
-  //   //   turretSeenTagId = -1;
-  //   //   turretTagFrames = 0;
-  //   //   turretTxDegrees = 0.0;
-  //   //   return;
-  //   // }
-
-  //   // if (newCandidate == turretCandidateTagId) {
-  //   //   turretTagFrames++;
-  //   // } else {
-  //   //   turretCandidateTagId = newCandidate;
-  //   //   turretTagFrames = 1;
-  //   // }
-
-  //   // if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
-  //   //   turretSeenTagId = turretCandidateTagId;
-  //   //   turretTxDegrees = tx;
-  //   // }
-  // }
 
   @FunctionalInterface
   public interface VisionConsumer {

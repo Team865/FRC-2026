@@ -184,12 +184,11 @@ public class RobotContainer {
                     VisionConstants.camera0Name, () -> drive.getPose().getRotation(), true),
                 new VisionIOLimelight(
                     VisionConstants.camera1Name, () -> drive.getPose().getRotation(), true),
-                new VisionIO() {
-                  @Override
-                  public String getName() {
-                    return "limelight-turret";
-                  }
-                });
+                new VisionIOLimelight(
+                    VisionConstants.camera2Name,
+                    () ->
+                        drive.getPose().getRotation().plus(new Rotation2d(turret.getOrientation())),
+                    false));
         // new VisionIOLimelight(
         //     VisionConstants.camera2Name,
         //     () ->
