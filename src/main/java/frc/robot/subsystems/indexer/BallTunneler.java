@@ -1,5 +1,6 @@
 package frc.robot.subsystems.indexer;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.rollers.Rollers;
@@ -20,6 +21,7 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("BallTunneler/kD", IndexerConstants.BallTunneler.SYSTEM_CONSTANTS.kD);
 
+  private final Debouncer startSerializerDebouncer = new Debouncer(0.5);
   private final SysIdRoutine sysIdRoutine;
 
   public BallTunneler(RollersIO io) {
@@ -33,6 +35,10 @@ public class BallTunneler extends Rollers implements SysIdTestable {
     return runEnd(
         () -> io.setAngularVelocity(IndexerConstants.BallTunneler.TUNNELING_SPEED),
         () -> io.stop());
+  }
+
+  public boolean shouldRunSerializerAgain() {
+    return inputs.torqueCurrentAmps < 80;
   }
 
   @Override

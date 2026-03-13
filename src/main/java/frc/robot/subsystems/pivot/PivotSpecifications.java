@@ -6,7 +6,7 @@ public record PivotSpecifications(
     double supplyCurrentLimit,
     double statorCurrentLimit) {
   public PivotSpecifications {
-    supplyCurrentLimit = Math.min(supplyCurrentLimit, 70.0);
+    supplyCurrentLimit = Math.min(supplyCurrentLimit, 60.0);
     statorCurrentLimit = Math.min(statorCurrentLimit, 120.0);
   }
 

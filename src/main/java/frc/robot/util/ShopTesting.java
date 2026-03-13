@@ -1,11 +1,12 @@
 package frc.robot.util;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.drive.Drive;
@@ -37,29 +38,33 @@ public class ShopTesting {
       DoubleSupplier hubDistanceSupplier) {
     LoggedTunableNumber flywheelTestVelocityRadsPerSec =
         new LoggedTunableNumber("Test/FlywheelVelocityRadsPerSec", 0.0);
-    LoggedTunableNumber turretTestAngle = new LoggedTunableNumber("Test/turretAngleDeg", 0.0);
-    Angle turretAngleIncrementRate = Degrees.of(90.0).times(0.020);
     LoggedTunableNumber hoodTestAngleDeg = new LoggedTunableNumber("Test/HoodAngleDeg", 0.0);
     LoggedTunableNumber shootOnTheMoveFactor =
         new LoggedTunableNumber("Test/ShootOnTheMoveFactor", 1.0);
 
-    LoggedTunableNumber rollersTestVoltage =
-        new LoggedTunableNumber("Test/IntakeRollersVoltage", 0.0);
-    LoggedTunableNumber rollersTestVelMPS =
-        new LoggedTunableNumber("Test/IntakeRollersVelocityMetersPerSec", 0.0);
-    LoggedTunableNumber extensionTestVoltage =
-        new LoggedTunableNumber("Test/IntakeExtVoltage", 0.0);
-    LoggedTunableNumber extensionTestPositionInches =
-        new LoggedTunableNumber("Test/IntakeExtPosInches", 0.0);
+    driverController
+        .rightTrigger()
+        .whileTrue(
+            new ParallelCommandGroup(
+                serializer.runSerializer(),
+                ballTunneler.runTunneler(),
+                flywheel.runVelocity(
+                    () -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get()))));
 
-    // driverController
-    //     .leftTrigger()
-    //     .whileTrue(
-    //         new ParallelCommandGroup(
-    //             serializer.runSerializer(),
-    //             ballTunneler.runTunneler(),
-    //             flywheel.runVelocity(
-    //                 () -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get()))));
+    driverController.povUp().onTrue(intake.stow());
+    driverController
+        .povDown()
+        .onTrue(intake.deploy())
+        .whileTrue(intake.runRollers(() -> drive.getChassisSpeeds()));
+
+    driverController
+        .y()
+        .toggleOnTrue(
+            turret.lockOntoTarget(
+                () ->
+                    ShootingUtil.calculateTurretRelativeAngle(
+                        drive.getPose(), hubPoseSupplier.get())))
+        .onTrue(hood.setTargetAngle(Degrees.of(hoodTestAngleDeg.get())));
 
     // driverController
     //     .rightTrigger()

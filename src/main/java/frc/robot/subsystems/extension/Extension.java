@@ -38,7 +38,7 @@ public class Extension extends SubsystemBase {
   }
 
   public Trigger atSetpoint() {
-    return new Trigger(() -> inputs.position.isNear(inputs.targetPosition, Inches.of(0.25)));
+    return new Trigger(() -> inputs.position.isNear(inputs.targetPosition, Inches.of(0.5)));
   }
 
   public Command runPosition(Distance position) {

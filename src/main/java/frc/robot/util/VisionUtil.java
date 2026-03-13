@@ -35,17 +35,19 @@ public final class VisionUtil {
       return new PoseProcessingResult(allObservedPoses, acceptedPoses, rejectedPoses);
 
     for (var obs : inputs.poseObservations) {
+      if (obs.tagCount() == 0) continue;
+
       Pose3d pose = obs.pose();
       allObservedPoses.add(pose);
 
-      boolean isMT2 = obs.type() == VisionIO.PoseObservationType.MEGATAG_2;
+      boolean isMT1 = obs.type() == VisionIO.PoseObservationType.MEGATAG_1;
 
       // Accept only MT2 or sim poses
-      boolean acceptPose = isMT2 || obs.type() == VisionIO.PoseObservationType.PHOTONVISION;
+      boolean acceptPose = isMT1 || obs.type() == VisionIO.PoseObservationType.PHOTONVISION;
 
-      if (acceptPose && isMT2) {
+      if (acceptPose && isMT1) {
         acceptPose =
-            obs.tagCount() > 0
+            ((obs.tagCount() == 1) ? (obs.ambiguity() <= maxAmbiguity) : true)
                 && Math.abs(pose.getZ()) <= maxZError
                 && pose.getX() >= 0.0
                 && pose.getX() <= aprilTagLayout.getFieldLength()
@@ -61,12 +63,15 @@ public final class VisionUtil {
       acceptedPoses.add(pose);
 
       double stdDevFactor = Math.pow(obs.averageTagDistance(), 2.0) / obs.tagCount();
+      if (Double.isNaN(stdDevFactor)) {
+        System.out.println("BAIJDQOIDWJQDOQWD");
+      }
       double linearStdDev = linearStdDevBaseline * stdDevFactor;
       double angularStdDev = angularStdDevBaseline * stdDevFactor;
 
-      if (isMT2) {
-        linearStdDev *= linearStdDevMegatag2Factor;
-        angularStdDev *= angularStdDevMegatag2Factor;
+      if (isMT1) {
+        linearStdDev *= linearStdDevBaseline;
+        angularStdDev *= angularStdDevBaseline;
       }
 
       if (cameraIndex < cameraStdDevFactors.length) {

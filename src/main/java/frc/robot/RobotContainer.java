@@ -61,7 +61,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
-import frc.robot.util.ShopTesting;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -370,17 +369,17 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    ShopTesting.enable(
-        driverController,
-        drive,
-        serializer,
-        ballTunneler,
-        flywheel,
-        hood,
-        turret,
-        intake,
-        () -> getAllianceHubPose(),
-        () -> getDistanceFromHub());
+    // ShopTesting.enable(
+    //     driverController,
+    //     drive,
+    //     serializer,
+    //     ballTunneler,
+    //     flywheel,
+    //     hood,
+    //     turret,
+    //     intake,
+    //     () -> getAllianceHubPose(),
+    //     () -> getDistanceFromHub());
 
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
@@ -393,6 +392,8 @@ public class RobotContainer {
 
     // Reset gyro to 0° when B button is pressed
     driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
+
+    // if (true) return;
 
     // driverController
     //     .leftBumper()
@@ -455,8 +456,10 @@ public class RobotContainer {
         .whileTrue(superstructure.continuouslyRequestState(ShootingState.SHOOTING))
         .onFalse(superstructure.requestState(ShootingState.IDLE));
 
-    driverController.povUp().onTrue(superstructure.forceState(IntakingState.STOWING));
-    driverController.povDown().onTrue(superstructure.forceState(IntakingState.DEPLOYING));
+    // driverController.povUp().onTrue(superstructure.requestState(IntakingState.STOWING));
+    // driverController.povDown().onTrue(superstructure.requestState(IntakingState.DEPLOYING));
+
+    driverController.leftBumper().onTrue(superstructure.toggleIntakeExtension());
 
     // // OPERATOR CONTROLLER
     // turret.setDefaultCommand(turret.runVoltage(() -> -operatorController.getLeftX()));

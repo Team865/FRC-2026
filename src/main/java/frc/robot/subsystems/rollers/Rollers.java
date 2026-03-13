@@ -60,6 +60,10 @@ public class Rollers extends SubsystemBase {
     return this.runEnd(() -> io.setLinearVelocity(velocitySupplier.get()), () -> io.stop());
   }
 
+  public Command stop() {
+    return this.runOnce(io::stop);
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);

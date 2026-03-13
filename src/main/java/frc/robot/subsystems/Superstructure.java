@@ -4,7 +4,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure.ShootingState;
@@ -28,7 +31,7 @@ public class Superstructure extends SubsystemBase {
     /** Requestable: Completely idle */
     IDLE,
     /** Requestable: Rollers, Flywheels, Indexer running */
-    SHOOTING
+    SHOOTING,
   }
 
   /** The state in regards to intaking */
@@ -37,11 +40,9 @@ public class Superstructure extends SubsystemBase {
     STOWED,
     /** Requestable: The intake is currently being stowed */
     STOWING,
-    /** Requestable: The intake is currently beind deployed */
+    /** Requestable: The intake is currently being deployed */
     DEPLOYING,
-    /** Intermediate & Requestable: The intake is deployed and ready to start intaking */
-    INTAKE_READY,
-    /** Requestable: The intake is currently running */
+    /** Intermediate: The intake is deployed and running */
     INTAKING
   }
 
@@ -86,6 +87,7 @@ public class Superstructure extends SubsystemBase {
     configureStateRequirements();
     configureStateBehaviours();
     configureGameStateTriggers();
+    configureAutoTracking();
   }
 
   /** Configure the requirements of each state */
@@ -116,11 +118,37 @@ public class Superstructure extends SubsystemBase {
         .whileTrue(
             flywheel.runVelocity(
                 () -> ShootingUtil.getFlywheelVelocity(distanceFromShootingTarget)))
-        .whileTrue(ballTunneler.runTunneler())
-        .whileTrue(serializer.runSerializer())
         .onFalse(runOnce(() -> drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts)))
         .onTrue(runOnce(() -> drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed)))
-        .onTrue(runOnce(() -> leds.shootingWaveCommand()));
+        .onTrue(leds.shootingWaveCommand());
+
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.SHOOTING)
+        .whileTrue(ballTunneler.runTunneler())
+        .onTrue(serializer.startSerializer())
+        .onFalse(serializer.stop());
+
+    shouldStopSerializer()
+        .onTrue(
+            new SequentialCommandGroup(
+                serializer.stop(),
+                new WaitUntilCommand(() -> shouldRestartSerializer())
+                    .raceWith(new WaitCommand(1.0)),
+                serializer
+                    .startSerializer()
+                    .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING))));
+    // serializer
+    //     .stop()
+    //     .andThen(
+    //         new WaitUntilCommand(() -> shouldRestartSerializer())
+    //             .andThen(
+    //                 serializer
+    //                     .startSerializer()
+    //                     .alongWith(new PrintCommand("Test"))
+    //                     .onlyIf(
+    //                         () ->
+    //                             shootingStateMachine.isInState(ShootingState.SHOOTING)))));
 
     shootingStateMachine
         .stateTriggers
@@ -142,20 +170,30 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(IntakingState.DEPLOYING) // Deploy the intake
         .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
-        .onTrue(forceState(IntakingState.INTAKE_READY)); // Move to appropriate state
+        .onTrue(forceState(IntakingState.INTAKING)); // Move to appropriate state
 
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWED)
-        .negate()
-        .whileTrue( // Run the intake based on drivetrain speed
+        .whileFalse( // Run the intake based on drivetrain speed
             intake.runRollers(() -> drive.getChassisSpeeds()));
   }
 
   private void configureGameStateTriggers() {
-    new Trigger(() -> DriverStation.isTeleopEnabled())
-        .onTrue(forceState(ShootingState.IDLE))
-        .onTrue(forceState(IntakingState.DEPLOYING));
+    new Trigger(() -> DriverStation.isTeleopEnabled()).onTrue(forceState(ShootingState.IDLE));
+    // .onTrue(forceState(IntakingState.DEPLOYING));
+  }
+
+  private void configureAutoTracking() {
+    turret.setDefaultCommand(
+        turret.lockOntoTarget( // Have the turret track the target
+            () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
+            () ->
+                ShootingUtil.getAngularVelocityCompensation(
+                    drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds())));
+
+    hood.setDefaultCommand(
+        hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromShootingTarget)));
   }
 
   /** A command that requests a state for the shooting state machine */
@@ -216,6 +254,18 @@ public class Superstructure extends SubsystemBase {
         intakingStateMachine);
   }
 
+  private Trigger shouldStopSerializer() {
+    return shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.SHOOTING)
+        .and(serializer.isStalling())
+        .and(serializer.isRunning());
+  }
+
+  private boolean shouldRestartSerializer() {
+    return ballTunneler.shouldRunSerializerAgain();
+  }
+
   @Override
   public void periodic() {
 
@@ -225,12 +275,6 @@ public class Superstructure extends SubsystemBase {
 
     distanceFromShootingTarget =
         shootingTarget.getTranslation().getDistance(drive.getPose().getTranslation());
-    turret.lockOntoTarget( // Have the turret track the target
-        () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
-        () ->
-            ShootingUtil.getAngularVelocityCompensation(
-                drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds()));
-    hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromShootingTarget));
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());

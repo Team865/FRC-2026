@@ -1,9 +1,12 @@
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.RollersIO;
@@ -25,6 +28,7 @@ public class Serializer extends Rollers implements SysIdTestable {
       new LoggedTunableNumber("Serializer/kD", IndexerConstants.Serializer.SYSTEM_CONSTANTS.kD);
 
   private final SysIdRoutine sysIdRoutine;
+  private final Debouncer stallingDebouncer = new Debouncer(0.5);
 
   public Serializer(RollersIO io) {
     super("Serializer", io);
@@ -40,6 +44,18 @@ public class Serializer extends Rollers implements SysIdTestable {
   public Command runSerializer() {
     return runEnd(
         () -> io.setAngularVelocity(IndexerConstants.Serializer.SPINDEXING_SPEED), () -> io.stop());
+  }
+
+  public Command startSerializer() {
+    return runOnce(() -> io.setAngularVelocity(IndexerConstants.Serializer.SPINDEXING_SPEED));
+  }
+
+  public Trigger isStalling() {
+    return new Trigger(() -> inputs.torqueCurrentAmps > 100);
+  }
+
+  public Trigger isRunning() {
+    return new Trigger(() -> inputs.angularVelocity.in(RadiansPerSecond) > 1);
   }
 
   @Override
