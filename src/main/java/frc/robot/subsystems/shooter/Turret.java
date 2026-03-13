@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
@@ -85,7 +86,17 @@ public class Turret extends Pivot implements SysIdTestable {
           Logger.recordOutput("Turret/Optimized Turret Angle Degrees", optimizedAngle.in(Degrees));
 
           io.setPosition(optimizedAngle);
-          // io.setPositionWithExtraOmega(optimizedAngle, driveOmegaSupplier.get());
+
+          // double currentPositionRads = inputs.position.in(Radians);
+
+          // if (currentPositionRads
+          //         < (ShooterConstants.Turret.MIN_ANGLE_RADS + Units.degreesToRadians(10))
+          //     || currentPositionRads
+          //         > (ShooterConstants.Turret.MAX_ANGLE_RADS + Units.degreesToRadians(10))) {
+          //   io.setPosition(optimizedAngle);
+          // } else {
+          //   io.setPositionWithExtraOmega(optimizedAngle, driveOmegaSupplier.get());
+          // }
         },
         () -> this.io.stop());
   }
