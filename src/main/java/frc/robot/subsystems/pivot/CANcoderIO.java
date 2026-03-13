@@ -31,6 +31,7 @@ public class CANcoderIO implements AbsoluteEncoderIO {
     Logger.recordOutput("Initial Offset Pre-Config", absolutePositionSignal.getValue());
 
     PhoenixUtil.tryUntilOk(5, () -> cancoder.getConfigurator().apply(config));
+    absolutePositionSignal.refresh();
 
     Logger.recordOutput("Initial Offset", absolutePositionSignal.getValue());
 
