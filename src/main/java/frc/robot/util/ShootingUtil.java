@@ -78,15 +78,16 @@ public class ShootingUtil {
         targetPose.getTranslation().minus(drivetrainPose.getTranslation());
     Translation2d linearVelocityVector =
         new Translation2d(drivetrainSpeeds.vxMetersPerSecond, drivetrainSpeeds.vyMetersPerSecond);
-    double angleRadsBetweenLookVectorAndVelocity =
-        angleRadsBetweenTwoVectors(pointToTargetVector, linearVelocityVector);
+    double drivetrainSpeedMPS = linearVelocityVector.getNorm();
 
     double linearVelocityCompensationRadsPerSec;
 
-    if (Double.isNaN(angleRadsBetweenLookVectorAndVelocity)) {
+    if (drivetrainSpeedMPS == 0) {
       linearVelocityCompensationRadsPerSec = 0.0;
     } else {
-      double linearVelocityMagnitudeMeters = linearVelocityVector.getNorm();
+      double angleRadsBetweenLookVectorAndVelocity =
+          angleRadsBetweenTwoVectors(pointToTargetVector, linearVelocityVector);
+      double linearVelocityMagnitudeMeters = drivetrainSpeedMPS;
       double distanceToTargetMeters = pointToTargetVector.getNorm();
 
       linearVelocityCompensationRadsPerSec =
