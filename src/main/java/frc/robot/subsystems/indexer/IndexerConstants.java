@@ -1,6 +1,7 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -13,10 +14,10 @@ public final class IndexerConstants {
 
   public static final class Serializer {
     public static final int CAN_ID = 17;
-    public static final AngularVelocity SPINDEXING_SPEED = RadiansPerSecond.of(15);
+    public static final AngularVelocity SPINDEXING_SPEED = RotationsPerSecond.of(1.25);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8));
+        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 30, 120);
 
     private static final double TAU = 1;
 

@@ -29,6 +29,7 @@ public class Serializer extends Rollers implements SysIdTestable {
 
   private final SysIdRoutine sysIdRoutine;
   private final Debouncer stallingDebouncer = new Debouncer(0.5);
+  private boolean isStalling = false;
 
   public Serializer(RollersIO io) {
     super("Serializer", io);
@@ -51,7 +52,7 @@ public class Serializer extends Rollers implements SysIdTestable {
   }
 
   public Trigger isStalling() {
-    return new Trigger(() -> inputs.torqueCurrentAmps > 100);
+    return new Trigger(() -> isStalling);
   }
 
   public Trigger isRunning() {
@@ -67,6 +68,8 @@ public class Serializer extends Rollers implements SysIdTestable {
 
     Logger.recordOutput("Serializer/PosRots", inputs.position.in(Rotations));
     Logger.recordOutput("Serializer/VelRotsPerSec", inputs.angularVelocity.in(RotationsPerSecond));
+
+    isStalling = stallingDebouncer.calculate(inputs.torqueCurrentAmps > 100);
 
     super.periodic();
   }

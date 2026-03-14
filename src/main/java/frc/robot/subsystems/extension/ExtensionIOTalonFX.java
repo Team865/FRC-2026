@@ -63,7 +63,7 @@ public class ExtensionIOTalonFX implements ExtensionIO {
         specs.clockwisePositive()
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config, 0.5));
 

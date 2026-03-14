@@ -21,7 +21,8 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("BallTunneler/kD", IndexerConstants.BallTunneler.SYSTEM_CONSTANTS.kD);
 
-  private final Debouncer startSerializerDebouncer = new Debouncer(0.5);
+  private final Debouncer isFreeRunningDebouncer = new Debouncer(0.1);
+  private boolean isFreeRunning = false;
   private final SysIdRoutine sysIdRoutine;
 
   public BallTunneler(RollersIO io) {
@@ -37,6 +38,10 @@ public class BallTunneler extends Rollers implements SysIdTestable {
         () -> io.setVolts(12), () -> io.stop());
   }
 
+  public boolean isRunningUnderNoLoad() {
+    return isFreeRunning;
+  }
+
   public boolean shouldRunSerializerAgain() {
     return inputs.torqueCurrentAmps < 80;
   }
@@ -47,6 +52,8 @@ public class BallTunneler extends Rollers implements SysIdTestable {
 
     LoggedTunableNumber.ifChanged(
         id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
+
+    isFreeRunning = isFreeRunningDebouncer.calculate(inputs.torqueCurrentAmps < 65);
     super.periodic();
   }
 

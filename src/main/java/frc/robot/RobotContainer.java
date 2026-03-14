@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,7 +26,6 @@ import frc.robot.subsystems.Superstructure.ShootingState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSim;
-import frc.robot.subsystems.climber.ClimberIOTalonFX;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -61,7 +62,6 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
-import frc.robot.util.ShopTesting;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -210,7 +210,7 @@ public class RobotContainer {
                     ShooterConstants.Hood.SPECS));
         flywheel = new Flywheel(new FlywheelIOTalonFX());
 
-        climber = new Climber(new ClimberIOTalonFX());
+        climber = new Climber(new ClimberIO() {});
 
         break;
 
@@ -317,13 +317,13 @@ public class RobotContainer {
             leds,
             () -> getAllianceHubPose());
 
-    NamedCommands.registerCommand("StowIntake", superstructure.requestState(IntakingState.STOWED));
+    NamedCommands.registerCommand("StowIntake", superstructure.forceState(IntakingState.STOWING));
     NamedCommands.registerCommand(
-        "DeployIntake", superstructure.requestState(IntakingState.INTAKING));
+        "DeployIntake", superstructure.forceState(IntakingState.DEPLOYING));
 
     NamedCommands.registerCommand(
-        "StartShooting", superstructure.requestState(ShootingState.SHOOTING));
-    NamedCommands.registerCommand("StopShooting", superstructure.requestState(ShootingState.IDLE));
+        "StartShooting", superstructure.forceState(ShootingState.SHOOTING));
+    NamedCommands.registerCommand("StopShooting", superstructure.forceState(ShootingState.IDLE));
 
     // NamedCommands.registerCommand("ExtendClimber", climber.extend());
     // NamedCommands.registerCommand("RetractClimber", climber.retract());
@@ -375,17 +375,17 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    ShopTesting.enable(
-        driverController,
-        drive,
-        serializer,
-        ballTunneler,
-        flywheel,
-        hood,
-        turret,
-        intake,
-        () -> getAllianceHubPose(),
-        () -> getDistanceFromHub());
+    // ShopTesting.enable(
+    //     driverController,
+    //     drive,
+    //     serializer,
+    //     ballTunneler,
+    //     flywheel,
+    //     hood,
+    //     turret,
+    //     intake,
+    //     () -> getAllianceHubPose(),
+    //     () -> getDistanceFromHub());
 
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
@@ -474,7 +474,10 @@ public class RobotContainer {
         .y()
         .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
     operatorController.a().whileTrue(serializer.runSerializer());
-    operatorController.x().whileTrue(ballTunneler.runTunneler());
+    operatorController
+        .x()
+        .whileTrue(ballTunneler.runTunneler())
+        .whileTrue(flywheel.runVelocity(RadiansPerSecond.of(350)));
 
     operatorController
         .back()

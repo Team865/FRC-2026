@@ -1,6 +1,5 @@
 package frc.robot.util;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -57,19 +56,19 @@ public class ShopTesting {
         .onTrue(intake.deploy())
         .whileTrue(intake.runRollers(() -> drive.getChassisSpeeds()));
 
-    driverController
-        .y()
-        .toggleOnTrue(
-            turret.lockOntoTarget(
-                () ->
-                    ShootingUtil.calculateTurretRelativeAngle(
-                        drive.getPose(), hubPoseSupplier.get())))
-        .onTrue(hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())));
+    // driverController
+    //     .y()
+    //     .whileTrue(
+    //         turret.lockOntoTarget(
+    //             () ->
+    //                 ShootingUtil.calculateTurretRelativeAngle(
+    //                     drive.getPose(), hubPoseSupplier.get())))
+    //     .whileTrue(hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())));
 
     // Turret tracking only when this is held down. Used for velocity compensation testing
     driverController
         .b()
-        .whileTrue(
+        .toggleOnTrue(
             turret.lockOntoTarget(
                 () ->
                     ShootingUtil.calculateTurretRelativeAngle(

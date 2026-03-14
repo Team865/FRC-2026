@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.LoggedTunableNumber;
-import org.littletonrobotics.junction.Logger;
 
 public class Climber extends SubsystemBase {
   private final ClimberIO climberIO;
@@ -68,28 +67,29 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-    climberIO.updateInputs(climberIOInputs);
-    disconnectedAlert.set(!climberIOInputs.connected);
-    Logger.processInputs("Climber/inputs", climberIOInputs);
+    // climberIO.updateInputs(climberIOInputs);
+    // disconnectedAlert.set(!climberIOInputs.connected);
+    // Logger.processInputs("Climber/inputs", climberIOInputs);
 
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        (constants) ->
-            climberIO.setControlGains(
-                constants[0], constants[1], constants[2], constants[3], constants[4], constants[5]),
-        kG,
-        kS,
-        kV,
-        kA,
-        kP,
-        kD);
+    // LoggedTunableNumber.ifChanged(
+    //     hashCode(),
+    //     (constants) ->
+    //         climberIO.setControlGains(
+    //             constants[0], constants[1], constants[2], constants[3], constants[4],
+    // constants[5]),
+    //     kG,
+    //     kS,
+    //     kV,
+    //     kA,
+    //     kP,
+    //     kD);
 
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        (constants) -> climberIO.setMotionProfile(constants[0], constants[1]),
-        maxVelocity,
-        maxAcceleration);
+    // LoggedTunableNumber.ifChanged(
+    //     hashCode(),
+    //     (constants) -> climberIO.setMotionProfile(constants[0], constants[1]),
+    //     maxVelocity,
+    //     maxAcceleration);
 
-    Logger.recordOutput("Climber/targetMeters", target.in(Meters));
+    // Logger.recordOutput("Climber/targetMeters", target.in(Meters));
   }
 }

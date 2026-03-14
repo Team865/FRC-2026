@@ -150,6 +150,8 @@ public class VisionIOLimelight implements VisionIO {
 
   @Override
   public void throttleCamera(int throttleAmount) {
-    throttlePublisher.accept(throttleAmount);
+    if (this.isLL4) {
+      throttlePublisher.accept(throttleAmount);
+    }
   }
 }

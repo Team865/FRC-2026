@@ -85,10 +85,10 @@ public class Superstructure extends SubsystemBase {
     this.leds = leds;
     this.hubPoseSupplier = hubPoseSupplier;
 
-    // configureStateRequirements();
-    // configureStateBehaviours();
-    // configureGameStateTriggers();
-    // configureAutoTracking();
+    configureStateRequirements();
+    configureStateBehaviours();
+    configureGameStateTriggers();
+    configureAutoTracking();
   }
 
   /** Configure the requirements of each state */
@@ -119,23 +119,35 @@ public class Superstructure extends SubsystemBase {
         .whileTrue(
             flywheel.runVelocity(
                 () -> ShootingUtil.getFlywheelVelocity(distanceFromShootingTarget)))
-        .onFalse(runOnce(() -> drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts)))
-        .onTrue(runOnce(() -> drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed)))
         .onTrue(leds.shootingWaveCommand());
 
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
+        .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
+        .onFalse(runOnce(() -> drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts)))
+        .onTrue(runOnce(() -> drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed)));
+
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.SHOOTING)
         .whileTrue(ballTunneler.runTunneler())
-        .onTrue(serializer.startSerializer())
+        .onTrue(
+            new SequentialCommandGroup(
+                new WaitCommand(0.1),
+                new WaitUntilCommand(ballTunneler::isRunningUnderNoLoad)
+                    .raceWith(new WaitCommand(5)),
+                serializer
+                    .startSerializer()
+                    .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING))))
         .onFalse(serializer.stop());
 
     shouldStopSerializer()
         .onTrue(
             new SequentialCommandGroup(
                 serializer.stop(),
-                new WaitUntilCommand(() -> shouldRestartSerializer())
-                    .raceWith(new WaitCommand(1.0)),
+                new WaitUntilCommand(ballTunneler::isRunningUnderNoLoad)
+                    .raceWith(new WaitCommand(5)),
                 serializer
                     .startSerializer()
                     .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING))));

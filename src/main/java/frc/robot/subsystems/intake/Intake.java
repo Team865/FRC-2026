@@ -88,7 +88,7 @@ public class Intake extends SubsystemBase {
 
           return MetersPerSecond.of(
               Math.max(
-                  5.0,
+                  7.0,
                   2
                       * Math.sqrt(
                           speeds.vxMetersPerSecond * speeds.vxMetersPerSecond

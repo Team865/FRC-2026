@@ -1,13 +1,12 @@
 package frc.robot.util;
 
+import edu.wpi.first.math.util.Units;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import edu.wpi.first.math.util.Units;
 
 public class ShootingLogger {
   private record Measurement(
