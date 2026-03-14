@@ -85,10 +85,10 @@ public class Superstructure extends SubsystemBase {
     this.leds = leds;
     this.hubPoseSupplier = hubPoseSupplier;
 
-    configureStateRequirements();
-    configureStateBehaviours();
-    configureGameStateTriggers();
-    configureAutoTracking();
+    // configureStateRequirements();
+    // configureStateBehaviours();
+    // configureGameStateTriggers();
+    // configureAutoTracking();
   }
 
   /** Configure the requirements of each state */

@@ -88,7 +88,7 @@ public class PivotIOSim implements PivotIO {
     inputs.appliedVoltage = this.appliedVolts;
     inputs.supplyCurrentAmps = this.motorSim.getCurrentDrawAmps();
     inputs.statorCurrentAmps = inputs.supplyCurrentAmps;
-    inputs.torqueCurrent = inputs.supplyCurrentAmps;
+    inputs.torqueCurrentAmps = inputs.supplyCurrentAmps;
     inputs.velocity = this.motorSim.getAngularVelocity();
     inputs.targetPosition = targetAngle;
     inputs.position = this.motorSim.getAngularPosition();

@@ -1,7 +1,13 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Rotations;
+
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
@@ -30,6 +36,7 @@ public class Hood extends Pivot implements SysIdTestable {
           "Shooter/Hood/MaxAcceleration",
           ShooterConstants.Hood.SYSTEM_CONSTANTS.maxAcceleration.get());
 
+  private final Debouncer currentSenseDebouncer = new Debouncer(0.5);
   private final SysIdRoutine sysIdRoutine;
 
   public Hood(PivotIO io) {
@@ -51,6 +58,16 @@ public class Hood extends Pivot implements SysIdTestable {
           io.setPosition(angleSupplier.get());
         },
         () -> io.stop());
+  }
+
+  public Command currentSensedRezero() {
+    return new SequentialCommandGroup(
+        setVoltage(-1),
+        new WaitUntilCommand(
+                () -> currentSenseDebouncer.calculate(Math.abs(inputs.torqueCurrentAmps) > 20))
+            .raceWith(new WaitCommand(2)),
+        stop(),
+        runOnce(() -> io.seedPosition(Rotations.zero())));
   }
 
   @Override

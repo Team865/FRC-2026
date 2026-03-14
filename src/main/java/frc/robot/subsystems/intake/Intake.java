@@ -1,10 +1,15 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.extension.Extension;
 import frc.robot.subsystems.extension.ExtensionIO;
@@ -45,6 +50,8 @@ public class Intake extends SubsystemBase {
           "IntakePivot/maxAcceleration",
           IntakeConstants.Extension.SYSTEM_CONSTANTS.maxAcceleration.get());
 
+  private final Debouncer currentSenseDebouncer = new Debouncer(0.5);
+
   public Intake(RollersIO rollersIO, ExtensionIO extensionIO) {
     this.rollers = new Rollers("Intake/Rollers", rollersIO);
     this.extension = new Extension("Intake/Extension", extensionIO);
@@ -56,6 +63,18 @@ public class Intake extends SubsystemBase {
 
   public Command deploy() {
     return extension.setPosition(IntakeConstants.Extension.DEPLOYED_POSITION);
+  }
+
+  public Command currentSensedRezero() {
+    return new SequentialCommandGroup(
+        extension.setVolts(-5),
+        new WaitUntilCommand(
+                () ->
+                    currentSenseDebouncer.calculate(
+                        Math.abs(extension.inputs.torqueCurrentAmps) > 60))
+            .raceWith(new WaitCommand(5)),
+        extension.stop(),
+        runOnce(() -> extension.io.seedPosition(Meters.zero())));
   }
 
   public Trigger extensionAtSetpoint() {

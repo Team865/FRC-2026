@@ -49,6 +49,12 @@ public class ExtensionIOSim implements ExtensionIO {
   }
 
   @Override
+  public boolean seedPosition(Distance position) {
+    motorSim.setAngle(position.in(Meters));
+    return true;
+  }
+
+  @Override
   public void stop() {
     appliedVolts = 0.0;
     voltageOverridesTarget = true;
@@ -72,6 +78,7 @@ public class ExtensionIOSim implements ExtensionIO {
     inputs.appliedVoltage = appliedVolts;
     inputs.supplyCurrentAmps = motorSim.getCurrentDrawAmps();
     inputs.statorCurrentAmps = inputs.supplyCurrentAmps;
+    inputs.torqueCurrentAmps = inputs.supplyCurrentAmps;
     inputs.velocity = MetersPerSecond.of(motorSim.getAngularVelocityRadPerSec());
     inputs.position = Meters.of(motorSim.getAngularPositionRad());
     inputs.targetPosition = targetPosition;

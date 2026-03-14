@@ -61,6 +61,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
+import frc.robot.util.ShopTesting;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -189,6 +190,12 @@ public class RobotContainer {
                     () ->
                         drive.getPose().getRotation().plus(new Rotation2d(turret.getOrientation())),
                     false));
+        // new VisionIO() {
+        //   @Override
+        //   public String getName() {
+        //     return "limelight-turret";
+        //   }
+        // });
         // new VisionIOLimelight(
         //     VisionConstants.camera2Name,
         //     () ->
@@ -368,17 +375,17 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // ShopTesting.enable(
-    //     driverController,
-    //     drive,
-    //     serializer,
-    //     ballTunneler,
-    //     flywheel,
-    //     hood,
-    //     turret,
-    //     intake,
-    //     () -> getAllianceHubPose(),
-    //     () -> getDistanceFromHub());
+    ShopTesting.enable(
+        driverController,
+        drive,
+        serializer,
+        ballTunneler,
+        flywheel,
+        hood,
+        turret,
+        intake,
+        () -> getAllianceHubPose(),
+        () -> getDistanceFromHub());
 
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
@@ -413,38 +420,38 @@ public class RobotContainer {
     //                 ShootingUtil.getAngularVelocityCompensation(
     //                     drive.getPose(), getAllianceHubPose(), drive.getChassisSpeeds())));
 
-    driverController
-        .y()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> Rotation2d.kZero));
-    driverController
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> Rotation2d.k180deg));
-    driverController
-        .x()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> Rotation2d.kCCW_90deg));
-    driverController
-        .b()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -driverController.getLeftY(),
-                () -> -driverController.getLeftX(),
-                () -> Rotation2d.kCW_90deg));
+    // driverController
+    //     .y()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -driverController.getLeftY(),
+    //             () -> -driverController.getLeftX(),
+    //             () -> Rotation2d.kZero));
+    // driverController
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -driverController.getLeftY(),
+    //             () -> -driverController.getLeftX(),
+    //             () -> Rotation2d.k180deg));
+    // driverController
+    //     .x()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -driverController.getLeftY(),
+    //             () -> -driverController.getLeftX(),
+    //             () -> Rotation2d.kCCW_90deg));
+    // driverController
+    //     .b()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -driverController.getLeftY(),
+    //             () -> -driverController.getLeftX(),
+    //             () -> Rotation2d.kCW_90deg));
 
     // // Toggle bump mode
     driverController.leftBumper().onTrue(superstructure.toggleBumpMode());
@@ -468,6 +475,10 @@ public class RobotContainer {
         .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
     operatorController.a().whileTrue(serializer.runSerializer());
     operatorController.x().whileTrue(ballTunneler.runTunneler());
+
+    operatorController
+        .back()
+        .onTrue(hood.currentSensedRezero().andThen(intake.currentSensedRezero()));
   }
 
   /**

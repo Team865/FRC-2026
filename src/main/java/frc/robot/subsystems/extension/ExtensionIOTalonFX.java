@@ -40,6 +40,7 @@ public class ExtensionIOTalonFX implements ExtensionIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
   private final StatusSignal<Current> statorCurrentSignal;
+  private final StatusSignal<Current> torqueCurrentSignal;
 
   private final Distance targetPosition = Meters.zero();
 
@@ -71,6 +72,8 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     voltageSignal = talon.getMotorVoltage();
     supplyCurrentSignal = talon.getSupplyCurrent();
     statorCurrentSignal = talon.getStatorCurrent();
+    torqueCurrentSignal = talon.getTorqueCurrent();
+
     PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(0.0));
     talon.optimizeBusUtilization();
     PhoenixUtil.tryUntilOk(
@@ -82,7 +85,8 @@ public class ExtensionIOTalonFX implements ExtensionIO {
                 angularVelocitySignal,
                 voltageSignal,
                 supplyCurrentSignal,
-                statorCurrentSignal));
+                statorCurrentSignal,
+                torqueCurrentSignal));
   }
 
   @Override
@@ -97,21 +101,32 @@ public class ExtensionIOTalonFX implements ExtensionIO {
   }
 
   @Override
+  public boolean seedPosition(Distance position) {
+    Angle angularPosition = Radians.of(position.in(Meters) / drumRadiusMeters);
+
+    return PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(angularPosition));
+  }
+
+  @Override
   public void stop() {
     talon.setControl(neutralRequest);
   }
 
   @Override
   public void updateInputs(ExtensionIOInputsAutoLogged inputs) {
-    inputs.connected =
-        connectedDebouncer.calculate(
-            BaseStatusSignal.refreshAll(
-                    positionAngleSignal,
-                    angularVelocitySignal,
-                    voltageSignal,
-                    supplyCurrentSignal,
-                    statorCurrentSignal)
-                .isOK());
+    boolean refreshSucceeded =
+        BaseStatusSignal.refreshAll(
+                positionAngleSignal,
+                angularVelocitySignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal,
+                torqueCurrentSignal)
+            .isOK();
+
+    inputs.connected = connectedDebouncer.calculate(refreshSucceeded);
+
+    if (!refreshSucceeded) return;
 
     inputs.position = Meters.of(positionAngleSignal.getValue().in(Radians) * drumRadiusMeters);
     inputs.targetPosition = targetPosition;
@@ -121,6 +136,7 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     inputs.appliedVoltage = voltageSignal.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentSignal.getValueAsDouble();
+    inputs.torqueCurrentAmps = torqueCurrentSignal.getValueAsDouble();
 
     // inputs.positionRots = positionAngleSignal.getValue().in(Rotations);
     // inputs.velocityRotsPerSec = angularVelocitySignal.getValue().in(RotationsPerSecond);

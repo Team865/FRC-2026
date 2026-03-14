@@ -25,7 +25,7 @@ public class CANcoderIO implements AbsoluteEncoderIO {
         CANcoderSpecifications.clockwisePositive()
             ? SensorDirectionValue.Clockwise_Positive
             : SensorDirectionValue.CounterClockwise_Positive;
-    // config.MagnetSensor.MagnetOffset = CANcoderSpecifications.magnetOffsetRots();
+    config.MagnetSensor.MagnetOffset = CANcoderSpecifications.magnetOffsetRots();
 
     absolutePositionSignal = cancoder.getAbsolutePosition();
     Logger.recordOutput("Initial Offset Pre-Config", absolutePositionSignal.getValue());

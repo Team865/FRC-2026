@@ -47,6 +47,10 @@ public class Pivot extends SubsystemBase {
     return this.runEnd(() -> io.setPosition(targetSupplier.get()), io::stop);
   }
 
+  public Command stop() {
+    return this.runOnce(io::stop);
+  }
+
   public Angle getOrientation() {
     return inputs.position;
   }

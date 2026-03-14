@@ -79,15 +79,17 @@ public class ClimberIOTalonFX implements ClimberIO {
 
   @Override
   public void updateInputs(ClimberIOInputsAutoLogged inputs) {
-    inputs.connected =
-        connectedDebouncer.calculate(
-            BaseStatusSignal.refreshAll(
-                    positionMetersSignal,
-                    velocityMetersPerSecSignal,
-                    voltageSignal,
-                    supplyCurrentSignal,
-                    statorCurrentSignal)
-                .isOK());
+    boolean refreshSucceeded =
+        BaseStatusSignal.refreshAll(
+                positionMetersSignal,
+                velocityMetersPerSecSignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal)
+            .isOK();
+    inputs.connected = connectedDebouncer.calculate(refreshSucceeded);
+
+    if (!refreshSucceeded) return;
 
     inputs.appliedVoltage = voltageSignal.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();

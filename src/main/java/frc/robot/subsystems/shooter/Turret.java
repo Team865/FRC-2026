@@ -59,10 +59,10 @@ public class Turret extends Pivot implements SysIdTestable {
     pivotIO.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
     pivotIO.updateInputs(inputs);
 
-    try (Alert failedReseedAlert =
-        new Alert("Turret could not be seeded from encoder.", AlertType.kWarning)) {
-      failedReseedAlert.set(!pivotIO.seedPosition(encoderInputs.position));
-    }
+    // try (Alert failedReseedAlert =
+    //     new Alert("Turret could not be seeded from encoder.", AlertType.kWarning)) {
+    //   failedReseedAlert.set(!pivotIO.seedPosition(encoderInputs.position));
+    // }
 
     sysIdRoutine =
         new SysIdBuilder(this, io::setVolts)

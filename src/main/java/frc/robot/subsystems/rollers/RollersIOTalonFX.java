@@ -77,11 +77,14 @@ public class RollersIOTalonFX implements RollersIO {
 
   @Override
   public void updateInputs(RollersIOInputsAutoLogged inputs) {
-    inputs.connected =
-        connectedDebouncer.calculate(
-            BaseStatusSignal.refreshAll(
-                    position, velocity, appliedVoltage, supplyCurrent, torqueCurrent)
-                .isOK());
+    boolean refreshSucceeded =
+        BaseStatusSignal.refreshAll(
+                position, velocity, appliedVoltage, supplyCurrent, torqueCurrent)
+            .isOK();
+
+    inputs.connected = connectedDebouncer.calculate(refreshSucceeded);
+
+    if (!refreshSucceeded) return;
 
     inputs.position = position.getValue();
     inputs.angularVelocity = velocity.getValue();

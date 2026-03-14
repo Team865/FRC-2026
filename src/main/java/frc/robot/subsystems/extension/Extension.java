@@ -57,6 +57,10 @@ public class Extension extends SubsystemBase {
     return runEnd(() -> io.setVolts(voltageSupplier.getAsDouble()), io::stop);
   }
 
+  public Command stop() {
+    return runOnce(io::stop);
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);

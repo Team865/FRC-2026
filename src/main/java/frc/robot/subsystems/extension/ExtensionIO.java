@@ -17,6 +17,7 @@ public interface ExtensionIO {
     public double appliedVoltage = 0.0;
     public double supplyCurrentAmps = 0.0;
     public double statorCurrentAmps = 0.0;
+    public double torqueCurrentAmps = 0.0;
 
     // public double positionRots = 0.0;
     // public double velocityRotsPerSec = 0.0;
@@ -27,6 +28,10 @@ public interface ExtensionIO {
   public default void setVolts(double volts) {}
 
   public default void setPosition(Distance position) {}
+
+  public default boolean seedPosition(Distance position) {
+    return true;
+  }
 
   public default void stop() {}
 

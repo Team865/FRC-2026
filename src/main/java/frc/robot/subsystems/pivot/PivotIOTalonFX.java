@@ -35,6 +35,7 @@ public class PivotIOTalonFX implements PivotIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
   private final StatusSignal<Current> statorCurrentSignal;
+  private final StatusSignal<Current> torqueCurrentSignal;
 
   private Angle targetAngle = Rotations.zero();
 
@@ -66,6 +67,7 @@ public class PivotIOTalonFX implements PivotIO {
     voltageSignal = talon.getMotorVoltage();
     supplyCurrentSignal = talon.getSupplyCurrent();
     statorCurrentSignal = talon.getStatorCurrent();
+    torqueCurrentSignal = talon.getTorqueCurrent();
 
     talon.optimizeBusUtilization();
     PhoenixUtil.tryUntilOk(
@@ -77,7 +79,8 @@ public class PivotIOTalonFX implements PivotIO {
                 velocitySignal,
                 voltageSignal,
                 supplyCurrentSignal,
-                statorCurrentSignal));
+                statorCurrentSignal,
+                torqueCurrentSignal));
   }
 
   @Override
@@ -109,15 +112,19 @@ public class PivotIOTalonFX implements PivotIO {
 
   @Override
   public void updateInputs(PivotIOInputsAutoLogged inputs) {
-    inputs.connected =
-        connectedDebouncer.calculate(
-            BaseStatusSignal.refreshAll(
-                    positionSignal,
-                    velocitySignal,
-                    voltageSignal,
-                    supplyCurrentSignal,
-                    statorCurrentSignal)
-                .isOK());
+    boolean refreshSucceeded =
+        BaseStatusSignal.refreshAll(
+                positionSignal,
+                velocitySignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal,
+                torqueCurrentSignal)
+            .isOK();
+
+    inputs.connected = connectedDebouncer.calculate(refreshSucceeded);
+
+    if (!refreshSucceeded) return;
 
     inputs.targetPosition = targetAngle;
     inputs.position = positionSignal.getValue();
@@ -125,6 +132,7 @@ public class PivotIOTalonFX implements PivotIO {
     inputs.appliedVoltage = voltageSignal.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentSignal.getValueAsDouble();
+    inputs.torqueCurrentAmps = torqueCurrentSignal.getValueAsDouble();
   }
 
   @Override
