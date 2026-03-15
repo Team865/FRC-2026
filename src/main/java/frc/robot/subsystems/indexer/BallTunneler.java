@@ -1,7 +1,12 @@
 package frc.robot.subsystems.indexer;
 
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.RollersIO;
@@ -21,8 +26,7 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("BallTunneler/kD", IndexerConstants.BallTunneler.SYSTEM_CONSTANTS.kD);
 
-  private final Debouncer isFreeRunningDebouncer = new Debouncer(0.1);
-  private boolean isFreeRunning = false;
+  private final Debouncer isFreeRunningDebouncer = new Debouncer(0.1, DebounceType.kRising);
   private final SysIdRoutine sysIdRoutine;
 
   public BallTunneler(RollersIO io) {
@@ -38,12 +42,11 @@ public class BallTunneler extends Rollers implements SysIdTestable {
         () -> io.setVolts(12), () -> io.stop());
   }
 
-  public boolean isRunningUnderNoLoad() {
-    return isFreeRunning;
-  }
-
-  public boolean shouldRunSerializerAgain() {
-    return inputs.torqueCurrentAmps < 80;
+  public Command waitUntilFreeRunning() {
+    return new SequentialCommandGroup(
+        Commands.runOnce(() -> isFreeRunningDebouncer.calculate(false)), // Reset debouncer
+        new WaitUntilCommand(() -> isFreeRunningDebouncer.calculate(inputs.torqueCurrentAmps < 65))
+            .raceWith(new WaitCommand(IndexerConstants.antiStallTimeoutSeconds)));
   }
 
   @Override
@@ -53,7 +56,6 @@ public class BallTunneler extends Rollers implements SysIdTestable {
     LoggedTunableNumber.ifChanged(
         id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
 
-    isFreeRunning = isFreeRunningDebouncer.calculate(inputs.torqueCurrentAmps < 65);
     super.periodic();
   }
 

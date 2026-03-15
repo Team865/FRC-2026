@@ -11,6 +11,7 @@ import frc.robot.subsystems.rollers.RollersSpecifications;
 
 public final class IndexerConstants {
   public static final String CANBUS = "CANivore";
+  public static final double antiStallTimeoutSeconds = 5.0;
 
   public static final class Serializer {
     public static final int CAN_ID = 17;

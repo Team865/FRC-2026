@@ -8,8 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -125,32 +123,17 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(ShootingState.SHOOTING)
         .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
-        .onFalse(runOnce(() -> drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts)))
-        .onTrue(runOnce(() -> drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed)));
+        .onFalse(drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts))
+        .onTrue(drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed));
 
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
         .whileTrue(ballTunneler.runTunneler())
-        .onTrue(
-            new SequentialCommandGroup(
-                new WaitCommand(0.1),
-                new WaitUntilCommand(ballTunneler::isRunningUnderNoLoad)
-                    .raceWith(new WaitCommand(5)),
-                serializer
-                    .startSerializer()
-                    .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING))))
+        .onTrue(restartSerializerAntiStalled())
         .onFalse(serializer.stop());
 
-    shouldStopSerializer()
-        .onTrue(
-            new SequentialCommandGroup(
-                serializer.stop(),
-                new WaitUntilCommand(ballTunneler::isRunningUnderNoLoad)
-                    .raceWith(new WaitCommand(5)),
-                serializer
-                    .startSerializer()
-                    .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING))));
+    shouldStopSerializer().onTrue(restartSerializerAntiStalled());
     // serializer
     //     .stop()
     //     .andThen(
@@ -239,6 +222,15 @@ public class Superstructure extends SubsystemBase {
     return intakingStateMachine.forceStateCommand(targetState);
   }
 
+  private Command restartSerializerAntiStalled() {
+    return new SequentialCommandGroup(
+        serializer.stop(),
+        ballTunneler.waitUntilFreeRunning(),
+        serializer
+            .startSerializer()
+            .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING)));
+  }
+
   public Command toggleBumpMode() {
     return runOnce(
         () -> {
@@ -271,12 +263,7 @@ public class Superstructure extends SubsystemBase {
     return shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .and(serializer.isStalling())
-        .and(serializer.isRunning());
-  }
-
-  private boolean shouldRestartSerializer() {
-    return ballTunneler.shouldRunSerializerAgain();
+        .and(serializer.isStalling());
   }
 
   @Override
