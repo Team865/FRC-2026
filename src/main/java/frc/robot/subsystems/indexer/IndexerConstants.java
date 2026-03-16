@@ -18,22 +18,22 @@ public final class IndexerConstants {
     public static final AngularVelocity SPINDEXING_SPEED = RotationsPerSecond.of(1.25);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 30, 120);
+        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 70, 200);
 
     private static final double TAU = 1;
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
-            new ControlSystemContext(2.1862, 0.27345, 0.66746, 0, 15, 0),
+            new ControlSystemContext(2.1862, 0.27345, 0.8, 0, 5, 0),
             new ControlSystemContext(2.5, 0.1, 0.25, 0.0, 5.0, 0.0));
   }
 
   public static final class BallTunneler {
     public static final int CAN_ID = 18;
-    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(500);
+    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(200);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0));
+        new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 70, 200);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(

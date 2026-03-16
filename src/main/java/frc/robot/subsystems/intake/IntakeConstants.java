@@ -1,7 +1,6 @@
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.util.Units;
@@ -36,7 +35,7 @@ public final class IntakeConstants {
     public static final int MOTOR_CAN_ID = 15;
     public static final String CANBUS = "CANivore";
 
-    public static final Distance STOWED_POSITION = Meters.zero();
+    public static final Distance STOWED_POSITION = Inches.of(3);
     public static final Distance DEPLOYED_POSITION = Inches.of(12.25);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =

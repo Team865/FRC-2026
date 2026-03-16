@@ -51,8 +51,8 @@ public class Serializer extends Rollers implements SysIdTestable {
     return runOnce(() -> io.setAngularVelocity(IndexerConstants.Serializer.SPINDEXING_SPEED));
   }
 
-  public Trigger isStalling() {
-    return new Trigger(() -> stallingDebouncer.calculate(inputs.torqueCurrentAmps > 100));
+  public boolean isStalling() {
+    return stallingDebouncer.calculate(inputs.torqueCurrentAmps > 100);
   }
 
   public Trigger isRunning() {

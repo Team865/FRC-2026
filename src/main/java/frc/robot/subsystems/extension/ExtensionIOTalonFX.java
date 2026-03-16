@@ -42,7 +42,7 @@ public class ExtensionIOTalonFX implements ExtensionIO {
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> torqueCurrentSignal;
 
-  private final Distance targetPosition = Meters.zero();
+  private Distance targetPosition = Meters.zero();
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
 
@@ -96,6 +96,8 @@ public class ExtensionIOTalonFX implements ExtensionIO {
 
   @Override
   public void setPosition(Distance position) {
+    targetPosition = position;
+
     talon.setControl(
         positionRequest.withPosition(Radians.of(position.in(Meters) / drumRadiusMeters)));
   }

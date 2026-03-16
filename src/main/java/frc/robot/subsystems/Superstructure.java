@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -86,7 +87,7 @@ public class Superstructure extends SubsystemBase {
     configureStateRequirements();
     configureStateBehaviours();
     configureGameStateTriggers();
-    configureAutoTracking();
+    // configureAutoTracking();
   }
 
   /** Configure the requirements of each state */
@@ -130,10 +131,10 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(ShootingState.SHOOTING)
         .whileTrue(ballTunneler.runTunneler())
-        .onTrue(restartSerializerAntiStalled())
+        .onTrue(serializer.startSerializer())
         .onFalse(serializer.stop());
 
-    shouldStopSerializer().onTrue(restartSerializerAntiStalled());
+    // shouldStopSerializer().onTrue(restartSerializerAntiStalled());
     // serializer
     //     .stop()
     //     .andThen(
@@ -225,7 +226,7 @@ public class Superstructure extends SubsystemBase {
   private Command restartSerializerAntiStalled() {
     return new SequentialCommandGroup(
         serializer.stop(),
-        ballTunneler.waitUntilFreeRunning(),
+        new WaitUntilCommand(() -> !serializer.isStalling()),
         serializer
             .startSerializer()
             .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING)));
@@ -263,7 +264,7 @@ public class Superstructure extends SubsystemBase {
     return shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .and(serializer.isStalling());
+        .and(new Trigger(serializer::isStalling));
   }
 
   @Override
