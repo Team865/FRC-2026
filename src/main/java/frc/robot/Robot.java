@@ -33,6 +33,7 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
   private double teleopStartTime;
   private boolean isFMSAttached;
+
   public Robot() {
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
