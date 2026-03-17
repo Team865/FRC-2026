@@ -55,7 +55,7 @@ public class Vision extends SubsystemBase {
 
     cameraConsumers.put(camera0Name, positionConsumer);
     cameraConsumers.put(camera1Name, positionConsumer);
-    // cameraConsumers.put(camera2Name, turretConsumer);
+    //cameraConsumers.put(camera2Name, turretConsumer);
   }
 
   public VisionIOInputsAutoLogged getInputs(int cameraIndex) {
@@ -72,8 +72,6 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
     List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
     List<Pose3d> allRobotPosesRejected = new LinkedList<>();
 
@@ -93,24 +91,15 @@ public class Vision extends SubsystemBase {
       VisionUtil.PoseProcessingResult poseResult =
           VisionUtil.processPoseObservations(inputs[i], consumer, i);
 
-      Logger.recordOutput("Vision/" + cameraName + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
-      Logger.recordOutput(
-          "Vision/" + cameraName + "/RobotPoses", poseResult.all.toArray(new Pose3d[0]));
       Logger.recordOutput(
           "Vision/" + cameraName + "/RobotPosesAccepted",
           poseResult.accepted.toArray(new Pose3d[0]));
       Logger.recordOutput(
           "Vision/" + cameraName + "/RobotPosesRejected",
           poseResult.rejected.toArray(new Pose3d[0]));
-
-      allTagPoses.addAll(tagPoses);
-      allRobotPoses.addAll(poseResult.all);
       allRobotPosesAccepted.addAll(poseResult.accepted);
       allRobotPosesRejected.addAll(poseResult.rejected);
     }
-
-    Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
-    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
     Logger.recordOutput(

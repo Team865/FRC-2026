@@ -492,8 +492,11 @@ public class RobotContainer {
   }
 
   public void updateComponentPoses() {
+    if (Constants.currentMode != Constants.Mode.REAL){
     ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.extension, climber);
+     }
   }
+
 
   public void throttleCameras(int throttleAmount) {
     vision.throttleCameras(throttleAmount);

@@ -32,7 +32,7 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private double teleopStartTime;
-
+  private boolean isFMSAttached;
   public Robot() {
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
@@ -138,6 +138,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
+    isFMSAttached = DriverStation.isFMSAttached();
     robotContainer.throttleCameras(0);
     SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
 
@@ -158,8 +159,6 @@ public class Robot extends LoggedRobot {
 
     SmartDashboard.putBoolean("RobotEnabled", DriverStation.isEnabled());
     double teleopTimeElapsedSeconds;
-    boolean isFMSAttached = DriverStation.isFMSAttached();
-
     if (isFMSAttached) {
       teleopTimeElapsedSeconds = 220 - DriverStation.getMatchTime();
     } else {
