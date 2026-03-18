@@ -15,18 +15,19 @@ import frc.robot.subsystems.shooter.ShooterConstants;
 import org.littletonrobotics.junction.Logger;
 
 public class ShootingUtil {
-  public static Angle calculateHoodAngle(double distanceFromHub) {
+  public static Angle calculateHoodAngle(double distanceFromTargetMeters) {
     // Determined from experimental data and linear regression
-    double angleDeg = (7.84808 * distanceFromHub) - 6.31405;
+    double angleDeg = (7.84808 * distanceFromTargetMeters) - 6.31405;
+
+    // if(distanceFromTargetMeters < 2.5) {
+    //   angleDeg = (7.84808 * distanceFromTargetMeters) - 6.31405;
+    // } else {
+    //   angleDeg = (6.59125 * distanceFromTargetMeters) - 7.9826;
+    // }
 
     return Degrees.of(
         MathUtil.clamp(
             angleDeg, ShooterConstants.Hood.MIN_ANGLE_DEG, ShooterConstants.Hood.MAX_ANGLE_DEG));
-  }
-
-  public static Angle calculateHoodAngle(Pose2d drivetrainPose, Pose2d targetPose) {
-    return calculateHoodAngle(
-        targetPose.getTranslation().getDistance(drivetrainPose.getTranslation()));
   }
 
   public static Angle calculateTurretRelativeAngle(Pose2d drivetrainPose, Pose2d targetPose) {
@@ -64,8 +65,14 @@ public class ShootingUtil {
         targetPose, drivetrainFieldOrientedSpeeds, correctionFactor);
   }
 
-  public static AngularVelocity getFlywheelVelocity(double distanceFromHub) {
-    return RadiansPerSecond.of(350); // Add more velocities once we get more measurements
+  public static AngularVelocity getFlywheelVelocity(double distanceFromTargetMeters) {
+    // if(distanceFromTargetMeters < 2.5) {
+    //   return RadiansPerSecond.of(350);
+    // } else {
+    //   return RadiansPerSecond.of(400);
+    // }
+
+    return RadiansPerSecond.of(150); // Add more velocities once we get more measurements
   }
 
   public static double angleRadsBetweenTwoVectors(Translation2d vector1, Translation2d vector2) {

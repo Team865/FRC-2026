@@ -49,7 +49,7 @@ public class RollersIOTalonFX implements RollersIO {
             ? InvertedValue.Clockwise_Positive
             : InvertedValue.CounterClockwise_Positive;
 
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = specs.supplyCurrentLimit();

@@ -52,7 +52,7 @@ public class Serializer extends Rollers implements SysIdTestable {
   }
 
   public boolean isStalling() {
-    return stallingDebouncer.calculate(inputs.torqueCurrentAmps > 100);
+    return stallingDebouncer.calculate(inputs.torqueCurrentAmps > 95);
   }
 
   public Trigger isRunning() {

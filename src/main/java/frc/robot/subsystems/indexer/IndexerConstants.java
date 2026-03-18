@@ -16,9 +16,8 @@ public final class IndexerConstants {
   public static final class Serializer {
     public static final int CAN_ID = 17;
     public static final AngularVelocity SPINDEXING_SPEED = RotationsPerSecond.of(1.25);
-
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 70, 200);
+        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 90, 200);
 
     private static final double TAU = 1;
 
@@ -30,10 +29,10 @@ public final class IndexerConstants {
 
   public static final class BallTunneler {
     public static final int CAN_ID = 18;
-    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(200);
+    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(285);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 70, 200);
+        new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 50, 140);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(

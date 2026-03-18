@@ -1,13 +1,17 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
@@ -16,7 +20,6 @@ import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
@@ -62,7 +65,7 @@ public class Superstructure extends SubsystemBase {
   private final Supplier<Pose2d> hubPoseSupplier;
 
   private Pose2d shootingTarget = Pose2d.kZero;
-  private double distanceFromShootingTarget = 0.0;
+  private double distanceFromTargetMeters = 0.0;
 
   public Superstructure(
       Drive drive,
@@ -116,8 +119,7 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(ShootingState.SHOOTING)
         .whileTrue(
-            flywheel.runVelocity(
-                () -> ShootingUtil.getFlywheelVelocity(distanceFromShootingTarget)))
+            flywheel.runVelocity(() -> ShootingUtil.getFlywheelVelocity(distanceFromTargetMeters)))
         .onTrue(leds.shootingWaveCommand());
 
     shootingStateMachine
@@ -147,11 +149,11 @@ public class Superstructure extends SubsystemBase {
     //                         () ->
     //                             shootingStateMachine.isInState(ShootingState.SHOOTING)))));
 
-    shootingStateMachine
-        .stateTriggers
-        .get(ShootingState.SHOOTING)
-        .and(intakingStateMachine.stateTriggers.get(IntakingState.STOWED))
-        .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
+    // shootingStateMachine
+    //     .stateTriggers
+    //     .get(ShootingState.SHOOTING)
+    //     .and(intakingStateMachine.stateTriggers.get(IntakingState.STOWED))
+    //     .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
 
     // Intaking state
     intakingStateMachine
@@ -190,7 +192,7 @@ public class Superstructure extends SubsystemBase {
                     drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds())));
 
     hood.setDefaultCommand(
-        hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromShootingTarget)));
+        hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromTargetMeters)));
   }
 
   /** A command that requests a state for the shooting state machine */
@@ -225,11 +227,13 @@ public class Superstructure extends SubsystemBase {
 
   private Command restartSerializerAntiStalled() {
     return new SequentialCommandGroup(
-        serializer.stop(),
-        new WaitUntilCommand(() -> !serializer.isStalling()),
+        new PrintCommand("Anti-stalling Activated"),
+        serializer.setAngularVelocity(RotationsPerSecond.of(-0.5)),
+        new WaitUntilCommand(() -> !serializer.isStalling()).raceWith(new WaitCommand(1.0)),
         serializer
             .startSerializer()
-            .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING)));
+            .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING)),
+        new PrintCommand("Anti-stalling Stopped"));
   }
 
   public Command toggleBumpMode() {
@@ -274,7 +278,7 @@ public class Superstructure extends SubsystemBase {
         ShootingUtil.correctTargetPoseWhileMoving(
             hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
-    distanceFromShootingTarget =
+    distanceFromTargetMeters =
         shootingTarget.getTranslation().getDistance(drive.getPose().getTranslation());
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
@@ -286,6 +290,6 @@ public class Superstructure extends SubsystemBase {
         drive
             .getPose()
             .plus(new Transform2d(0, 0, new Rotation2d(turret.getOrientation())))
-            .plus(new Transform2d(distanceFromShootingTarget, 0, Rotation2d.kZero)));
+            .plus(new Transform2d(distanceFromTargetMeters, 0, Rotation2d.kZero)));
   }
 }
