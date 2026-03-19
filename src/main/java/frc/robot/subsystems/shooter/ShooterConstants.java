@@ -1,9 +1,11 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.Constants.ControlSystemConstants;
 import frc.robot.Constants.ControlSystemContext;
@@ -49,6 +51,9 @@ public final class ShooterConstants {
 
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-200);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(200);
+
+    // 0.75 rotations / second
+    public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.75).times(0.020);
   }
 
   public static final class Hood {
@@ -65,5 +70,8 @@ public final class ShooterConstants {
 
     public static final double MIN_ANGLE_DEG = 0;
     public static final double MAX_ANGLE_DEG = 26.5;
+
+    // 26.5 degrees / second
+    public static final double MANUAL_CONTROL_RATE = 10.0 * 0.020;
   }
 }

@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
@@ -17,6 +18,7 @@ import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -103,6 +105,35 @@ public class Turret extends Pivot implements SysIdTestable {
 
   public Command lockOntoTarget(Supplier<Angle> relativeAngleSupplier) {
     return lockOntoTarget(relativeAngleSupplier, () -> RotationsPerSecond.zero());
+  }
+
+  public Command manualControl(DoubleSupplier gainSupplier) {
+    Command command =
+        new Command() {
+          private Angle currentTargetPosition;
+
+          @Override
+          public void initialize() {
+            currentTargetPosition = getOrientation();
+          }
+
+          @Override
+          public void execute() {
+            double gain = MathUtil.applyDeadband(gainSupplier.getAsDouble(), 0.1);
+
+            if (gain == 0.0) return;
+
+            currentTargetPosition =
+                currentTargetPosition.plus(ShooterConstants.Turret.MANUAL_CONTROL_RATE.times(gain));
+            Angle optimizedAngle = optimizeAngle(currentTargetPosition);
+
+            io.setPosition(optimizedAngle);
+          }
+        };
+
+    command.addRequirements(this);
+
+    return command;
   }
 
   /**

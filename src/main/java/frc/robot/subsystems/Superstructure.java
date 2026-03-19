@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
@@ -53,6 +54,7 @@ public class Superstructure extends SubsystemBase {
       new StateMachine<>(ShootingState.IDLE);
   public final StateMachine<IntakingState> intakingStateMachine =
       new StateMachine<>(IntakingState.STOWED);
+  private boolean isManualOverride = false;
 
   private final Drive drive;
   private final Intake intake;
@@ -67,6 +69,8 @@ public class Superstructure extends SubsystemBase {
   private Pose2d shootingTarget = Pose2d.kZero;
   private double distanceFromTargetMeters = 0.0;
 
+  private final CommandXboxController operatorController;
+
   public Superstructure(
       Drive drive,
       Intake intake,
@@ -76,6 +80,7 @@ public class Superstructure extends SubsystemBase {
       Hood hood,
       Flywheel flywheel,
       LEDs leds,
+      CommandXboxController operatorController,
       Supplier<Pose2d> hubPoseSupplier) {
     this.drive = drive;
     this.intake = intake;
@@ -86,11 +91,12 @@ public class Superstructure extends SubsystemBase {
     this.flywheel = flywheel;
     this.leds = leds;
     this.hubPoseSupplier = hubPoseSupplier;
+    this.operatorController = operatorController;
 
     configureStateRequirements();
     configureStateBehaviours();
     configureGameStateTriggers();
-    // configureAutoTracking();
+    configureAutoTracking();
   }
 
   /** Configure the requirements of each state */
@@ -125,6 +131,7 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
+        .or(new Trigger(() -> isManualOverride))
         .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
         .onFalse(drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts))
         .onTrue(drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed));
@@ -193,6 +200,10 @@ public class Superstructure extends SubsystemBase {
 
     hood.setDefaultCommand(
         hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromTargetMeters)));
+
+    new Trigger(() -> isManualOverride)
+        .whileTrue(turret.manualControl(() -> -operatorController.getRightX()))
+        .whileTrue(hood.manualControl(() -> -operatorController.getLeftY()));
   }
 
   /** A command that requests a state for the shooting state machine */
@@ -260,8 +271,11 @@ public class Superstructure extends SubsystemBase {
           } else {
             intakingStateMachine.requestState(IntakingState.STOWING);
           }
-        },
-        intakingStateMachine);
+        });
+  }
+
+  public Command toggleManualOverride() {
+    return Commands.runOnce(() -> isManualOverride = !isManualOverride);
   }
 
   private Trigger shouldStopSerializer() {

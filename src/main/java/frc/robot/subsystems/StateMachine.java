@@ -2,14 +2,14 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
-public class StateMachine<State extends Enum<State>> extends SubsystemBase {
+public class StateMachine<State extends Enum<State>> {
   public static enum RequestCode {
     /** State change request succeeded */
     SUCCESS,
@@ -67,7 +67,7 @@ public class StateMachine<State extends Enum<State>> extends SubsystemBase {
 
   /** Command wrapper for {@link #forceState(Enum)} */
   public Command forceStateCommand(State newState) {
-    return runOnce(() -> forceState(newState));
+    return Commands.runOnce(() -> forceState(newState));
   }
 
   /**
@@ -98,7 +98,7 @@ public class StateMachine<State extends Enum<State>> extends SubsystemBase {
 
   /** Command wrapper for {@link #requestState(Enum)} */
   public Command requestStateCommand(State targetState) {
-    return runOnce(() -> requestState(targetState));
+    return Commands.runOnce(() -> requestState(targetState));
   }
 
   /**
@@ -106,6 +106,6 @@ public class StateMachine<State extends Enum<State>> extends SubsystemBase {
    * interrupted.
    */
   public Command runRequestStateCommand(State targetState) {
-    return run(() -> requestState(targetState)).until(() -> isInState(targetState));
+    return Commands.run(() -> requestState(targetState)).until(() -> isInState(targetState));
   }
 }

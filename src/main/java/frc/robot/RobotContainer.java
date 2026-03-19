@@ -7,8 +7,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -60,6 +58,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
+import frc.robot.util.ShootingUtil;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -313,6 +312,7 @@ public class RobotContainer {
             hood,
             flywheel,
             leds,
+            operatorController,
             () -> getAllianceHubPose());
 
     NamedCommands.registerCommand("StowIntake", superstructure.forceState(IntakingState.STOWING));
@@ -469,19 +469,28 @@ public class RobotContainer {
     // turret.setDefaultCommand(turret.runVoltage(() -> -operatorController.getLeftX()));
     // hood.setDefaultCommand(hood.runVoltage(() -> operatorController.getRightY()));
     operatorController
-        .y()
+        .a()
         .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
-    operatorController.a().whileTrue(serializer.runSerializer());
+    operatorController.x().whileTrue(serializer.runSerializer());
     operatorController
-        .x()
+        .y()
         .whileTrue(ballTunneler.runTunneler())
-        .whileTrue(flywheel.runVelocity(RadiansPerSecond.of(150)));
+        .whileTrue(
+            flywheel.runVelocity(
+                () ->
+                    ShootingUtil.getFlywheelVelocity(
+                        drive
+                            .getPose()
+                            .getTranslation()
+                            .getDistance(getAllianceHubPose().getTranslation()))));
 
     operatorController.b().whileTrue(serializer.runVolts(-2.0));
 
     operatorController
         .back()
         .onTrue(hood.currentSensedRezero().andThen(intake.currentSensedRezero()));
+
+    operatorController.start().onTrue(superstructure.toggleManualOverride());
   }
 
   /**

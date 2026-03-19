@@ -1,7 +1,9 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,6 +16,7 @@ import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 public class Hood extends Pivot implements SysIdTestable {
@@ -58,6 +61,39 @@ public class Hood extends Pivot implements SysIdTestable {
           io.setPosition(angleSupplier.get());
         },
         () -> io.stop());
+  }
+
+  public Command manualControl(DoubleSupplier gainSupplier) {
+    Command command =
+        new Command() {
+          private Angle currentTargetAngle;
+
+          @Override
+          public void initialize() {
+            currentTargetAngle = getOrientation();
+          }
+
+          @Override
+          public void execute() {
+            double gain = MathUtil.applyDeadband(gainSupplier.getAsDouble(), 0.1);
+
+            if (gain == 0.0) return;
+
+            currentTargetAngle =
+                Degrees.of(
+                    MathUtil.clamp(
+                        currentTargetAngle.in(Degrees)
+                            + ShooterConstants.Hood.MANUAL_CONTROL_RATE * gain,
+                        ShooterConstants.Hood.MIN_ANGLE_DEG,
+                        ShooterConstants.Hood.MAX_ANGLE_DEG));
+
+            io.setPosition(currentTargetAngle);
+          }
+        };
+
+    command.addRequirements(this);
+
+    return command;
   }
 
   public Command currentSensedRezero() {
