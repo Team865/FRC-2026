@@ -96,7 +96,7 @@ public class JoystickDrive extends Command {
     double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
     // Cube rotation value for more precise control
-    omega = omega * omega * omega;
+    omega = Math.copySign(omega * omega * omega * omega, omega);
 
     omega *= 0.5; // Artificially reduce max omega
 

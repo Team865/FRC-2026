@@ -17,13 +17,13 @@ import org.littletonrobotics.junction.Logger;
 public class ShootingUtil {
   public static Angle calculateHoodAngle(double distanceFromTargetMeters) {
     // Determined from experimental data and linear regression
-    double angleDeg = (7.84808 * distanceFromTargetMeters) - 6.31405;
+    double angleDeg; // = (7.84808 * distanceFromTargetMeters) - 6.31405;
 
-    // if(distanceFromTargetMeters < 2.5) {
-    //   angleDeg = (7.84808 * distanceFromTargetMeters) - 6.31405;
-    // } else {
-    //   angleDeg = (6.59125 * distanceFromTargetMeters) - 7.9826;
-    // }
+    if (distanceFromTargetMeters < 2.5) {
+      angleDeg = (7.84808 * distanceFromTargetMeters) - 6.31405;
+    } else {
+      angleDeg = (7.0125 * distanceFromTargetMeters) - 8.6826;
+    }
 
     return Degrees.of(
         MathUtil.clamp(
@@ -45,12 +45,15 @@ public class ShootingUtil {
   public static Pose2d correctTargetPoseWhileMoving(
       Pose2d targetPose, ChassisSpeeds drivetrainFieldOrientedSpeeds, double correctionFactor) {
 
+    if (AllianceFlipUtil.shouldFlip())
+      drivetrainFieldOrientedSpeeds = drivetrainFieldOrientedSpeeds.times(-1);
+
     // Modify the targetPose based on drivetrain speed
     Transform2d targetOffsetVector =
         new Transform2d(
                 new Translation2d(
-                    -drivetrainFieldOrientedSpeeds.vxMetersPerSecond,
-                    -drivetrainFieldOrientedSpeeds.vyMetersPerSecond),
+                    drivetrainFieldOrientedSpeeds.vxMetersPerSecond,
+                    drivetrainFieldOrientedSpeeds.vyMetersPerSecond),
                 Rotation2d.kZero)
             .times(correctionFactor);
 
@@ -66,13 +69,13 @@ public class ShootingUtil {
   }
 
   public static AngularVelocity getFlywheelVelocity(double distanceFromTargetMeters) {
-    // if(distanceFromTargetMeters < 2.5) {
-    //   return RadiansPerSecond.of(350);
-    // } else {
-    //   return RadiansPerSecond.of(400);
-    // }
+    if (distanceFromTargetMeters < 2.5) {
+      return RadiansPerSecond.of(350);
+    } else {
+      return RadiansPerSecond.of(400);
+    }
 
-    return RadiansPerSecond.of(150); // Add more velocities once we get more measurements
+    // return RadiansPerSecond.of(150); // Add more velocities once we get more measurements
   }
 
   public static double angleRadsBetweenTwoVectors(Translation2d vector1, Translation2d vector2) {

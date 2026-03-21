@@ -27,7 +27,7 @@ public final class IntakeConstants {
         new RollersSpecifications(2.0, false, Units.inchesToMeters(1.0));
 
     public static final LinearVelocity MINIMUM_INTAKE_SPEED = MetersPerSecond.of(1.0);
-    public static final LinearVelocity AGITATING_VELOCITY = MetersPerSecond.of(-4.0);
+    public static final LinearVelocity AGITATING_VELOCITY = MetersPerSecond.of(-0.5);
     public static final double DRIVETRAIN_TO_INTAKE_SPEED_FACTOR = 2;
   }
 

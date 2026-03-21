@@ -53,7 +53,7 @@ public class VisionConstants {
   public static double angularStdDevBaseline = 0.06; // Radians
   // Number of frames to skip when processing
   // Reccomended value taken from limelight docs
-  public static int disabledThrottleAmount = 2000;
+  public static int disabledThrottleAmount = 0;
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
   public static double[] cameraStdDevFactors =
@@ -62,7 +62,7 @@ public class VisionConstants {
         1.0, // Right
         0.5 // Turret
       };
-  public static final double turretForwardOffsetMeters = Units.inchesToMeters(6);
+  public static final double turretForwardOffsetMeters = 0.2136;
   // Multipliers to apply for MegaTag 2 observations
   public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
   public static double angularStdDevMegatag2Factor =

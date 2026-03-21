@@ -42,6 +42,6 @@ public class CANcoderIO implements AbsoluteEncoderIO {
   public void updateInputs(AbsoluteEncoderInputs inputs) {
     inputs.connected =
         encoderDisconnectDebouncer.calculate(absolutePositionSignal.refresh().getStatus().isOK());
-    inputs.position = absolutePositionSignal.getValue();
+    inputs.position = absolutePositionSignal.getValue().div(cancoderToMechanismRatio);
   }
 }

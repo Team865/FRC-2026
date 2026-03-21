@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -96,7 +98,7 @@ public class Superstructure extends SubsystemBase {
     configureStateRequirements();
     configureStateBehaviours();
     configureGameStateTriggers();
-    configureAutoTracking();
+    configureShooter();
   }
 
   /** Configure the requirements of each state */
@@ -182,7 +184,7 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(IntakingState.STOWED)
         .whileFalse( // Run the intake based on drivetrain speed
-            intake.runRollers(() -> drive.getChassisSpeeds()));
+            intake.rollers.runLinearVelocity(MetersPerSecond.of(5)));
   }
 
   private void configureGameStateTriggers() {
@@ -190,7 +192,7 @@ public class Superstructure extends SubsystemBase {
     // .onTrue(forceState(IntakingState.DEPLOYING));
   }
 
-  private void configureAutoTracking() {
+  private void configureShooter() {
     turret.setDefaultCommand(
         turret.lockOntoTarget( // Have the turret track the target
             () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
@@ -203,7 +205,10 @@ public class Superstructure extends SubsystemBase {
 
     new Trigger(() -> isManualOverride)
         .whileTrue(turret.manualControl(() -> -operatorController.getRightX()))
-        .whileTrue(hood.manualControl(() -> -operatorController.getLeftY()));
+        .whileTrue(hood.manualControl(() -> -operatorController.getLeftY()))
+        // Helper button for zeroing before restarting bot
+        .and(operatorController.povUp())
+        .onTrue(turret.setTargetAngle(Rotations.zero()));
   }
 
   /** A command that requests a state for the shooting state machine */

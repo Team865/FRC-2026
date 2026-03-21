@@ -6,6 +6,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -30,6 +32,8 @@ public class Serializer extends Rollers implements SysIdTestable {
 
   private final SysIdRoutine sysIdRoutine;
   private final Debouncer stallingDebouncer = new Debouncer(0.5, DebounceType.kRising);
+
+  private final Alert stallingAlert = new Alert("Serializer might be stalled", AlertType.kWarning);
 
   public Serializer(RollersIO io) {
     super("Serializer", io);
@@ -63,11 +67,13 @@ public class Serializer extends Rollers implements SysIdTestable {
   public void periodic() {
     int id = hashCode();
 
-    LoggedTunableNumber.ifChanged(
-        id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
+    // LoggedTunableNumber.ifChanged(
+    //     id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
 
     Logger.recordOutput("Serializer/PosRots", inputs.position.in(Rotations));
     Logger.recordOutput("Serializer/VelRotsPerSec", inputs.angularVelocity.in(RotationsPerSecond));
+
+    stallingAlert.set(isStalling());
 
     super.periodic();
   }

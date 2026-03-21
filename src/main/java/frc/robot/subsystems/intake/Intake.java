@@ -55,6 +55,16 @@ public class Intake extends SubsystemBase {
   public Intake(RollersIO rollersIO, ExtensionIO extensionIO) {
     this.rollers = new Rollers("Intake/Rollers", rollersIO);
     this.extension = new Extension("Intake/Extension", extensionIO);
+
+    rollersIO.setControlConstants(
+        rollersKs.get(), rollersKv.get(), rollersKa.get(), rollersKp.get(), rollersKd.get());
+    extensionIO.setControlConstants(
+        extensionKs.get(),
+        extensionKv.get(),
+        extensionKa.get(),
+        extensionKp.get(),
+        extensionKd.get());
+    extensionIO.setMotionProfile(extensionMaxVelocity.get(), extensionMaxAcceleration.get());
   }
 
   public Command stow() {
@@ -101,26 +111,26 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     int id = hashCode();
 
-    LoggedTunableNumber.ifChanged(
-        id,
-        c -> rollers.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
-        rollersKs,
-        rollersKv,
-        rollersKa,
-        rollersKp,
-        rollersKd);
-    LoggedTunableNumber.ifChanged(
-        id,
-        c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
-        extensionKs,
-        extensionKv,
-        extensionKa,
-        extensionKp,
-        extensionKd);
-    LoggedTunableNumber.ifChanged(
-        id,
-        c -> extension.io.setMotionProfile(c[0], c[1]),
-        extensionMaxVelocity,
-        extensionMaxAcceleration);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     c -> rollers.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+    //     rollersKs,
+    //     rollersKv,
+    //     rollersKa,
+    //     rollersKp,
+    //     rollersKd);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+    //     extensionKs,
+    //     extensionKv,
+    //     extensionKa,
+    //     extensionKp,
+    //     extensionKd);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     c -> extension.io.setMotionProfile(c[0], c[1]),
+    //     extensionMaxVelocity,
+    //     extensionMaxAcceleration);
   }
 }

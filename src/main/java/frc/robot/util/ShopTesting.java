@@ -1,5 +1,6 @@
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -47,14 +48,9 @@ public class ShopTesting {
             new ParallelCommandGroup(
                 serializer.runSerializer(),
                 ballTunneler.runTunneler(),
+                hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())),
                 flywheel.runVelocity(
                     () -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get()))));
-
-    driverController.povUp().onTrue(intake.stow());
-    driverController
-        .povDown()
-        .onTrue(intake.deploy())
-        .whileTrue(intake.runRollers(() -> drive.getChassisSpeeds()));
 
     // driverController
     //     .y()
@@ -66,16 +62,6 @@ public class ShopTesting {
     //     .whileTrue(hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())));
 
     // Turret tracking only when this is held down. Used for velocity compensation testing
-    driverController
-        .b()
-        .toggleOnTrue(
-            turret.lockOntoTarget(
-                () ->
-                    ShootingUtil.calculateTurretRelativeAngle(
-                        drive.getPose(), hubPoseSupplier.get()),
-                () ->
-                    ShootingUtil.getAngularVelocityCompensation(
-                        drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds())));
 
     ShootingLogger shootingLogger = new ShootingLogger();
     Subsystem proxySubsystem = new Subsystem() {};

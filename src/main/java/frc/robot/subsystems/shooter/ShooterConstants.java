@@ -47,10 +47,10 @@ public final class ShooterConstants {
 
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(52.0, false);
     public static final CANcoderSpecifications CANCODER_SPECS =
-        new CANcoderSpecifications(360.0 / 400, false, -0.488281);
+        new CANcoderSpecifications(360.0 / 400, false, -0.0373);
 
-    public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-200);
-    public static final double MAX_ANGLE_RADS = Units.degreesToRadians(200);
+    public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
+    public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);
 
     // 0.75 rotations / second
     public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.75).times(0.020);
