@@ -52,8 +52,12 @@ public class ShootingUtil {
     Transform2d targetOffsetVector =
         new Transform2d(
                 new Translation2d(
-                    drivetrainFieldOrientedSpeeds.vxMetersPerSecond,
-                    drivetrainFieldOrientedSpeeds.vyMetersPerSecond),
+                    Math.copySign(
+                        Math.sqrt(Math.abs(drivetrainFieldOrientedSpeeds.vxMetersPerSecond)),
+                        drivetrainFieldOrientedSpeeds.vxMetersPerSecond),
+                    Math.copySign(
+                        Math.sqrt(Math.abs(drivetrainFieldOrientedSpeeds.vyMetersPerSecond)),
+                        drivetrainFieldOrientedSpeeds.vyMetersPerSecond)),
                 Rotation2d.kZero)
             .times(correctionFactor);
 
