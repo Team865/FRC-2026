@@ -61,6 +61,10 @@ public class Extension extends SubsystemBase {
     return runOnce(io::stop);
   }
 
+  public Distance getPosition() {
+    return inputs.position;
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);

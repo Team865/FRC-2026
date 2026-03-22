@@ -1,5 +1,5 @@
 {
-  "name": "865Robot2026",
+  "name": "Laminar",
   "disableSimplification": true,
   "rotations": [
     {
@@ -18,11 +18,11 @@
   "position": [
     0.0,
     0.0,
-    0.0
+    -0.025
   ],
   "components": [
     {
-      "name": "Rollers",
+      "name": "DyeRotor",
       "zeroedRotations": [
         {
           "axis": "x",
@@ -45,8 +45,6 @@
     },
     {
       "name": "Turret",
-      "type": "mechanism2d",
-      "mechanismIndex": 1,
       "zeroedRotations": [
         {
           "axis": "x",
@@ -68,7 +66,29 @@
       ]
     },
     {
-      "name": "IntakeArm",
+      "name": "Hood",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": 34.5
+        }
+      ],
+      "zeroedPosition": [
+        -0.10180629334,
+        0,
+        -0.635
+      ]
+    },
+    {
+      "name": "Lintake",
       "zeroedRotations": [
         {
           "axis": "x",
@@ -84,9 +104,9 @@
         }
       ],
       "zeroedPosition": [
-        -0.21,
-        0.0,
-        -0.31
+        0,
+        0,
+        0
       ]
     },
     {

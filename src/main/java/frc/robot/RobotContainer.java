@@ -506,7 +506,7 @@ public class RobotContainer {
 
   public void updateComponentPoses() {
     if (Constants.currentMode != Constants.Mode.REAL) {
-      ComponentPoseUtil.publishComponentPoses(serializer, turret, intake.extension, climber);
+      ComponentPoseUtil.publishComponentPoses(serializer, turret, hood, intake.extension, climber);
     }
   }
 
