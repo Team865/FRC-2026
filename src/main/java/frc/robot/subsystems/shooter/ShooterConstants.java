@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -51,6 +52,7 @@ public final class ShooterConstants {
 
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);
+    public static final Angle DEADZONE = Degrees.of(2);
 
     // 0.75 rotations / second
     public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.75).times(0.020);

@@ -24,7 +24,6 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Turret extends Pivot implements SysIdTestable {
-  private static final Angle DEADZONE = Degrees.of(2);
   private static final double TAU = 2 * Math.PI;
 
   private final LoggedTunableNumber kS =
@@ -85,7 +84,7 @@ public class Turret extends Pivot implements SysIdTestable {
           Angle optimizedAngle = optimizeAngle(rawAngle);
 
           // Apply deadzone to reduce how much noise affects tracking
-          if (inputs.targetPosition.isNear(optimizedAngle, DEADZONE)) {
+          if (inputs.targetPosition.isNear(optimizedAngle, ShooterConstants.Turret.DEADZONE)) {
             optimizedAngle = inputs.targetPosition;
           }
 
