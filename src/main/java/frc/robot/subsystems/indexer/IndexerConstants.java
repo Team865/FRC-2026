@@ -24,7 +24,7 @@ public final class IndexerConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(2.1862, 0.27345, 0.8, 0, 5, 0),
-            new ControlSystemContext(2.5, 0.1, 0.25, 0.0, 5.0, 0.0));
+            new ControlSystemContext(0.12, 0.01, 0.0, 0.0, 1.0, 0.0));
   }
 
   public static final class BallTunneler {

@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import static frc.robot.Constants.Mode;
+
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -97,7 +99,9 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    robotContainer.updateComponentPoses();
+    if (!Constants.currentMode.equals(Mode.REAL)) { // Only update when not running on real hardware
+      robotContainer.updateComponentPoses();
+    }
 
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
