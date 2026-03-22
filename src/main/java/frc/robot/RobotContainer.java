@@ -331,6 +331,13 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
+    autoChooser.addOption("Intake Pit Check", superstructure.intakePitCheck());
+    autoChooser.addOption("Turret Pit Check", superstructure.turretPitCheck());
+    autoChooser.addOption("Shooting Pit Check", superstructure.shootingPitCheck());
+    autoChooser.addOption("Flywheel Pit Check", superstructure.flywheelPitCheck());
+    autoChooser.addOption("Balltunneler Pit Check", superstructure.balltunnelerPitCheck());
+    autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
+    autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
     // // Set up SysId routines
 
     // autoChooser.addOption(
@@ -512,5 +519,9 @@ public class RobotContainer {
 
   public void throttleCameras(int throttleAmount) {
     vision.throttleCameras(throttleAmount);
+  }
+
+  public void stopManualOverride() {
+    superstructure.stopManualOverride();
   }
 }

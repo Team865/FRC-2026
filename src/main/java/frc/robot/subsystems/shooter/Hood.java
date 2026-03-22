@@ -97,13 +97,17 @@ public class Hood extends Pivot implements SysIdTestable {
   }
 
   public Command currentSensedRezero() {
-    return new SequentialCommandGroup(
-        setVoltage(-1),
-        new WaitUntilCommand(
-                () -> currentSenseDebouncer.calculate(Math.abs(inputs.torqueCurrentAmps) > 20))
-            .raceWith(new WaitCommand(2)),
-        stop(),
-        runOnce(() -> io.seedPosition(Rotations.zero())));
+    if (frc.robot.Constants.currentMode == frc.robot.Constants.Mode.REAL) {
+      return new SequentialCommandGroup(
+          setVoltage(-1),
+          new WaitUntilCommand(
+                  () -> currentSenseDebouncer.calculate(Math.abs(inputs.torqueCurrentAmps) > 20))
+              .raceWith(new WaitCommand(2)),
+          stop(),
+          runOnce(() -> io.seedPosition(Rotations.zero())));
+    } else {
+      return runOnce(() -> {});
+    }
   }
 
   @Override

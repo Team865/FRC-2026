@@ -76,15 +76,19 @@ public class Intake extends SubsystemBase {
   }
 
   public Command currentSensedRezero() {
-    return new SequentialCommandGroup(
-        extension.setVolts(-5),
-        new WaitUntilCommand(
-                () ->
-                    currentSenseDebouncer.calculate(
-                        Math.abs(extension.inputs.torqueCurrentAmps) > 60))
-            .raceWith(new WaitCommand(5)),
-        extension.stop(),
-        runOnce(() -> extension.io.seedPosition(Meters.zero())));
+    if (frc.robot.Constants.currentMode == frc.robot.Constants.Mode.REAL) {
+      return new SequentialCommandGroup(
+          extension.setVolts(-5),
+          new WaitUntilCommand(
+                  () ->
+                      currentSenseDebouncer.calculate(
+                          Math.abs(extension.inputs.torqueCurrentAmps) > 60))
+              .raceWith(new WaitCommand(5)),
+          extension.stop(),
+          runOnce(() -> extension.io.seedPosition(Meters.zero())));
+    } else {
+      return runOnce(() -> {});
+    }
   }
 
   public Trigger extensionAtSetpoint() {

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -253,6 +255,83 @@ public class Superstructure extends SubsystemBase {
         new PrintCommand("Anti-stalling Stopped"));
   }
 
+  public SequentialCommandGroup intakePitCheck() {
+    return new SequentialCommandGroup(
+        startManualOverride(),
+        intake.currentSensedRezero(),
+        forceState(IntakingState.DEPLOYING),
+        new WaitCommand(3.0),
+        forceState(IntakingState.STOWING));
+  }
+
+  public SequentialCommandGroup hoodPitCheck() {
+    return new SequentialCommandGroup(
+        startManualOverride(),
+        hood.currentSensedRezero(),
+        hood.setTargetAngle(Degrees.of(0)),
+        new WaitCommand(1.0),
+        hood.setTargetAngle(Degrees.of(15)),
+        new WaitCommand(1.0),
+        hood.setTargetAngle(Degrees.of(26.5)),
+        new WaitCommand(1.0),
+        hood.setTargetAngle(Degrees.of(5)),
+        new WaitCommand(1.0),
+        hood.setTargetAngle(Degrees.of(0)),
+        new WaitCommand(4.0));
+  }
+
+  public SequentialCommandGroup balltunnelerPitCheck() {
+    return new SequentialCommandGroup(
+        startManualOverride(),
+        ballTunneler.runTunneler(),
+        flywheel.runVelocity(RadiansPerSecond.of(150)),
+        new WaitCommand(6.0),
+        ballTunneler.stop(),
+        flywheel.stop());
+  }
+
+  public SequentialCommandGroup serializerPitCheck() {
+    return new SequentialCommandGroup(
+        startManualOverride(), serializer.runSerializer(), new WaitCommand(6.0), serializer.stop());
+  }
+
+  public SequentialCommandGroup flywheelPitCheck() {
+    return new SequentialCommandGroup(
+        startManualOverride(),
+        flywheel.runVelocity(RadiansPerSecond.of(560)),
+        new WaitCommand(6.0),
+        flywheel.stop());
+  }
+
+  public SequentialCommandGroup shootingPitCheck() {
+    return new SequentialCommandGroup(
+        startManualOverride(),
+        flywheel.runVelocity(RadiansPerSecond.of(150)),
+        serializer.runSerializer(),
+        ballTunneler.runTunneler(),
+        new WaitCommand(6.0),
+        flywheel.stop(),
+        ballTunneler.stop(),
+        serializer.stop());
+  }
+
+  public SequentialCommandGroup turretPitCheck() {
+    return new SequentialCommandGroup(
+        startManualOverride(),
+        turret.setTargetAngle(Degrees.of(90)),
+        new WaitCommand(1.0),
+        turret.setTargetAngle(Degrees.of(180)),
+        new WaitCommand(1.0),
+        turret.setTargetAngle(Degrees.of(0)),
+        new WaitCommand(1.0),
+        turret.setTargetAngle(Degrees.of(-90)),
+        new WaitCommand(1.0),
+        turret.setTargetAngle(Degrees.of(-180)),
+        new WaitCommand(1.0),
+        turret.setTargetAngle(Degrees.of(0)),
+        new WaitCommand(4.0));
+  }
+
   public Command toggleBumpMode() {
     return runOnce(
         () -> {
@@ -282,6 +361,14 @@ public class Superstructure extends SubsystemBase {
 
   public Command toggleManualOverride() {
     return Commands.runOnce(() -> isManualOverride = !isManualOverride);
+  }
+
+  public Command startManualOverride() {
+    return Commands.runOnce(() -> isManualOverride = true);
+  }
+
+  public Command stopManualOverride() {
+    return Commands.runOnce(() -> isManualOverride = false);
   }
 
   private Trigger shouldStopSerializer() {
