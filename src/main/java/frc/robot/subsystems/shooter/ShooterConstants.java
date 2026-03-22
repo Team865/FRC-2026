@@ -64,7 +64,7 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 0.24, 0.01, 0.32, 0.0, 300.0, 0.0, Optional.of(3.0), Optional.of(5.0)),
             new ControlSystemContext(
-                4.44, 0.1, 0.0, 0.0, 1.0, 0.0, Optional.of(1.0), Optional.of(1.0)));
+                0.12, 0.001, 0.0, 0.0, 10.0, 0.15, Optional.of(26.0), Optional.of(52.0)));
 
     public static final PivotSpecifications SPECS = new PivotSpecifications(96.0, true);
 

@@ -63,15 +63,11 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.4120781527531172,
-      "rotationDegrees": 135.0
-    },
-    {
-      "waypointRelativePos": 1.0905861456483135,
-      "rotationDegrees": 135.0
-    },
-    {
-      "waypointRelativePos": 1.4493783303730048,
       "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 1.43687374749499,
+      "rotationDegrees": -148.8792644902523
     },
     {
       "waypointRelativePos": 2.15275310834814,
@@ -97,7 +93,7 @@
   "eventMarkers": [
     {
       "name": "DeployIntake",
-      "waypointRelativePos": 0.9900332225913652,
+      "waypointRelativePos": 0.5571428571428577,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -123,7 +119,7 @@
   "folder": "Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 135.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": false
 }

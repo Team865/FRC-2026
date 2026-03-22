@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -17,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
@@ -70,6 +70,7 @@ public class Superstructure extends SubsystemBase {
 
   private Pose2d shootingTarget = Pose2d.kZero;
   private double distanceFromTargetMeters = 0.0;
+  private boolean isPassing = false;
 
   private final CommandXboxController operatorController;
 
@@ -184,7 +185,7 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(IntakingState.STOWED)
         .whileFalse( // Run the intake based on drivetrain speed
-            intake.rollers.runLinearVelocity(MetersPerSecond.of(5)));
+            intake.runRollers(() -> drive.getChassisSpeeds()));
   }
 
   private void configureGameStateTriggers() {
@@ -292,13 +293,16 @@ public class Superstructure extends SubsystemBase {
 
   @Override
   public void periodic() {
+    Pose2d drivePose = drive.getPose();
 
     shootingTarget = // hubPoseSupplier.get();
         ShootingUtil.correctTargetPoseWhileMoving(
             hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
     distanceFromTargetMeters =
-        shootingTarget.getTranslation().getDistance(drive.getPose().getTranslation());
+        shootingTarget.getTranslation().getDistance(drivePose.getTranslation());
+
+    isPassing = FieldConstants.shouldBePassing(drivePose);
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());

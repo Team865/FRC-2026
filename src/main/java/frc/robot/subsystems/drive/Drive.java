@@ -45,9 +45,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.Constants.Mode;
 import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.util.Benchmark;
+import frc.robot.util.Benchmark.TimeUnit;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.VisionUtil;
 import java.util.concurrent.locks.Lock;
@@ -126,6 +127,8 @@ public class Drive extends SubsystemBase {
   private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts.times(0.8);
 
   private boolean shouldReseedOnRotationStop = false;
+
+  private final Benchmark benchmark = new Benchmark("Drive Periodic");
 
   public Drive(
       GyroIO gyroIO,
@@ -207,6 +210,7 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
+    benchmark.start();
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -272,7 +276,9 @@ public class Drive extends SubsystemBase {
     field.setRobotPose(getPose());
 
     // Update gyro alert
-    gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+    gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Constants.simMode);
+
+    benchmark.end(TimeUnit.MILLISECONDS);
   }
 
   /**

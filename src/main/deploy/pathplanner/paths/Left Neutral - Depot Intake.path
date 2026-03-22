@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.07229487178906,
-        "y": 5.116423076917263
+        "x": 6.306726296958854,
+        "y": 5.276243291592128
       },
       "isLocked": false,
       "linkedName": "LeftNZEndA"
     },
     {
       "anchor": {
-        "x": 1.6070384615326487,
-        "y": 5.95
+        "x": 2.834490161001789,
+        "y": 5.584525939177102
       },
       "prevControl": {
-        "x": 2.1070384615326487,
-        "y": 5.95
+        "x": 3.0836154561615956,
+        "y": 5.563631267331405
       },
       "nextControl": {
-        "x": 1.1070384615326487,
-        "y": 5.95
+        "x": 1.5826289586455036,
+        "y": 5.689522218269573
       },
       "isLocked": false,
       "linkedName": null
@@ -36,8 +36,8 @@
         "y": 5.95
       },
       "prevControl": {
-        "x": 1.6302692307692321,
-        "y": 5.95
+        "x": 0.8787609701110988,
+        "y": 5.9225800167969815
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,14 +47,14 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.33684210526315606,
-      "rotationDegrees": 135.0
+      "rotationDegrees": -119.99999999999999
     },
     {
-      "waypointRelativePos": 0.6421052631578961,
-      "rotationDegrees": 135.0
+      "waypointRelativePos": 0.7895791583166333,
+      "rotationDegrees": -119.99999999999999
     },
     {
-      "waypointRelativePos": 0.8350877192982392,
+      "waypointRelativePos": 1.3907815631262523,
       "rotationDegrees": 0.0
     }
   ],
@@ -77,7 +77,7 @@
   "eventMarkers": [
     {
       "name": "StartShooting",
-      "waypointRelativePos": 0.8413948256467906,
+      "waypointRelativePos": 1.3761904761904746,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

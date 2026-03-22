@@ -62,6 +62,14 @@ public class FieldConstants {
           Units.inchesToMeters(180.75),
           Rotation2d.fromDegrees(180)); // Away from origin
 
+  public static boolean shouldBePassing(Pose2d robotPose) {
+    if (AllianceFlipUtil.shouldFlip()) {
+      return robotPose.getX() < (651.22 - 182.11);
+    } else {
+      return robotPose.getX() > 182.11;
+    }
+  }
+
   public static final class Lockout {
     public static final double thresholdMeters = 1.0;
 
