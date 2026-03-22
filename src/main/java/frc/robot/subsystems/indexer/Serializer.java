@@ -48,11 +48,12 @@ public class Serializer extends Rollers implements SysIdTestable {
 
   public Command runSerializer() {
     return runEnd(
-        () -> io.setAngularVelocity(IndexerConstants.Serializer.SPINDEXING_SPEED), () -> io.stop());
+        () -> io.setAngularVelocity(IndexerConstants.Serializer.SERIALIZING_SPEED),
+        () -> io.stop());
   }
 
   public Command startSerializer() {
-    return runOnce(() -> io.setAngularVelocity(IndexerConstants.Serializer.SPINDEXING_SPEED));
+    return runOnce(() -> io.setAngularVelocity(IndexerConstants.Serializer.SERIALIZING_SPEED));
   }
 
   public boolean isStalling() {

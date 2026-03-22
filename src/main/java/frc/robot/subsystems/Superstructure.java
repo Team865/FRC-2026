@@ -283,8 +283,8 @@ public class Superstructure extends SubsystemBase {
   public SequentialCommandGroup balltunnelerPitCheck() {
     return new SequentialCommandGroup(
         startManualOverride(),
-        ballTunneler.runTunneler(),
-        flywheel.runVelocity(RadiansPerSecond.of(150)),
+        ballTunneler.startTunneler(),
+        flywheel.setVelocity(RadiansPerSecond.of(150)),
         new WaitCommand(6.0),
         ballTunneler.stop(),
         flywheel.stop());
@@ -298,7 +298,7 @@ public class Superstructure extends SubsystemBase {
   public SequentialCommandGroup flywheelPitCheck() {
     return new SequentialCommandGroup(
         startManualOverride(),
-        flywheel.runVelocity(RadiansPerSecond.of(560)),
+        flywheel.setVelocity(RadiansPerSecond.of(560)),
         new WaitCommand(6.0),
         flywheel.stop());
   }
@@ -306,9 +306,9 @@ public class Superstructure extends SubsystemBase {
   public SequentialCommandGroup shootingPitCheck() {
     return new SequentialCommandGroup(
         startManualOverride(),
-        flywheel.runVelocity(RadiansPerSecond.of(150)),
-        serializer.runSerializer(),
-        ballTunneler.runTunneler(),
+        flywheel.setVelocity(RadiansPerSecond.of(150)),
+        serializer.startSerializer(),
+        ballTunneler.startTunneler(),
         new WaitCommand(6.0),
         flywheel.stop(),
         ballTunneler.stop(),

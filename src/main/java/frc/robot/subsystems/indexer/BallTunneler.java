@@ -39,8 +39,11 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   public Command runTunneler() {
     return runEnd(
         () -> io.setAngularVelocity(IndexerConstants.BallTunneler.TUNNELING_SPEED),
-        // () -> io.setVolts(12),
         () -> io.stop());
+  }
+
+  public Command startTunneler() {
+    return runOnce(() -> io.setAngularVelocity(IndexerConstants.BallTunneler.TUNNELING_SPEED));
   }
 
   public Command waitUntilFreeRunning() {
