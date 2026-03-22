@@ -30,7 +30,7 @@ public class ComponentPoseUtil {
       Extension intakeExtension,
       Climber climber) {
 
-    Pose3d[] poses = new Pose3d[5];
+    Pose3d[] poses = new Pose3d[6];
     // Serializer
     poses[0] =
         new Pose3d(
@@ -53,20 +53,17 @@ public class ComponentPoseUtil {
 
     // Intake arm
     double intakeExtensionMeters = intakeExtension.getPosition().in(Meters);
+    double intakeExtensionHorizontal = lintakeHFactor * intakeExtensionMeters;
 
     poses[3] =
         new Pose3d(
-            new Translation3d(
-                lintakeHFactor * intakeExtensionMeters, 0, lintakeVFactor * intakeExtensionMeters),
+            new Translation3d(intakeExtensionHorizontal, 0, lintakeVFactor * intakeExtensionMeters),
             Rotation3d.kZero);
-    // intakeExtension != null && intakeExtension.getOrientation() != null
-    //     ? new Pose3d(
-    //         new Translation3d(-0.31, 0, 0.21),
-    //         new Rotation3d(0, -intakeExtension.getOrientation().in(Radians), 0))
-    //     : new Pose3d();
+
+    poses[4] = new Pose3d(new Translation3d(intakeExtensionHorizontal, 0, 0), Rotation3d.kZero);
 
     // Climber
-    poses[4] = new Pose3d(new Translation3d(0, 0, climber.getPositionMeters()), Rotation3d.kZero);
+    poses[5] = new Pose3d(new Translation3d(0, 0, climber.getPositionMeters()), Rotation3d.kZero);
 
     Logger.recordOutput("RobotRendering/ComponentPoses", poses);
   }
