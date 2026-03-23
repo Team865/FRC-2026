@@ -15,5 +15,7 @@ public final class DriveConstants {
     return AllianceFlipUtil.shouldFlip() ? Rotation2d.k180deg : Rotation2d.kZero;
   }
 
+  public static final double driveMotorSupplyCurrentLimit = 50.0;
+
   private DriveConstants() {}
 }
