@@ -101,6 +101,17 @@
           "name": "DeployIntake"
         }
       }
+    },
+    {
+      "name": "StopShooting",
+      "waypointRelativePos": 1.0191226096737758,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopShooting"
+        }
+      }
     }
   ],
   "globalConstraints": {

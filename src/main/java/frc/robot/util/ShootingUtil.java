@@ -43,8 +43,14 @@ public class ShootingUtil {
   }
 
   public static Pose2d correctTargetPoseWhileMoving(
-      Pose2d targetPose, ChassisSpeeds drivetrainFieldOrientedSpeeds, double correctionFactor) {
+      Pose2d robotPose,
+      Pose2d targetPose,
+      ChassisSpeeds drivetrainFieldOrientedSpeeds,
+      double velocityCorrectionFactor,
+      double distanceCorrectionFactor) {
 
+    double distanceFromTargetMeters =
+        targetPose.getTranslation().getDistance(robotPose.getTranslation());
     if (AllianceFlipUtil.shouldFlip())
       drivetrainFieldOrientedSpeeds = drivetrainFieldOrientedSpeeds.times(-1);
 
@@ -52,24 +58,21 @@ public class ShootingUtil {
     Transform2d targetOffsetVector =
         new Transform2d(
                 new Translation2d(
-                    Math.copySign(
-                        Math.sqrt(Math.abs(drivetrainFieldOrientedSpeeds.vxMetersPerSecond)),
-                        drivetrainFieldOrientedSpeeds.vxMetersPerSecond),
-                    Math.copySign(
-                        Math.sqrt(Math.abs(drivetrainFieldOrientedSpeeds.vyMetersPerSecond)),
-                        drivetrainFieldOrientedSpeeds.vyMetersPerSecond)),
+                    drivetrainFieldOrientedSpeeds.vxMetersPerSecond,
+                    drivetrainFieldOrientedSpeeds.vyMetersPerSecond),
                 Rotation2d.kZero)
-            .times(correctionFactor);
+            // Hard coded for now until we know the other version works
+            .times(0.85); // velocityCorrectionFactor + distanceFromTargetMeters *
+    // distanceCorrectionFactor);
 
     return targetPose.plus(targetOffsetVector);
   }
 
   public static Pose2d correctTargetPoseWhileMoving(
-      Pose2d targetPose, ChassisSpeeds drivetrainFieldOrientedSpeeds) {
-    double correctionFactor = 0.85;
+      Pose2d robotPose, Pose2d targetPose, ChassisSpeeds drivetrainFieldOrientedSpeeds) {
 
     return correctTargetPoseWhileMoving(
-        targetPose, drivetrainFieldOrientedSpeeds, correctionFactor);
+        robotPose, targetPose, drivetrainFieldOrientedSpeeds, 0.6, 0.2);
   }
 
   public static AngularVelocity getFlywheelVelocity(double distanceFromTargetMeters) {

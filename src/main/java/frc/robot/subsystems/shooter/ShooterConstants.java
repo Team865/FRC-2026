@@ -26,7 +26,7 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 0.12, 0.0, 0.4, 0.0, 0.5, 0.004, Optional.empty(), Optional.empty()),
             new ControlSystemContext(
-                0.12, 0.05, 0.0, 0.0, 0.5, 0.0, Optional.empty(), Optional.empty()));
+                0.02, 0.01, 0.0, 0.0, 0.1, 0.0, Optional.empty(), Optional.empty()));
 
     public static final double GEAR_RATIO = 1;
     public static final double WHEEL_RADIUS_METERS = 0.05;
@@ -53,6 +53,7 @@ public final class ShooterConstants {
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);
     public static final Angle DEADZONE = Degrees.of(2);
+    public static final Angle SHOOTING_TOLERANCE = Degrees.of(5);
 
     // 0.75 rotations / second
     public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.75).times(0.020);
@@ -72,6 +73,7 @@ public final class ShooterConstants {
 
     public static final double MIN_ANGLE_DEG = 0;
     public static final double MAX_ANGLE_DEG = 26.5;
+    public static final Angle EXTRA_GAIN_TOLERANCE = Degrees.of(0.2);
 
     // 26.5 degrees / second
     public static final double MANUAL_CONTROL_RATE = 10.0 * 0.020;

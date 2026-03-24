@@ -11,6 +11,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.pivot.AbsoluteEncoderIO;
 import frc.robot.subsystems.pivot.AbsoluteEncoderInputsAutoLogged;
@@ -83,10 +84,10 @@ public class Turret extends Pivot implements SysIdTestable {
           Angle rawAngle = relativeAngleSupplier.get();
           Angle optimizedAngle = optimizeAngle(rawAngle);
 
-          // Apply deadzone to reduce how much noise affects tracking
-          if (inputs.targetPosition.isNear(optimizedAngle, ShooterConstants.Turret.DEADZONE)) {
-            optimizedAngle = inputs.targetPosition;
-          }
+          // // Apply deadzone to reduce how much noise affects tracking
+          // if (inputs.targetPosition.isNear(optimizedAngle, ShooterConstants.Turret.DEADZONE)) {
+          //   optimizedAngle = inputs.targetPosition;
+          // }
 
           Logger.recordOutput(
               "Turret/Requested Angle Degrees", relativeAngleSupplier.get().in(Degrees));
@@ -192,6 +193,13 @@ public class Turret extends Pivot implements SysIdTestable {
     return Radians.of(absoluteAngleRads);
   }
 
+  public Trigger canShoot() {
+    return new Trigger(
+        () ->
+            inputs.targetPosition.isNear(
+                inputs.position, ShooterConstants.Turret.SHOOTING_TOLERANCE));
+  }
+
   @Override
   public void periodic() {
     int id = hashCode();
@@ -215,7 +223,7 @@ public class Turret extends Pivot implements SysIdTestable {
     super.periodic();
 
     encoderIO.updateInputs(encoderInputs);
-    encoderDisconnectedAlert.set(!encoderInputs.connected);
+    // encoderDisconnectedAlert.set(!encoderInputs.connected);
     Logger.processInputs("Shooter/Turret/AbsoluteEncoder", encoderInputs);
   }
 

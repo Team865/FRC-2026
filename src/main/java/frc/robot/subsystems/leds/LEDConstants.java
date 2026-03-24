@@ -38,11 +38,11 @@ public final class LEDConstants {
   }
 
   public enum Section {
-    TurretSide(0),
-    RightSide(1),
-    IntakeSide(2),
-    LeftSide(3),
-    BellyPan(4);
+    Right(0),
+    RightMiddle(1),
+    LeftMiddle(2),
+    Left(3),
+    Overflow(4);
 
     private final int index;
 

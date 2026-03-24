@@ -75,6 +75,9 @@ public class Superstructure extends SubsystemBase {
   private boolean isPassing = false;
 
   private final CommandXboxController operatorController;
+  private final Trigger manualOverrideTrigger = new Trigger(() -> isManualOverride);
+  private final Trigger passingModeTrigger =
+      new Trigger(() -> isPassing && DriverStation.isTeleopEnabled() && !isManualOverride);
 
   public Superstructure(
       Drive drive,
@@ -129,6 +132,7 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
+        .and(passingModeTrigger.negate())
         .whileTrue(
             flywheel.runVelocity(() -> ShootingUtil.getFlywheelVelocity(distanceFromTargetMeters)))
         .onTrue(leds.shootingWaveCommand());
@@ -136,30 +140,25 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .or(new Trigger(() -> isManualOverride))
-        .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
-        .onFalse(drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts))
-        .onTrue(drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed));
+        .and(passingModeTrigger)
+        .whileTrue(flywheel.runVelocity(() -> RadiansPerSecond.of(350)));
 
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
+        .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
+        .onFalse(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))
+        .onTrue(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
+
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.SHOOTING)
+        .and(turret.canShoot())
         .whileTrue(ballTunneler.runTunneler())
         .onTrue(serializer.startSerializer())
         .onFalse(serializer.stop());
 
     // shouldStopSerializer().onTrue(restartSerializerAntiStalled());
-    // serializer
-    //     .stop()
-    //     .andThen(
-    //         new WaitUntilCommand(() -> shouldRestartSerializer())
-    //             .andThen(
-    //                 serializer
-    //                     .startSerializer()
-    //                     .alongWith(new PrintCommand("Test"))
-    //                     .onlyIf(
-    //                         () ->
-    //                             shootingStateMachine.isInState(ShootingState.SHOOTING)))));
 
     // shootingStateMachine
     //     .stateTriggers
@@ -187,7 +186,7 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(IntakingState.STOWED)
         .whileFalse( // Run the intake based on drivetrain speed
-            intake.runRollers(() -> drive.getChassisSpeeds()));
+            intake.runRollers(drive::getRotation, drive::getChassisSpeeds));
   }
 
   private void configureGameStateTriggers() {
@@ -206,12 +205,25 @@ public class Superstructure extends SubsystemBase {
     hood.setDefaultCommand(
         hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromTargetMeters)));
 
-    new Trigger(() -> isManualOverride)
+    passingModeTrigger
+        .whileTrue(
+            turret.lockOntoTarget(
+                () ->
+                    DriveConstants.getZeroOrientation()
+                        .plus(Rotation2d.k180deg)
+                        .minus(drive.getRotation())
+                        .getMeasure()))
+        .whileTrue(hood.runTargetAngle(() -> Degrees.of(26.5)));
+
+    manualOverrideTrigger
+        .and(operatorController.povUp().negate())
         .whileTrue(turret.manualControl(() -> -operatorController.getRightX()))
-        .whileTrue(hood.manualControl(() -> -operatorController.getLeftY()))
-        // Helper button for zeroing before restarting bot
+        .whileTrue(hood.manualControl(() -> -operatorController.getLeftY()));
+
+    manualOverrideTrigger
         .and(operatorController.povUp())
-        .onTrue(turret.setTargetAngle(Rotations.zero()));
+        // Helper button for zeroing before restarting bot
+        .whileTrue(turret.runTargetAngle(() -> Rotations.zero()));
   }
 
   /** A command that requests a state for the shooting state machine */
@@ -335,14 +347,14 @@ public class Superstructure extends SubsystemBase {
   public Command toggleBumpMode() {
     return runOnce(
         () -> {
-          if (drive.getMaxLinearSpeed().equals(DriveConstants.bumpModeMaxSpeed)) {
+          if (drive.getMaxLinearSpeed().equals(DriveConstants.shootingModeMaxSpeed)) {
             if (shootingStateMachine.isInState(ShootingState.IDLE)) {
               drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts);
             } else {
               drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed);
             }
           } else {
-            drive.setMaxLinearSpeed(DriveConstants.bumpModeMaxSpeed);
+            drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed);
           }
         });
   }
@@ -384,7 +396,7 @@ public class Superstructure extends SubsystemBase {
 
     shootingTarget = // hubPoseSupplier.get();
         ShootingUtil.correctTargetPoseWhileMoving(
-            hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
+            drivePose, hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
     distanceFromTargetMeters =
         shootingTarget.getTranslation().getDistance(drivePose.getTranslation());

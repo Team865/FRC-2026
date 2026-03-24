@@ -4,7 +4,10 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -95,18 +98,25 @@ public class Intake extends SubsystemBase {
     return extension.atSetpoint();
   }
 
-  public Command runRollers(Supplier<ChassisSpeeds> drivetrainSpeedsSupplier) {
+  public Command runRollers(
+      Supplier<Rotation2d> driveHeadingSupplier, Supplier<ChassisSpeeds> drivetrainSpeedsSupplier) {
     return rollers.runLinearVelocity(
         () -> {
-          ChassisSpeeds speeds = drivetrainSpeedsSupplier.get();
+          Rotation2d driverHeading = driveHeadingSupplier.get();
+          ChassisSpeeds fieldOrientedSpeeds =
+              ChassisSpeeds.fromRobotRelativeSpeeds(drivetrainSpeedsSupplier.get(), driverHeading);
+          Translation2d dtSpeedsVector =
+              new Translation2d(
+                  fieldOrientedSpeeds.vxMetersPerSecond, fieldOrientedSpeeds.vyMetersPerSecond);
 
-          return MetersPerSecond.of(
-              Math.max(
-                  5.0,
-                  2
-                      * Math.sqrt(
-                          speeds.vxMetersPerSecond * speeds.vxMetersPerSecond
-                              + speeds.vyMetersPerSecond * speeds.vyMetersPerSecond)));
+          LinearVelocity totalDTSpeeds = MetersPerSecond.of(dtSpeedsVector.getNorm());
+
+          LinearVelocity alignedDTSpeeds =
+              totalDTSpeeds
+                  .times(2 * Math.max(dtSpeedsVector.getAngle().minus(driverHeading).getCos(), 0))
+                  .unaryMinus();
+
+          return alignedDTSpeeds.plus(IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED);
         });
   }
 

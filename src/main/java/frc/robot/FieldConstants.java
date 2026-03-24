@@ -64,9 +64,9 @@ public class FieldConstants {
 
   public static boolean shouldBePassing(Pose2d robotPose) {
     if (AllianceFlipUtil.shouldFlip()) {
-      return robotPose.getX() < (651.22 - 182.11);
+      return robotPose.getX() < Units.inchesToMeters(651.22 - 182.11);
     } else {
-      return robotPose.getX() > 182.11;
+      return robotPose.getX() > Units.inchesToMeters(182.11);
     }
   }
 

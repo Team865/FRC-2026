@@ -15,7 +15,7 @@ public final class IndexerConstants {
 
   public static final class Serializer {
     public static final int CAN_ID = 17;
-    public static final AngularVelocity SERIALIZING_SPEED = RotationsPerSecond.of(1.25);
+    public static final AngularVelocity SERIALIZING_SPEED = RotationsPerSecond.of(2.0);
     public static final RollersSpecifications ROLLERS_SPECS =
         new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 90, 200);
 
@@ -24,20 +24,20 @@ public final class IndexerConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(2.1862, 0.27345, 0.8, 0, 5, 0),
-            new ControlSystemContext(0.12, 0.01, 0.0, 0.0, 1.0, 0.0));
+            new ControlSystemContext(0.02, 0.01, 0.0, 0.0, 0.5, 0.0));
   }
 
   public static final class BallTunneler {
     public static final int CAN_ID = 18;
-    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(285);
+    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(250);
 
     public static final RollersSpecifications ROLLERS_SPECS =
         new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 50, 140);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
-            new ControlSystemContext(0.16037, 0.065646, 0.94517, 0, 1.0, 0.0),
-            new ControlSystemContext(0.12, 0.01, 0.05, 0.0, 0.5, 0.0));
+            new ControlSystemContext(0.202555, 0.05, 0.45, 0, 1.0, 0.0),
+            new ControlSystemContext(0.02, 0.01, 0, 0.0, 0.5, 0.0));
   }
 
   private IndexerConstants() {}

@@ -3,6 +3,8 @@ package frc.robot.subsystems.vision;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -26,6 +28,7 @@ public class Vision extends SubsystemBase {
   private final Alert[] disconnectedAlerts;
   private final Map<String, VisionConsumer> cameraConsumers;
   private final Map<String, Integer> cameraNameToIndex = new HashMap<>();
+  private final Debouncer shouldUseTurretLLDebouncer = new Debouncer(1.0, DebounceType.kRising);
 
   public Vision(Drive drive, VisionIO... io) {
     this.io = io;
@@ -49,13 +52,16 @@ public class Vision extends SubsystemBase {
 
     VisionConsumer turretConsumer =
         (pose, ts, stdDevs) -> {
-          pose = pose.plus(new Transform2d(-turretForwardOffsetMeters, 0, Rotation2d.kZero));
-          drive.addVisionMeasurement(pose, ts, stdDevs);
+          if (shouldUseTurretLLDebouncer.calculate(
+              inputs[0].tagIds.length + inputs[1].tagIds.length == 0)) {
+            pose = pose.plus(new Transform2d(-turretForwardOffsetMeters, 0, Rotation2d.kZero));
+            drive.addVisionMeasurement(pose, ts, stdDevs);
+          }
         };
 
     cameraConsumers.put(camera0Name, positionConsumer);
     cameraConsumers.put(camera1Name, positionConsumer);
-    // cameraConsumers.put(camera2Name, turretConsumer);
+    cameraConsumers.put(camera2Name, turretConsumer);
   }
 
   public VisionIOInputsAutoLogged getInputs(int cameraIndex) {

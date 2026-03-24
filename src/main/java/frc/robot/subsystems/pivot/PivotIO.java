@@ -23,6 +23,8 @@ public interface PivotIO {
 
   public default void setVolts(double volts) {}
 
+  public default void setPositionWithExtraGain(Angle angleRads, double voltage, Angle tolerance) {}
+
   public default void setPosition(Angle angleRads) {}
 
   public default void setPositionWithExtraOmega(Angle angleRads, AngularVelocity omega) {}

@@ -48,7 +48,6 @@ import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.Benchmark;
-import frc.robot.util.Benchmark.TimeUnit;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.VisionUtil;
 import java.util.concurrent.locks.Lock;
@@ -210,7 +209,7 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
-    benchmark.start();
+    // benchmark.start();
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -278,7 +277,7 @@ public class Drive extends SubsystemBase {
     // Update gyro alert
     gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Constants.simMode);
 
-    benchmark.end(TimeUnit.MILLISECONDS);
+    // benchmark.end(TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -445,8 +444,13 @@ public class Drive extends SubsystemBase {
   }
 
   /** Sets the drivetrain maximum speed */
-  public Command setMaxLinearSpeed(LinearVelocity maxSpeed) {
-    return Commands.runOnce(() -> currentMaxSpeed = maxSpeed);
+  public void setMaxLinearSpeed(LinearVelocity maxSpeed) {
+    currentMaxSpeed = maxSpeed;
+  }
+
+  /** Sets the drivetrain maximum speed */
+  public Command setMaxLinearSpeedCmd(LinearVelocity maxSpeed) {
+    return Commands.runOnce(() -> setMaxLinearSpeed(maxSpeed));
   }
 
   /** Returns the maximum linear speed */

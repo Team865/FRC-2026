@@ -11,15 +11,33 @@
           }
         },
         {
-          "type": "path",
+          "type": "wait",
           "data": {
-            "pathName": "Left Start - Neutral Intake"
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShooting"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Left Neutral - Depot Intake"
+            "pathName": "Right Start - Neutral Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Neutral - Alliance"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShooting"
           }
         }
       ]

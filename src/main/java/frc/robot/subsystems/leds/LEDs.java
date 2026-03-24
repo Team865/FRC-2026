@@ -86,7 +86,7 @@ public class LEDs extends SubsystemBase {
   public void setSection(Section section, Color color) {
     int quarterLength = numTableLeds / 4;
     int start = quarterLength * section.getIndex();
-    int end = (section == Section.BellyPan) ? numBellyPanLeds : start + quarterLength;
+    int end = (section == Section.Overflow) ? numBellyPanLeds : start + quarterLength;
     setRange(start, end, color);
 
     led.setData(buffer);
