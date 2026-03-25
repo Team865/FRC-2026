@@ -37,6 +37,8 @@ public class PivotIOTalonFX implements PivotIO {
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> torqueCurrentSignal;
 
+  private double extraEffort = 0.0;
+  private Angle extraEffortTolerance = Rotations.zero();
   private Angle targetAngle = Rotations.zero();
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
@@ -90,27 +92,20 @@ public class PivotIOTalonFX implements PivotIO {
 
   @Override
   public void setPosition(Angle angle) {
-    talon.setControl(positionRequest.withPosition(angle));
-    this.targetAngle = angle;
-  }
-
-  @Override
-  public void setPositionWithExtraGain(Angle angle, double voltage, Angle tolerance) {
     this.targetAngle = angle;
     Angle currentAngle = positionSignal.getValue();
     MotionMagicVoltage request = positionRequest.withPosition(angle);
 
-    if (currentAngle.isNear(targetAngle, tolerance)) {
-      talon.setControl(request);
-    } else {
+    if (!currentAngle.isNear(targetAngle, extraEffortTolerance)) {
       double deltaSign = Math.signum(targetAngle.minus(currentAngle).baseUnitMagnitude());
-      talon.setControl(request.withFeedForward(voltage * deltaSign));
+      request = request.withFeedForward(extraEffort * deltaSign);
     }
+
+    talon.setControl(positionRequest.withPosition(angle));
   }
 
   @Override
-  public void setPositionWithExtraOmega(
-      Angle angle, AngularVelocity omega, double voltage, Angle tolerance) {
+  public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
     double omegaRPS = omega.in(RotationsPerSecond);
 
     this.targetAngle = angle;
@@ -119,17 +114,12 @@ public class PivotIOTalonFX implements PivotIO {
     MotionMagicVoltage request =
         positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS / 5);
 
-    if (currentAngle.isNear(targetAngle, tolerance)) {
-      talon.setControl(request);
-    } else {
+    if (!currentAngle.isNear(targetAngle, extraEffortTolerance)) {
       double deltaSign = Math.signum(targetAngle.minus(currentAngle).baseUnitMagnitude());
-      talon.setControl(request.withFeedForward(voltage * deltaSign));
+      request = request.withFeedForward(extraEffort * deltaSign);
     }
-  }
 
-  @Override
-  public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
-    setPositionWithExtraOmega(angle, omega, 0, Rotations.zero());
+    talon.setControl(request);
   }
 
   @Override
@@ -184,5 +174,11 @@ public class PivotIOTalonFX implements PivotIO {
   @Override
   public boolean seedPosition(Angle position) {
     return PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(position, 0.5));
+  }
+
+  @Override
+  public void setExtraEffort(double voltage, Angle tolerance) {
+    this.extraEffort = voltage;
+    this.extraEffortTolerance = tolerance;
   }
 }

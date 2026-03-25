@@ -16,7 +16,6 @@ import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -58,7 +57,7 @@ public class Serializer extends Rollers implements SysIdTestable {
     return runOnce(() -> io.setAngularVelocity(IndexerConstants.Serializer.SERIALIZING_SPEED));
   }
 
-  @AutoLogOutput(key="Serializer/IsStalling")
+  @AutoLogOutput(key = "Serializer/IsStalling")
   public boolean isStalling() {
     return stallingDebouncer.calculate(inputs.torqueCurrentAmps > 125);
   }

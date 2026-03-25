@@ -48,6 +48,8 @@ public class Hood extends Pivot implements SysIdTestable {
     io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     io.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
 
+    io.setExtraEffort(0.1, ShooterConstants.Hood.EXTRA_GAIN_TOLERANCE);
+
     this.sysIdRoutine =
         new SysIdBuilder(this, io::setVolts)
             .withDynamicStepVoltage(1)
@@ -58,8 +60,7 @@ public class Hood extends Pivot implements SysIdTestable {
   public Command trackTarget(Supplier<Angle> angleSupplier) {
     return runEnd(
         () -> {
-          io.setPositionWithExtraGain(
-              angleSupplier.get(), 0.1, ShooterConstants.Hood.EXTRA_GAIN_TOLERANCE);
+          io.setPosition(angleSupplier.get());
         },
         () -> io.stop());
   }

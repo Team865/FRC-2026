@@ -15,6 +15,7 @@ public interface RollersIO {
   class RollersIOInputs {
     public Angle position = Rotations.zero();
     public AngularVelocity angularVelocity = RotationsPerSecond.zero();
+    public AngularVelocity targetAngularVelocity = RotationsPerSecond.zero();
     public LinearVelocity linearVelocity = MetersPerSecond.zero();
     public double appliedVoltage = 0.0;
     public double supplyCurrentAmps = 0.0;

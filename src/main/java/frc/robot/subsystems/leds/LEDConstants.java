@@ -5,10 +5,10 @@ import edu.wpi.first.wpilibj.util.Color;
 public final class LEDConstants {
   private LEDConstants() {}
 
-  public static final int pwmPort = 1; // Pwm port the leds are running on
+  public static final int pwmPort = 0; // Pwm port the leds are running on
   public static final int totalNumLeds =
       300; // Number of leds, this is 1 meter of lights by default
-  public static final int numTableLeds = 240;
+  public static final int numTableLeds = 400;
   public static final int numBellyPanLeds = 60;
 
   public enum PresetColor {

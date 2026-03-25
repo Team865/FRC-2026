@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.leds.LEDConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.HubActive;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -81,7 +82,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putBoolean("MATCH WON", false);
 
     // Start AdvantageKit logger
-    LoggedPowerDistribution.getInstance(62, ModuleType.kRev); // Example: PDH on CAN ID 50
+    LoggedPowerDistribution.getInstance(50, ModuleType.kRev); // Example: PDH on CAN ID 50
     Logger.start();
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
@@ -126,7 +127,7 @@ public class Robot extends LoggedRobot {
     if (SmartDashboard.getBoolean("MATCH WON", false)) {
       robotContainer.leds.updateRainbowWave();
     } else {
-      robotContainer.leds.updateAllianceColorWave();
+      robotContainer.leds.setAll(LEDConstants.PresetColor.RED);
     }
   }
 

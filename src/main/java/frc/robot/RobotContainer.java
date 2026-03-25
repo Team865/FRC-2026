@@ -472,7 +472,7 @@ public class RobotContainer {
     // driverController.povUp().onTrue(superstructure.requestState(IntakingState.STOWING));
     // driverController.povDown().onTrue(superstructure.requestState(IntakingState.DEPLOYING));
 
-    driverController.leftBumper().onTrue(superstructure.toggleIntakeExtension());
+    driverController.back().onTrue(superstructure.toggleIntakeExtension());
 
     // // OPERATOR CONTROLLER
     // turret.setDefaultCommand(turret.runVoltage(() -> -operatorController.getLeftX()));

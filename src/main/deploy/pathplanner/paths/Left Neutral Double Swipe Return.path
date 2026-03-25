@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.350183333335994,
-        "y": 5.6827166666679885
+        "x": 6.376381969157771,
+        "y": 6.106144721233688
       },
       "isLocked": false,
       "linkedName": "LeftNZEndA"
@@ -20,8 +20,8 @@
         "y": 5.3728249999985405
       },
       "prevControl": {
-        "x": 4.241674999993371,
-        "y": 5.42573333332909
+        "x": 3.9555634638196917,
+        "y": 5.6650177935943065
       },
       "nextControl": null,
       "isLocked": false,
@@ -37,7 +37,7 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.5466816647919058,
+      "minWaypointRelativePos": 0.533183352080992,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 2.0,

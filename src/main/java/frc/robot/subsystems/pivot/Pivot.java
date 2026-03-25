@@ -1,5 +1,7 @@
 package frc.robot.subsystems.pivot;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -14,6 +16,7 @@ public class Pivot extends SubsystemBase {
 
   public final PivotIO io;
   protected final PivotIOInputsAutoLogged inputs = new PivotIOInputsAutoLogged();
+  protected Angle atSetpointTolerance = Degrees.of(5.0);
 
   protected final Alert motorDisconnectedAlert;
 
@@ -57,6 +60,10 @@ public class Pivot extends SubsystemBase {
 
   public Angle getTargetOrientation() {
     return inputs.targetPosition;
+  }
+
+  public boolean isAtSetpoint() {
+    return inputs.position.isNear(inputs.targetPosition, atSetpointTolerance);
   }
 
   @Override

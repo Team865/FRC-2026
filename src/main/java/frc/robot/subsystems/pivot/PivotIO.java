@@ -23,14 +23,9 @@ public interface PivotIO {
 
   public default void setVolts(double volts) {}
 
-  public default void setPositionWithExtraGain(Angle angleRads, double voltage, Angle tolerance) {}
-
   public default void setPosition(Angle angleRads) {}
 
   public default void setPositionWithExtraOmega(Angle angleRads, AngularVelocity omega) {}
-
-  public default void setPositionWithExtraOmega(
-      Angle angleRads, AngularVelocity omega, double voltage, Angle tolerance) {}
 
   public default void stop() {}
 
@@ -39,6 +34,12 @@ public interface PivotIO {
   public default void setControlConstants(double kS, double kV, double kA, double kP, double kD) {}
 
   public default void setMotionProfile(double maxVelocity, double maxAcceleration) {}
+
+  /**
+   * A voltage to use to add onto position requests so that the steady state is closer to the
+   * setpoint
+   */
+  public default void setExtraEffort(double voltage, Angle tolerance) {}
 
   public default boolean seedPosition(Angle position) {
     return true;

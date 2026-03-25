@@ -64,7 +64,7 @@ public class VisionConstants {
       };
 
   // Vertical offset: 0.687
-  public static final double turretForwardOffsetMeters = 0.2041;
+  public static final double turretForwardOffsetMeters = 0.218274;
   // Multipliers to apply for MegaTag 2 observations
   public static double linearStdDevMegatag2Factor = 1.0; // More stable than full 3D solve
   public static double angularStdDevMegatag2Factor =

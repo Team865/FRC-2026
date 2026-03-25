@@ -18,6 +18,7 @@ import frc.robot.subsystems.pivot.AbsoluteEncoderInputsAutoLogged;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.PitCheckCommand;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.DoubleSupplier;
@@ -63,6 +64,8 @@ public class Turret extends Pivot implements SysIdTestable {
     pivotIO.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
     pivotIO.updateInputs(inputs);
 
+    pivotIO.setExtraEffort(0.25, ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
+
     // try (Alert failedReseedAlert =
     //     new Alert("Turret could not be seeded from encoder.", AlertType.kWarning)) {
     //   failedReseedAlert.set(!pivotIO.seedPosition(encoderInputs.position));
@@ -99,14 +102,9 @@ public class Turret extends Pivot implements SysIdTestable {
                   < (ShooterConstants.Turret.MIN_ANGLE_RADS + Units.degreesToRadians(10))
               || currentPositionRads
                   > (ShooterConstants.Turret.MAX_ANGLE_RADS + Units.degreesToRadians(10))) {
-            io.setPositionWithExtraGain(
-                optimizedAngle, 0.25, ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
+            io.setPosition(optimizedAngle);
           } else {
-            io.setPositionWithExtraOmega(
-                optimizedAngle,
-                driveOmegaSupplier.get(),
-                0.25,
-                ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
+            io.setPositionWithExtraOmega(optimizedAngle, driveOmegaSupplier.get());
           }
         },
         () -> this.io.stop());
@@ -136,8 +134,7 @@ public class Turret extends Pivot implements SysIdTestable {
                 currentTargetPosition.plus(ShooterConstants.Turret.MANUAL_CONTROL_RATE.times(gain));
             Angle optimizedAngle = optimizeAngle(currentTargetPosition);
 
-            io.setPositionWithExtraGain(
-                optimizedAngle, 0.25, ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
+            io.setPosition(optimizedAngle);
           }
         };
 
@@ -236,5 +233,12 @@ public class Turret extends Pivot implements SysIdTestable {
   @Override
   public SysIdRoutine getRoutine() {
     return sysIdRoutine;
+  }
+
+  public Command pitCheck() {
+    Angle[] setpoints = {};
+
+    return new PitCheckCommand<Angle>(
+        "Turret Pit Checks", io::setPosition, this::isAtSetpoint, 1.0, setpoints, this);
   }
 }

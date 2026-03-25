@@ -67,6 +67,10 @@ public class LEDs extends SubsystemBase {
     setAll(r, g, b);
   }
 
+  public void setAll(PresetColor color) {
+    setAll(color.color);
+  }
+
   // Set a section to a color
   public void setRange(int startIndex, int endIndex, Color color) {
     startIndex = Math.max(0, startIndex);

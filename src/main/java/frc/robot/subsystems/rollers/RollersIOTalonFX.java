@@ -2,6 +2,7 @@ package frc.robot.subsystems.rollers;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -32,6 +33,8 @@ public class RollersIOTalonFX implements RollersIO {
   private final NeutralOut neutralOut = new NeutralOut();
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
+
+  private AngularVelocity targetAngularVelocity = RotationsPerSecond.zero();
 
   private final StatusSignal<Angle> position;
   private final StatusSignal<AngularVelocity> velocity;
@@ -88,6 +91,7 @@ public class RollersIOTalonFX implements RollersIO {
 
     inputs.position = position.getValue();
     inputs.angularVelocity = velocity.getValue();
+    inputs.angularVelocity = targetAngularVelocity;
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrent.getValueAsDouble();
     inputs.torqueCurrentAmps = torqueCurrent.getValueAsDouble();
@@ -112,23 +116,25 @@ public class RollersIOTalonFX implements RollersIO {
 
   @Override
   public void setVolts(double volts) {
+    this.targetAngularVelocity = RotationsPerSecond.zero();
     talon.setControl(voltageOut.withOutput(volts));
   }
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
+    this.targetAngularVelocity = velocity;
     talon.setControl(velocityVoltage.withVelocity(velocity));
   }
 
   @Override
   public void setLinearVelocity(LinearVelocity velocity) {
-    talon.setControl(
-        velocityVoltage.withVelocity(
-            RadiansPerSecond.of(velocity.in(MetersPerSecond) / specs.rollerRadiusMeters())));
+    setAngularVelocity(
+        RadiansPerSecond.of(velocity.in(MetersPerSecond) / specs.rollerRadiusMeters()));
   }
 
   @Override
   public void stop() {
+    this.targetAngularVelocity = RotationsPerSecond.zero();
     talon.setControl(neutralOut);
   }
 }

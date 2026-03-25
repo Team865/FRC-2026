@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,6 +24,7 @@ import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
@@ -163,17 +163,18 @@ public class Superstructure extends SubsystemBase {
 
     shouldStopSerializer().onTrue(restartSerializerAntiStalled());
 
-    // shootingStateMachine
-    //     .stateTriggers
-    //     .get(ShootingState.SHOOTING)
-    //     .and(intakingStateMachine.stateTriggers.get(IntakingState.STOWED))
-    //     .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
+    intakingStateMachine
+        .stateTriggers
+        .get(IntakingState.STOWED)
+        .and(shootingStateMachine.stateTriggers.get(ShootingState.SHOOTING))
+        .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
 
     // Intaking state
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWING)
         .onTrue(intake.stow()) // Stow the intake
+        .whileTrue(intake.rollers.runVolts(10.0))
         .and(intake.extensionAtSetpoint()) // If the intake is stowed,
         .onTrue(forceState(IntakingState.STOWED)); // move to appropriate state
 
@@ -187,8 +188,9 @@ public class Superstructure extends SubsystemBase {
 
     intakingStateMachine
         .stateTriggers
-        .get(IntakingState.STOWED)
-        .whileFalse( // Run the intake based on drivetrain speed
+        .get(IntakingState.INTAKING)
+        .or(intakingStateMachine.stateTriggers.get(IntakingState.STOWING))
+        .whileTrue( // Run the intake based on drivetrain speed
             intake.runRollers(drive::getRotation, drive::getChassisSpeeds));
   }
 
@@ -263,7 +265,11 @@ public class Superstructure extends SubsystemBase {
 
   private Command restartSerializerAntiStalled() {
     return new SequentialCommandGroup(
-        Commands.runOnce(() -> numStallsDetected++),
+        Commands.runOnce(
+            () -> {
+              numStallsDetected++;
+              Logger.recordOutput("Serializer/StallsDetected", numStallsDetected);
+            }),
         new PrintCommand("Anti-stalling Activated"),
         serializer.setVolts(-2.0),
         new WaitUntilCommand(() -> !serializer.isStalling()).raceWith(new WaitCommand(1.0)),
