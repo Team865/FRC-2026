@@ -460,8 +460,8 @@ public class RobotContainer {
     //             () -> -driverController.getLeftX(),
     //             () -> Rotation2d.kCW_90deg));
 
-    // // Toggle bump mode
-    driverController.rightBumper().onTrue(superstructure.toggleSlowMode());
+    // Toggle bump mode
+    driverController.back().onTrue(superstructure.toggleSlowMode());
 
     // Start shooting and stop when let go
     driverController
@@ -472,7 +472,7 @@ public class RobotContainer {
     // driverController.povUp().onTrue(superstructure.requestState(IntakingState.STOWING));
     // driverController.povDown().onTrue(superstructure.requestState(IntakingState.DEPLOYING));
 
-    driverController.back().onTrue(superstructure.toggleIntakeExtension());
+    driverController.leftBumper().onTrue(superstructure.toggleIntakeExtension());
 
     // // OPERATOR CONTROLLER
     // turret.setDefaultCommand(turret.runVoltage(() -> -operatorController.getLeftX()));
