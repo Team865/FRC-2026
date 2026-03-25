@@ -7,8 +7,11 @@
     "Middle",
     "Right"
   ],
-  "autoFolders": [],
-  "defaultMaxVel": 1.0,
+  "autoFolders": [
+    "Double Swipes",
+    "Preloads Only"
+  ],
+  "defaultMaxVel": 4.0,
   "defaultMaxAccel": 10.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,

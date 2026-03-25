@@ -340,9 +340,6 @@ public class RobotContainer {
     autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
     // // Set up SysId routines
 
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-
     // autoChooser.addOption(
     //     "Drive SysId (Quasistatic Forward)",
     //     drive.driveSysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -463,8 +460,8 @@ public class RobotContainer {
     //             () -> -driverController.getLeftX(),
     //             () -> Rotation2d.kCW_90deg));
 
-    // Toggle bump mode
-    driverController.rightBumper().onTrue(superstructure.toggleBumpMode());
+    // // Toggle bump mode
+    driverController.leftBumper().onTrue(superstructure.toggleBumpMode());
 
     // Start shooting and stop when let go
     driverController

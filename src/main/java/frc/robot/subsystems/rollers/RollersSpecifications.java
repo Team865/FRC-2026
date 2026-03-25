@@ -8,7 +8,7 @@ public record RollersSpecifications(
     double statorCurrentLimit) {
   public RollersSpecifications {
     supplyCurrentLimit = Math.min(supplyCurrentLimit, 60.0);
-    statorCurrentLimit = Math.min(statorCurrentLimit, 120.0);
+    statorCurrentLimit = Math.min(statorCurrentLimit, 170.0);
   }
 
   public RollersSpecifications(
