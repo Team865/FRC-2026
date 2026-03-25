@@ -32,7 +32,7 @@ public class Serializer extends Rollers implements SysIdTestable {
       new LoggedTunableNumber("Serializer/kD", IndexerConstants.Serializer.SYSTEM_CONSTANTS.kD);
 
   private final SysIdRoutine sysIdRoutine;
-  private final Debouncer stallingDebouncer = new Debouncer(0.5, DebounceType.kRising);
+  private final Debouncer stallingDebouncer = new Debouncer(0.1, DebounceType.kRising);
 
   private final Alert stallingAlert = new Alert("Serializer might be stalled", AlertType.kWarning);
 
