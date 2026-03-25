@@ -58,7 +58,8 @@ public class Hood extends Pivot implements SysIdTestable {
   public Command trackTarget(Supplier<Angle> angleSupplier) {
     return runEnd(
         () -> {
-          io.setPosition(angleSupplier.get());
+          io.setPositionWithExtraGain(
+              angleSupplier.get(), 0.1, ShooterConstants.Hood.EXTRA_GAIN_TOLERANCE);
         },
         () -> io.stop());
   }

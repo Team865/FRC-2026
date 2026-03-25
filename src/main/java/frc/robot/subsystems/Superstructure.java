@@ -73,6 +73,9 @@ public class Superstructure extends SubsystemBase {
   private Pose2d shootingTarget = Pose2d.kZero;
   private double distanceFromTargetMeters = 0.0;
   private boolean isPassing = false;
+  private boolean isSlowMode = false;
+
+  private int numStallsDetected = 0;
 
   private final CommandXboxController operatorController;
   private final Trigger manualOverrideTrigger = new Trigger(() -> isManualOverride);
@@ -158,7 +161,7 @@ public class Superstructure extends SubsystemBase {
         .onTrue(serializer.startSerializer())
         .onFalse(serializer.stop());
 
-    // shouldStopSerializer().onTrue(restartSerializerAntiStalled());
+    shouldStopSerializer().onTrue(restartSerializerAntiStalled());
 
     // shootingStateMachine
     //     .stateTriggers
@@ -190,7 +193,9 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void configureGameStateTriggers() {
-    new Trigger(() -> DriverStation.isTeleopEnabled()).onTrue(forceState(ShootingState.IDLE));
+    new Trigger(() -> DriverStation.isTeleopEnabled())
+        .onTrue(forceState(ShootingState.IDLE))
+        .onTrue(Commands.runOnce(() -> isManualOverride = false));
     // .onTrue(forceState(IntakingState.DEPLOYING));
   }
 
@@ -258,8 +263,9 @@ public class Superstructure extends SubsystemBase {
 
   private Command restartSerializerAntiStalled() {
     return new SequentialCommandGroup(
+        Commands.runOnce(() -> numStallsDetected++),
         new PrintCommand("Anti-stalling Activated"),
-        serializer.setAngularVelocity(RotationsPerSecond.of(-0.5)),
+        serializer.setVolts(-2.0),
         new WaitUntilCommand(() -> !serializer.isStalling()).raceWith(new WaitCommand(1.0)),
         serializer
             .startSerializer()
@@ -273,7 +279,10 @@ public class Superstructure extends SubsystemBase {
         intake.currentSensedRezero(),
         forceState(IntakingState.DEPLOYING),
         new WaitCommand(3.0),
-        forceState(IntakingState.STOWING));
+        new PrintCommand(intake.extension.getPosition().toString()),
+        forceState(IntakingState.STOWING),
+        new WaitCommand(3.0),
+        new PrintCommand(intake.extension.getPosition().toString()));
   }
 
   public SequentialCommandGroup hoodPitCheck() {
@@ -297,22 +306,27 @@ public class Superstructure extends SubsystemBase {
         startManualOverride(),
         ballTunneler.startTunneler(),
         flywheel.setVelocity(RadiansPerSecond.of(150)),
-        new WaitCommand(6.0),
-        ballTunneler.stop(),
-        flywheel.stop());
+        new WaitCommand(4.0),
+        ballTunneler.setAngularVelocity(RadiansPerSecond.of(0)),
+        flywheel.setVelocity(RadiansPerSecond.of(0)));
   }
 
   public SequentialCommandGroup serializerPitCheck() {
     return new SequentialCommandGroup(
-        startManualOverride(), serializer.runSerializer(), new WaitCommand(6.0), serializer.stop());
+        startManualOverride(),
+        serializer.runSerializer(),
+        new WaitCommand(4.0),
+        new PrintCommand(serializer.getAngularVelocity().toString()),
+        serializer.setAngularVelocity(RadiansPerSecond.of(0)));
   }
 
   public SequentialCommandGroup flywheelPitCheck() {
     return new SequentialCommandGroup(
         startManualOverride(),
         flywheel.setVelocity(RadiansPerSecond.of(560)),
-        new WaitCommand(6.0),
-        flywheel.stop());
+        new WaitCommand(4.0),
+        new PrintCommand(flywheel.getAngularVelocity().toString()),
+        flywheel.setVelocity(RadiansPerSecond.of(0)));
   }
 
   public SequentialCommandGroup shootingPitCheck() {
@@ -321,10 +335,13 @@ public class Superstructure extends SubsystemBase {
         flywheel.setVelocity(RadiansPerSecond.of(150)),
         serializer.startSerializer(),
         ballTunneler.startTunneler(),
-        new WaitCommand(6.0),
-        flywheel.stop(),
-        ballTunneler.stop(),
-        serializer.stop());
+        new WaitCommand(4.0),
+        new PrintCommand(serializer.getAngularVelocity().toString()),
+        new PrintCommand(ballTunneler.getAngularVelocity().toString()),
+        new PrintCommand(flywheel.getAngularVelocity().toString()),
+        flywheel.setVelocity(RadiansPerSecond.of(0)),
+        ballTunneler.setAngularVelocity(RadiansPerSecond.of(0)),
+        serializer.setAngularVelocity(RadiansPerSecond.of(0)));
   }
 
   public SequentialCommandGroup turretPitCheck() {
@@ -332,30 +349,31 @@ public class Superstructure extends SubsystemBase {
         startManualOverride(),
         turret.setTargetAngle(Degrees.of(90)),
         new WaitCommand(1.0),
+        new PrintCommand(turret.getOrientation().toString()),
         turret.setTargetAngle(Degrees.of(180)),
         new WaitCommand(1.0),
+        new PrintCommand(turret.getOrientation().toString()),
         turret.setTargetAngle(Degrees.of(0)),
         new WaitCommand(1.0),
+        new PrintCommand(turret.getOrientation().toString()),
         turret.setTargetAngle(Degrees.of(-90)),
         new WaitCommand(1.0),
+        new PrintCommand(turret.getOrientation().toString()),
         turret.setTargetAngle(Degrees.of(-180)),
         new WaitCommand(1.0),
+        new PrintCommand(turret.getOrientation().toString()),
         turret.setTargetAngle(Degrees.of(0)),
         new WaitCommand(4.0));
   }
 
-  public Command toggleBumpMode() {
+  public Command toggleSlowMode() {
     return runOnce(
         () -> {
-          if (drive.getMaxLinearSpeed().equals(DriveConstants.shootingModeMaxSpeed)) {
-            if (shootingStateMachine.isInState(ShootingState.IDLE)) {
-              drive.setMaxLinearSpeed(TunerConstants.kSpeedAt12Volts);
-            } else {
-              drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed);
-            }
-          } else {
-            drive.setMaxLinearSpeed(DriveConstants.shootingModeMaxSpeed);
-          }
+          if (shootingStateMachine.isInState(ShootingState.SHOOTING)) return;
+
+          isSlowMode = !isSlowMode;
+          drive.setMaxLinearSpeed(
+              isSlowMode ? DriveConstants.shootingModeMaxSpeed : TunerConstants.kSpeedAt12Volts);
         });
   }
 
@@ -387,7 +405,7 @@ public class Superstructure extends SubsystemBase {
     return shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .and(new Trigger(serializer::isStalling));
+        .and(serializer::isStalling);
   }
 
   @Override
@@ -405,6 +423,8 @@ public class Superstructure extends SubsystemBase {
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());
+    Logger.recordOutput("Superstructure/SlowMode", isSlowMode);
+    Logger.recordOutput("Superstructure/PassingMode", isPassing);
 
     // Render a Pose showing where the turret (thinks it) is pointing
     Logger.recordOutput(

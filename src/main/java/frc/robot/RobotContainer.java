@@ -461,7 +461,7 @@ public class RobotContainer {
     //             () -> Rotation2d.kCW_90deg));
 
     // // Toggle bump mode
-    driverController.leftBumper().onTrue(superstructure.toggleBumpMode());
+    driverController.rightBumper().onTrue(superstructure.toggleSlowMode());
 
     // Start shooting and stop when let go
     driverController

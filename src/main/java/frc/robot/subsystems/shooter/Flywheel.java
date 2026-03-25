@@ -75,6 +75,10 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
+  public AngularVelocity getAngularVelocity() {
+    return inputs.velocity;
+  }
+
   public Command runVelocity(Supplier<AngularVelocity> velocitySupplier) {
     return this.runEnd(
         () -> {

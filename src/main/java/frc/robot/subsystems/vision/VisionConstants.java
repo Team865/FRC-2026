@@ -60,13 +60,13 @@ public class VisionConstants {
       new double[] {
         1.0, // Left
         1.0, // Right
-        1.0 // Turret
+        10.0 // Turret
       };
 
   // Vertical offset: 0.687
   public static final double turretForwardOffsetMeters = 0.2041;
   // Multipliers to apply for MegaTag 2 observations
-  public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
+  public static double linearStdDevMegatag2Factor = 1.0; // More stable than full 3D solve
   public static double angularStdDevMegatag2Factor =
       Double.POSITIVE_INFINITY; // No rotation data available
 }

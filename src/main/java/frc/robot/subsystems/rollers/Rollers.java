@@ -75,6 +75,10 @@ public class Rollers extends SubsystemBase {
     return inputs.position;
   }
 
+  public AngularVelocity getAngularVelocity() {
+    return inputs.angularVelocity;
+  }
+
   // @Override
   // public SysIdRoutine getRoutine() {
   //   return sysIdRoutine;

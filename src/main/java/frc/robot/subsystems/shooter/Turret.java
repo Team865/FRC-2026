@@ -99,9 +99,14 @@ public class Turret extends Pivot implements SysIdTestable {
                   < (ShooterConstants.Turret.MIN_ANGLE_RADS + Units.degreesToRadians(10))
               || currentPositionRads
                   > (ShooterConstants.Turret.MAX_ANGLE_RADS + Units.degreesToRadians(10))) {
-            io.setPosition(optimizedAngle);
+            io.setPositionWithExtraGain(
+                optimizedAngle, 0.25, ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
           } else {
-            io.setPositionWithExtraOmega(optimizedAngle, driveOmegaSupplier.get());
+            io.setPositionWithExtraOmega(
+                optimizedAngle,
+                driveOmegaSupplier.get(),
+                0.25,
+                ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
           }
         },
         () -> this.io.stop());
@@ -131,7 +136,8 @@ public class Turret extends Pivot implements SysIdTestable {
                 currentTargetPosition.plus(ShooterConstants.Turret.MANUAL_CONTROL_RATE.times(gain));
             Angle optimizedAngle = optimizeAngle(currentTargetPosition);
 
-            io.setPosition(optimizedAngle);
+            io.setPositionWithExtraGain(
+                optimizedAngle, 0.25, ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
           }
         };
 

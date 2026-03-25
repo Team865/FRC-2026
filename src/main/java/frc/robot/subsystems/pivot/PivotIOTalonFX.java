@@ -109,13 +109,27 @@ public class PivotIOTalonFX implements PivotIO {
   }
 
   @Override
-  public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
+  public void setPositionWithExtraOmega(
+      Angle angle, AngularVelocity omega, double voltage, Angle tolerance) {
     double omegaRPS = omega.in(RotationsPerSecond);
 
     this.targetAngle = angle;
+    Angle currentAngle = positionSignal.getValue();
 
-    talon.setControl(
-        positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS / 5));
+    MotionMagicVoltage request =
+        positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS / 5);
+
+    if (currentAngle.isNear(targetAngle, tolerance)) {
+      talon.setControl(request);
+    } else {
+      double deltaSign = Math.signum(targetAngle.minus(currentAngle).baseUnitMagnitude());
+      talon.setControl(request.withFeedForward(voltage * deltaSign));
+    }
+  }
+
+  @Override
+  public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
+    setPositionWithExtraOmega(angle, omega, 0, Rotations.zero());
   }
 
   @Override
