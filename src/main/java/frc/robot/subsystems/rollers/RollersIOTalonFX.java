@@ -91,7 +91,7 @@ public class RollersIOTalonFX implements RollersIO {
 
     inputs.position = position.getValue();
     inputs.angularVelocity = velocity.getValue();
-    inputs.angularVelocity = targetAngularVelocity;
+    inputs.targetAngularVelocity = targetAngularVelocity;
     inputs.appliedVoltage = appliedVoltage.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrent.getValueAsDouble();
     inputs.torqueCurrentAmps = torqueCurrent.getValueAsDouble();
