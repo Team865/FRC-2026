@@ -12,6 +12,7 @@ import static frc.robot.Constants.Mode;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,6 +21,7 @@ import frc.robot.Constants.Mode;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.HubActive;
 import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -79,6 +81,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putBoolean("MATCH WON", false);
 
     // Start AdvantageKit logger
+    LoggedPowerDistribution.getInstance(62, ModuleType.kRev); // Example: PDH on CAN ID 50
     Logger.start();
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
