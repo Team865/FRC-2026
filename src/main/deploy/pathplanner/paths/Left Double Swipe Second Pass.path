@@ -16,64 +16,48 @@
     },
     {
       "anchor": {
-        "x": 5.8362166666666635,
-        "y": 5.493758333333334
+        "x": 7.117996422182468,
+        "y": 5.665652951699462
       },
       "prevControl": {
-        "x": 5.617127699384514,
-        "y": 5.112418732525246
+        "x": 6.598783542039355,
+        "y": 5.973935599284435
       },
       "nextControl": {
-        "x": 6.4555947565930865,
-        "y": 6.571829020743353
+        "x": 7.552064901058128,
+        "y": 5.407924792367039
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.279858333333331,
-        "y": 6.153530839267405
+        "x": 6.907066189624329,
+        "y": 3.458998211091234
       },
       "prevControl": {
-        "x": 6.637610385067168,
-        "y": 6.214328867442837
+        "x": 7.4089896489885225,
+        "y": 3.422494686773838
       },
       "nextControl": {
-        "x": 8.089829498776561,
-        "y": 6.076855390368195
+        "x": 6.0146690518783545,
+        "y": 3.523899821109123
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.498915784219125,
-        "y": 3.164294453975308
+        "x": 5.998443649373882,
+        "y": 4.984186046511627
       },
       "prevControl": {
-        "x": 8.51997361569396,
-        "y": 3.2683879256983555
+        "x": 6.311822514343287,
+        "y": 4.0819041058467755
       },
       "nextControl": {
-        "x": 6.171957295373667,
-        "y": 3.029015421115065
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 6.144043943571596,
-        "y": 5.102285727829341
-      },
-      "prevControl": {
-        "x": 6.4574228085410015,
-        "y": 4.20000378716449
-      },
-      "nextControl": {
-        "x": 5.795385527876632,
-        "y": 6.106144721233688
+        "x": 5.649785233678918,
+        "y": 5.988045039915974
       },
       "isLocked": false,
       "linkedName": null
@@ -94,27 +78,27 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.9283842794759718,
+      "waypointRelativePos": 0.35,
       "rotationDegrees": 180.0
     },
     {
-      "waypointRelativePos": 1.5531295487627286,
-      "rotationDegrees": 177.34877442329443
+      "waypointRelativePos": 0.75,
+      "rotationDegrees": 140.7220634742569
     },
     {
-      "waypointRelativePos": 2.35,
+      "waypointRelativePos": 1.4866310160427814,
       "rotationDegrees": 92.24121770093556
     },
     {
-      "waypointRelativePos": 3.0,
-      "rotationDegrees": -30.281117852294333
+      "waypointRelativePos": 2.0,
+      "rotationDegrees": -15.945395900922845
     },
     {
-      "waypointRelativePos": 3.55,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 2.6096256684491976,
+      "rotationDegrees": -89.40081107708092
     },
     {
-      "waypointRelativePos": 4.25,
+      "waypointRelativePos": 3.25,
       "rotationDegrees": 180.0
     }
   ],
@@ -122,7 +106,7 @@
     {
       "name": "Constraints Zone",
       "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0.8075657894736747,
+      "maxWaypointRelativePos": 0.4,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 10.0,
@@ -134,8 +118,8 @@
     },
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 1.827302631578943,
-      "maxWaypointRelativePos": 3.215460526315793,
+      "minWaypointRelativePos": 0.9,
+      "maxWaypointRelativePos": 2.215460526315793,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 10.0,
@@ -147,8 +131,8 @@
     },
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 4.443194600674915,
-      "maxWaypointRelativePos": 5.0,
+      "minWaypointRelativePos": 3.4431946006749152,
+      "maxWaypointRelativePos": 4.0,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 10.0,
@@ -163,7 +147,7 @@
   "eventMarkers": [
     {
       "name": "DeployIntake",
-      "waypointRelativePos": 1.1309523809523812,
+      "waypointRelativePos": 0.55,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
