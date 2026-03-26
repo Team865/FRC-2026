@@ -44,6 +44,7 @@ public class RollersIOSim implements RollersIO {
 
     inputs.connected = true;
     inputs.position = sim.getAngularPosition();
+    inputs.targetAngularVelocity = targetVelocity;
     inputs.angularVelocity = sim.getAngularVelocity();
     inputs.appliedVoltage = appliedVoltage;
     inputs.supplyCurrentAmps = sim.getCurrentDrawAmps();

@@ -99,7 +99,7 @@
     },
     {
       "waypointRelativePos": 1.8387190684133834,
-      "rotationDegrees": -102.42538505502746
+      "rotationDegrees": -144.73653286172907
     },
     {
       "waypointRelativePos": 2.253275109170306,
@@ -137,7 +137,7 @@
       "minWaypointRelativePos": 1.5197368421052633,
       "maxWaypointRelativePos": 3.45,
       "constraints": {
-        "maxVelocity": 1.5,
+        "maxVelocity": 2.0,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -160,7 +160,19 @@
     }
   ],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "DeployIntake",
+      "waypointRelativePos": 1.3690476190476175,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "DeployIntake"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.0,
     "maxAcceleration": 10.0,
