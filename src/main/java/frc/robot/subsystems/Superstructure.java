@@ -24,7 +24,6 @@ import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
@@ -158,11 +157,15 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
+        .onTrue(leds.shootingWaveCommand());
+
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.SHOOTING)
         .and(passingModeTrigger.negate())
         .whileTrue(
             flywheel.runVelocity(
-                () -> ShootingUtil.getScoringFlywheelVelocity(distanceFromTargetMeters)))
-        .onTrue(leds.shootingWaveCommand());
+                () -> ShootingUtil.getScoringFlywheelVelocity(distanceFromTargetMeters)));
 
     shootingStateMachine
         .stateTriggers
@@ -179,7 +182,8 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(ShootingState.SHOOTING)
         .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
-        .onFalse(drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts))
+        .onFalse(
+            drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts).onlyIf(() -> !isSlowMode))
         .onTrue(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
 
     shootingStateMachine
@@ -192,11 +196,11 @@ public class Superstructure extends SubsystemBase {
 
     shouldStopSerializer().onTrue(restartSerializerAntiStalled());
 
-    intakingStateMachine
-        .stateTriggers
-        .get(IntakingState.STOWED)
-        .and(shootingStateMachine.stateTriggers.get(ShootingState.SHOOTING))
-        .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
+    // intakingStateMachine
+    //     .stateTriggers
+    //     .get(IntakingState.STOWED)
+    //     .and(shootingStateMachine.stateTriggers.get(ShootingState.SHOOTING))
+    //     .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
 
     // Intaking state
     intakingStateMachine
@@ -408,8 +412,6 @@ public class Superstructure extends SubsystemBase {
   public Command toggleSlowMode() {
     return runOnce(
             () -> {
-              if (shootingStateMachine.isInState(ShootingState.SHOOTING)) return;
-
               isSlowMode = !isSlowMode;
               drive.setMaxLinearSpeed(
                   isSlowMode
@@ -454,15 +456,15 @@ public class Superstructure extends SubsystemBase {
   public void periodic() {
     Pose2d drivePose = drive.getPose();
 
-    if (!isPassing)
-      shootingTarget = // hubPoseSupplier.get();
-          ShootingUtil.correctTargetPoseWhileMoving(
-              drivePose, hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
-    else
+    if (isPassing && DriverStation.isTeleopEnabled())
       shootingTarget =
           (passingSide.equals(PassingSide.LEFT))
               ? FieldConstants.Passing.getLeftCorner()
               : FieldConstants.Passing.getRightCorner();
+    else
+      shootingTarget = // hubPoseSupplier.get();
+          ShootingUtil.correctTargetPoseWhileMoving(
+              drivePose, hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
     distanceFromTargetMeters =
         shootingTarget.getTranslation().getDistance(drivePose.getTranslation());

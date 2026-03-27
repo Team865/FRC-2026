@@ -84,19 +84,20 @@ public class Intake extends SubsystemBase {
   }
 
   public Command currentSensedRezero() {
+
     if (Constants.currentMode == Constants.Mode.REAL) {
       return new SequentialCommandGroup(
-          extension.setVolts(-5),
-          rollers.stop(),
+          this.runOnce(() -> extension.io.setVolts(-5)),
+          this.runOnce(() -> rollers.io.stop()),
           new WaitUntilCommand(
                   () ->
                       currentSenseDebouncer.calculate(
                           Math.abs(extension.inputs.torqueCurrentAmps) > 60))
               .raceWith(new WaitCommand(5)),
-          extension.stop(),
-          runOnce(() -> extension.io.seedPosition(Meters.zero())));
+          runOnce(() -> extension.io.seedPosition(Meters.zero())),
+          this.runOnce(() -> extension.io.stop()));
     } else {
-      return runOnce(() -> {});
+      return this.runOnce(() -> rollers.io.stop()).andThen(new WaitCommand(0.5));
     }
   }
 

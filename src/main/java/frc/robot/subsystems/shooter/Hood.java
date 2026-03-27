@@ -40,7 +40,7 @@ public class Hood extends Pivot implements SysIdTestable {
           "Shooter/Hood/MaxAcceleration",
           ShooterConstants.Hood.SYSTEM_CONSTANTS.maxAcceleration.get());
 
-  private final Debouncer currentSenseDebouncer = new Debouncer(0.5);
+  private final Debouncer currentSenseDebouncer = new Debouncer(0.2);
   private final SysIdRoutine sysIdRoutine;
 
   public Hood(PivotIO io) {

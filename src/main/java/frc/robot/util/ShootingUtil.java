@@ -97,7 +97,14 @@ public class ShootingUtil {
   }
 
   public static double angleRadsBetweenTwoVectors(Translation2d vector1, Translation2d vector2) {
-    return vector2.getAngle().minus(vector1.getAngle()).getRadians();
+    if (vector1.getNorm() == 0) {
+      if (vector2.getNorm() == 0) return 0.0;
+      else return vector2.getAngle().getRadians();
+    } else if (vector2.getNorm() == 0) {
+      return vector1.getAngle().getRadians();
+    } else {
+      return vector2.getAngle().minus(vector1.getAngle()).getRadians();
+    }
   }
 
   public static AngularVelocity getAngularVelocityCompensation(
