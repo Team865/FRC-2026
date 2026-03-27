@@ -109,13 +109,16 @@ public class Intake extends SubsystemBase {
       Supplier<Rotation2d> driveHeadingSupplier, Supplier<ChassisSpeeds> drivetrainSpeedsSupplier) {
     return rollers.runLinearVelocity(
         () -> {
+          ChassisSpeeds robotSpeeds = drivetrainSpeedsSupplier.get();
+          if(robotSpeeds.vxMetersPerSecond == 0 && robotSpeeds.vyMetersPerSecond == 0)
+            return IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED;
+
           Rotation2d driverHeading = driveHeadingSupplier.get();
           ChassisSpeeds fieldOrientedSpeeds =
-              ChassisSpeeds.fromRobotRelativeSpeeds(drivetrainSpeedsSupplier.get(), driverHeading);
+              ChassisSpeeds.fromRobotRelativeSpeeds(robotSpeeds, driverHeading);
           Translation2d dtSpeedsVector =
               new Translation2d(
                   fieldOrientedSpeeds.vxMetersPerSecond, fieldOrientedSpeeds.vyMetersPerSecond);
-
           LinearVelocity totalDTSpeeds = MetersPerSecond.of(dtSpeedsVector.getNorm());
 
           LinearVelocity alignedDTSpeeds =
