@@ -62,12 +62,32 @@ public class FieldConstants {
           Units.inchesToMeters(180.75),
           Rotation2d.fromDegrees(180)); // Away from origin
 
+  public static final double bumpLineXPos =
+      AllianceFlipUtil.shouldFlip()
+          ? Units.inchesToMeters(651.22 - 182.11)
+          : Units.inchesToMeters(182.11);
+
+  public static final Pose2d leftCorner =
+      AllianceFlipUtil.shouldFlip()
+          ? new Pose2d(Units.inchesToMeters(651.22), 20.0, Rotation2d.kZero)
+          : new Pose2d(0.0, Units.inchesToMeters(293.69), Rotation2d.kZero);
+
+  public static final Pose2d rightCorner =
+      AllianceFlipUtil.shouldFlip()
+          ? new Pose2d(Units.inchesToMeters(651.22), Units.inchesToMeters(293.69), Rotation2d.kZero)
+          : new Pose2d(0.0, 20.0, Rotation2d.kZero);
+
   public static boolean shouldBePassing(Pose2d robotPose) {
     if (AllianceFlipUtil.shouldFlip()) {
-      return robotPose.getX() < Units.inchesToMeters(651.22 - 182.11);
+      return robotPose.getX() < bumpLineXPos;
     } else {
-      return robotPose.getX() > Units.inchesToMeters(182.11);
+      return robotPose.getX() > bumpLineXPos;
     }
+  }
+
+  public static boolean isOnRightSide(Pose2d robotPose) {
+    if (AllianceFlipUtil.shouldFlip()) return robotPose.getY() < fieldWidth / 2;
+    else return robotPose.getY() > fieldWidth / 2;
   }
 
   public static final class Lockout {

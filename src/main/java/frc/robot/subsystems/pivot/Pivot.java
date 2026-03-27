@@ -62,8 +62,8 @@ public class Pivot extends SubsystemBase {
     return inputs.targetPosition;
   }
 
-  public boolean isAtSetpoint() {
-    return inputs.position.isNear(inputs.targetPosition, atSetpointTolerance);
+  public boolean isAtSetpoint(Angle setpoint) {
+    return inputs.position.isNear(setpoint, atSetpointTolerance);
   }
 
   @Override

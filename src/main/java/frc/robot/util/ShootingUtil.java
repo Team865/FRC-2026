@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.subsystems.shooter.ShooterConstants;
@@ -62,7 +63,7 @@ public class ShootingUtil {
                     drivetrainFieldOrientedSpeeds.vyMetersPerSecond),
                 Rotation2d.kZero)
             // Hard coded for now until we know the other version works
-            .times(0.85); // velocityCorrectionFactor + distanceFromTargetMeters *
+            .times(0.9); // velocityCorrectionFactor + distanceFromTargetMeters *
     // distanceCorrectionFactor);
 
     return targetPose.plus(targetOffsetVector);
@@ -75,7 +76,15 @@ public class ShootingUtil {
         robotPose, targetPose, drivetrainFieldOrientedSpeeds, 0.6, 0.2);
   }
 
-  public static AngularVelocity getFlywheelVelocity(double distanceFromTargetMeters) {
+  public static AngularVelocity getPassingFlywheelVelocity(double lateralDistanceFromBump) {
+    if (lateralDistanceFromBump < Units.inchesToMeters(120)) {
+      return RadiansPerSecond.of(350.0);
+    } else {
+      return RadiansPerSecond.of(500.0);
+    }
+  }
+
+  public static AngularVelocity getScoringFlywheelVelocity(double distanceFromTargetMeters) {
     if (distanceFromTargetMeters < 2.5) {
       return RadiansPerSecond.of(350);
     } else {

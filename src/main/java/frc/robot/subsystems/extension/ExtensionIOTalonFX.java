@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -41,6 +42,9 @@ public class ExtensionIOTalonFX implements ExtensionIO {
   private final StatusSignal<Current> supplyCurrentSignal;
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> torqueCurrentSignal;
+
+  private double extraGain = 0.0;
+  private Angle extraGainTolerance = Rotations.zero();
 
   private Distance targetPosition = Meters.zero();
 

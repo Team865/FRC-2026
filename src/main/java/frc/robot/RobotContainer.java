@@ -325,6 +325,10 @@ public class RobotContainer {
         "StartShooting", superstructure.forceState(ShootingState.SHOOTING));
     NamedCommands.registerCommand("StopShooting", superstructure.forceState(ShootingState.IDLE));
 
+    NamedCommands.registerCommand("RezeroIntake", intake.currentSensedRezero());
+    NamedCommands.registerCommand(
+        "HalfStowIntake", superstructure.forceState(IntakingState.HALF_STOW));
+
     // NamedCommands.registerCommand("ExtendClimber", climber.extend());
     // NamedCommands.registerCommand("RetractClimber", climber.retract());
 
@@ -332,12 +336,12 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     autoChooser.addOption("Intake Pit Check", superstructure.intakePitCheck());
-    autoChooser.addOption("Turret Pit Check", superstructure.turretPitCheck());
+    autoChooser.addOption("Turret Pit Check", turret.pitCheck());
     autoChooser.addOption("Shooting Pit Check", superstructure.shootingPitCheck());
     autoChooser.addOption("Flywheel Pit Check", superstructure.flywheelPitCheck());
     autoChooser.addOption("Balltunneler Pit Check", superstructure.balltunnelerPitCheck());
     autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
-    autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
+    autoChooser.addOption("Hood Pit Check", hood.pitCheck());
     // // Set up SysId routines
 
     // autoChooser.addOption(
@@ -461,7 +465,7 @@ public class RobotContainer {
     //             () -> Rotation2d.kCW_90deg));
 
     // Toggle bump mode
-    driverController.back().onTrue(superstructure.toggleSlowMode());
+    driverController.leftStick().onTrue(superstructure.toggleSlowMode());
 
     // Start shooting and stop when let go
     driverController
@@ -487,13 +491,15 @@ public class RobotContainer {
         .whileTrue(
             flywheel.runVelocity(
                 () ->
-                    ShootingUtil.getFlywheelVelocity(
+                    ShootingUtil.getScoringFlywheelVelocity(
                         drive
                             .getPose()
                             .getTranslation()
                             .getDistance(getAllianceHubPose().getTranslation()))));
 
     operatorController.b().whileTrue(serializer.runVolts(-2.0));
+
+    operatorController.leftBumper().onTrue(superstructure.requestState(IntakingState.HALF_STOW));
 
     operatorController
         .back()

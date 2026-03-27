@@ -37,10 +37,10 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.533183352080992,
+      "minWaypointRelativePos": 0.4994375703037141,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 1.5,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -52,13 +52,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "StartShooting",
-      "waypointRelativePos": 0.35,
+      "name": "HalfStowIntake",
+      "waypointRelativePos": 0.12373453318335415,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
-          "name": "StartShooting"
+          "name": "HalfStowIntake"
         }
       }
     }

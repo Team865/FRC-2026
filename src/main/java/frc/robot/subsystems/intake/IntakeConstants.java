@@ -27,7 +27,7 @@ public final class IntakeConstants {
         new RollersSpecifications(2.0, false, Units.inchesToMeters(1), 80.0, 170.0);
 
     public static final LinearVelocity MINIMUM_INTAKE_SPEED = MetersPerSecond.of(3.5);
-    public static final LinearVelocity AGITATING_VELOCITY = MetersPerSecond.of(-0.5);
+    public static final LinearVelocity AGITATING_VELOCITY = MetersPerSecond.of(5);
     public static final double DRIVETRAIN_TO_INTAKE_SPEED_FACTOR = 2;
   }
 
@@ -35,7 +35,8 @@ public final class IntakeConstants {
     public static final int MOTOR_CAN_ID = 15;
     public static final String CANBUS = "CANivore";
 
-    public static final Distance STOWED_POSITION = Inches.of(3);
+    public static final Distance STOWED_POSITION = Inches.of(3.0);
+    public static final Distance HALF_STOWED_POSITION = Inches.of(11.0);
     public static final Distance DEPLOYED_POSITION = Inches.of(12.25);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =

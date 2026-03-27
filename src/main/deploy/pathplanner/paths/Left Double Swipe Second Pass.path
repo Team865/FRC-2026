@@ -108,7 +108,7 @@
       "minWaypointRelativePos": 0,
       "maxWaypointRelativePos": 0.4,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 1.5,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -131,10 +131,10 @@
     },
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 3.4431946006749152,
-      "maxWaypointRelativePos": 4.0,
+      "minWaypointRelativePos": 3.3205849268841368,
+      "maxWaypointRelativePos": 3.7165354330708755,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 1.5,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -147,12 +147,23 @@
   "eventMarkers": [
     {
       "name": "DeployIntake",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0.4769403824521941,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
           "name": "DeployIntake"
+        }
+      }
+    },
+    {
+      "name": "HalfStowIntake",
+      "waypointRelativePos": 2.7896512935882973,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "HalfStowIntake"
         }
       }
     }

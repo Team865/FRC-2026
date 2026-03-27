@@ -18,7 +18,7 @@ import frc.robot.subsystems.pivot.AbsoluteEncoderInputsAutoLogged;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
-import frc.robot.util.PitCheckCommand;
+import frc.robot.util.PitCheck;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.DoubleSupplier;
@@ -76,8 +76,6 @@ public class Turret extends Pivot implements SysIdTestable {
             .withDynamicStepVoltage(3.0)
             .withQuasistaticRampRate(0.2)
             .build();
-
-    optimizeAngle(Degrees.of(0));
   }
 
   public Command lockOntoTarget(
@@ -236,9 +234,19 @@ public class Turret extends Pivot implements SysIdTestable {
   }
 
   public Command pitCheck() {
-    Angle[] setpoints = {};
+    Angle[] setpoints = {
+      Degrees.of(0),
+      Degrees.of(90),
+      Degrees.of(0),
+      Degrees.of(180),
+      Degrees.of(0),
+      Degrees.of(-90),
+      Degrees.of(0),
+      Degrees.of(-180),
+      Degrees.of(0)
+    };
 
-    return new PitCheckCommand<Angle>(
-        "Turret Pit Checks", io::setPosition, this::isAtSetpoint, 1.0, setpoints, this);
+    return PitCheck.createCommand(
+        "Turret Pit Checks", io::setPosition, this::isAtSetpoint, 0.5, 5.0, setpoints, this);
   }
 }

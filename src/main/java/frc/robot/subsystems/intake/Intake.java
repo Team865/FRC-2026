@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.subsystems.extension.Extension;
 import frc.robot.subsystems.extension.ExtensionIO;
 import frc.robot.subsystems.rollers.Rollers;
@@ -53,7 +54,7 @@ public class Intake extends SubsystemBase {
           "IntakePivot/maxAcceleration",
           IntakeConstants.Extension.SYSTEM_CONSTANTS.maxAcceleration.get());
 
-  private final Debouncer currentSenseDebouncer = new Debouncer(0.5);
+  private final Debouncer currentSenseDebouncer = new Debouncer(0.1);
 
   public Intake(RollersIO rollersIO, ExtensionIO extensionIO) {
     this.rollers = new Rollers("Intake/Rollers", rollersIO);
@@ -78,10 +79,15 @@ public class Intake extends SubsystemBase {
     return extension.setPosition(IntakeConstants.Extension.DEPLOYED_POSITION);
   }
 
+  public Command halfStow() {
+    return extension.setPosition(IntakeConstants.Extension.HALF_STOWED_POSITION);
+  }
+
   public Command currentSensedRezero() {
-    if (frc.robot.Constants.currentMode == frc.robot.Constants.Mode.REAL) {
+    if (Constants.currentMode == Constants.Mode.REAL) {
       return new SequentialCommandGroup(
           extension.setVolts(-5),
+          rollers.stop(),
           new WaitUntilCommand(
                   () ->
                       currentSenseDebouncer.calculate(

@@ -52,12 +52,12 @@
         "y": 2.712291666665094
       },
       "prevControl": {
-        "x": 6.615008944548562,
-        "y": 3.3291949910507186
+        "x": 6.688953715852465,
+        "y": 3.160268597227549
       },
       "nextControl": {
-        "x": 4.89398238015603,
-        "y": 2.4289733000274443
+        "x": 5.200210919717809,
+        "y": 2.6281476781323
       },
       "isLocked": false,
       "linkedName": null
@@ -68,8 +68,8 @@
         "y": 2.5986476868327397
       },
       "prevControl": {
-        "x": 4.754944632265717,
-        "y": 2.3876330071174356
+        "x": 4.784021352313168,
+        "y": 2.673962040332148
       },
       "nextControl": null,
       "isLocked": false,
@@ -105,10 +105,10 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.05,
+      "minWaypointRelativePos": 0.04499437570303916,
       "maxWaypointRelativePos": 0.3,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 1.5,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -134,7 +134,7 @@
       "minWaypointRelativePos": 3.1507311586051676,
       "maxWaypointRelativePos": 4.0,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 1.5,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -147,12 +147,23 @@
   "eventMarkers": [
     {
       "name": "DeployIntake",
-      "waypointRelativePos": 0.7,
+      "waypointRelativePos": 0.3599550056243009,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
         "data": {
           "name": "DeployIntake"
+        }
+      }
+    },
+    {
+      "name": "HalfStowIntake",
+      "waypointRelativePos": 2.4656917885264353,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "HalfStowIntake"
         }
       }
     }
