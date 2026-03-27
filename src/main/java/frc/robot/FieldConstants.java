@@ -62,26 +62,36 @@ public class FieldConstants {
           Units.inchesToMeters(180.75),
           Rotation2d.fromDegrees(180)); // Away from origin
 
-  public static final double bumpLineXPos =
-      AllianceFlipUtil.shouldFlip()
-          ? Units.inchesToMeters(651.22 - 182.11)
-          : Units.inchesToMeters(182.11);
+  public static final class Passing {
+    private static final double redBumpLineXPos = Units.inchesToMeters(651.22 - 182.11);
+    private static final double blueBumpLineXPos = Units.inchesToMeters(182.11);
 
-  public static final Pose2d leftCorner =
-      AllianceFlipUtil.shouldFlip()
-          ? new Pose2d(Units.inchesToMeters(651.22), 20.0, Rotation2d.kZero)
-          : new Pose2d(0.0, Units.inchesToMeters(293.69), Rotation2d.kZero);
+    private static final Pose2d redLeftCorner =
+        new Pose2d(Units.inchesToMeters(651.22), Units.inchesToMeters(20.0), Rotation2d.kZero);
+    private static final Pose2d blueLeftCorner =
+        new Pose2d(0.0, Units.inchesToMeters(293.69), Rotation2d.kZero);
 
-  public static final Pose2d rightCorner =
-      AllianceFlipUtil.shouldFlip()
-          ? new Pose2d(Units.inchesToMeters(651.22), Units.inchesToMeters(293.69), Rotation2d.kZero)
-          : new Pose2d(0.0, 20.0, Rotation2d.kZero);
+    private static final Pose2d redRightCorner =
+        new Pose2d(Units.inchesToMeters(651.22), Units.inchesToMeters(293.69), Rotation2d.kZero);
+    private static final Pose2d blueRightCorner =
+        new Pose2d(0.0, Units.inchesToMeters(20.0), Rotation2d.kZero);
 
-  public static boolean shouldBePassing(Pose2d robotPose) {
-    if (AllianceFlipUtil.shouldFlip()) {
-      return robotPose.getX() < bumpLineXPos;
-    } else {
-      return robotPose.getX() > bumpLineXPos;
+    public static double getBumpLineXPos() {
+      return AllianceFlipUtil.shouldFlip() ? redBumpLineXPos : blueBumpLineXPos;
+    }
+
+    public static boolean shouldBePassing(Pose2d robotPose) {
+      return (AllianceFlipUtil.shouldFlip())
+          ? robotPose.getX() < redBumpLineXPos
+          : robotPose.getX() > blueBumpLineXPos;
+    }
+
+    public static Pose2d getLeftCorner() {
+      return AllianceFlipUtil.shouldFlip() ? redLeftCorner : blueLeftCorner;
+    }
+
+    public static Pose2d getRightCorner() {
+      return AllianceFlipUtil.shouldFlip() ? redRightCorner : blueRightCorner;
     }
   }
 

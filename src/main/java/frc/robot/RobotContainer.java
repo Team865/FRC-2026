@@ -20,6 +20,7 @@ import frc.robot.commands.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Superstructure.IntakingState;
+import frc.robot.subsystems.Superstructure.PassingSide;
 import frc.robot.subsystems.Superstructure.ShootingState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
@@ -506,6 +507,9 @@ public class RobotContainer {
         .onTrue(hood.currentSensedRezero().andThen(intake.currentSensedRezero()));
 
     operatorController.start().onTrue(superstructure.toggleManualOverride());
+
+    operatorController.povLeft().onTrue(superstructure.setPassingSide(PassingSide.LEFT));
+    operatorController.povRight().onTrue(superstructure.setPassingSide(PassingSide.RIGHT));
   }
 
   /**

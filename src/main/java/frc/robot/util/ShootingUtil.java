@@ -77,10 +77,12 @@ public class ShootingUtil {
   }
 
   public static AngularVelocity getPassingFlywheelVelocity(double lateralDistanceFromBump) {
-    if (lateralDistanceFromBump < Units.inchesToMeters(120)) {
-      return RadiansPerSecond.of(350.0);
-    } else {
+    if (lateralDistanceFromBump > Units.inchesToMeters(200)) {
+      return RadiansPerSecond.of(550.0);
+    } else if (lateralDistanceFromBump > Units.inchesToMeters(140)) {
       return RadiansPerSecond.of(500.0);
+    } else {
+      return RadiansPerSecond.of(350.0);
     }
   }
 

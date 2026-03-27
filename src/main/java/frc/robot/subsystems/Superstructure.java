@@ -68,7 +68,6 @@ public class Superstructure extends SubsystemBase {
   public final StateMachine<IntakingState> intakingStateMachine =
       new StateMachine<>(IntakingState.STOWED);
   private boolean isManualOverride = false;
-  private PassingSide passingSide;
 
   private final Drive drive;
   private final Intake intake;
@@ -95,6 +94,9 @@ public class Superstructure extends SubsystemBase {
   @AutoLogOutput(key = "Superstructure/PassingMode")
   private final Trigger passingModeTrigger =
       new Trigger(() -> isPassing && DriverStation.isTeleopEnabled() && !isManualOverride);
+
+  @AutoLogOutput(key = "Superstructure/PassingSide")
+  private PassingSide passingSide;
 
   public Superstructure(
       Drive drive,
@@ -170,7 +172,8 @@ public class Superstructure extends SubsystemBase {
             flywheel.runVelocity(
                 () ->
                     ShootingUtil.getPassingFlywheelVelocity(
-                        Math.abs(drive.getPose().getX() - FieldConstants.bumpLineXPos))));
+                        Math.abs(
+                            drive.getPose().getX() - FieldConstants.Passing.getBumpLineXPos()))));
 
     shootingStateMachine
         .stateTriggers
@@ -458,17 +461,18 @@ public class Superstructure extends SubsystemBase {
     else
       shootingTarget =
           (passingSide.equals(PassingSide.LEFT))
-              ? FieldConstants.leftCorner
-              : FieldConstants.rightCorner;
+              ? FieldConstants.Passing.getLeftCorner()
+              : FieldConstants.Passing.getRightCorner();
 
     distanceFromTargetMeters =
         shootingTarget.getTranslation().getDistance(drivePose.getTranslation());
 
-    isPassing = FieldConstants.shouldBePassing(drivePose);
+    isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/SlowMode", isSlowMode);
+    Logger.recordOutput("Superstructure/ShooterTarget", shootingTarget);
 
     // Render a Pose showing where the turret (thinks it) is pointing
     Logger.recordOutput(
