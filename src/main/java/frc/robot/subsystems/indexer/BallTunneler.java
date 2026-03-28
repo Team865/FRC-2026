@@ -11,6 +11,7 @@ import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 public class BallTunneler extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kS =
@@ -24,7 +25,7 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("BallTunneler/kD", IndexerConstants.BallTunneler.SYSTEM_CONSTANTS.kD);
 
-  private final Debouncer isFreeRunningDebouncer = new Debouncer(0.1, DebounceType.kRising);
+  private final Debouncer isFreeRunningDebouncer = new Debouncer(0.01, DebounceType.kRising);
   private final SysIdRoutine sysIdRoutine;
 
   public BallTunneler(RollersIO io) {
@@ -39,6 +40,12 @@ public class BallTunneler extends Rollers implements SysIdTestable {
     return runEnd(
         () -> io.setAngularVelocity(IndexerConstants.BallTunneler.TUNNELING_SPEED),
         () -> io.stop());
+  }
+
+  @AutoLogOutput(key = "Tunneler/IsNegative")
+  public boolean IsNegative() {
+
+    return isFreeRunningDebouncer.calculate(inputs.torqueCurrentAmps < -50);
   }
 
   public Command startTunneler() {
