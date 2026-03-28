@@ -26,16 +26,16 @@ public class VisionConstants {
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d robotToCamera0 =
       new Transform3d(
-          Units.inchesToMeters(2),
-          Units.inchesToMeters(12.355),
-          Units.inchesToMeters(23.952),
-          new Rotation3d(0, Units.degreesToRadians(-30), 90));
+          Units.inchesToMeters(-11.490),
+          Units.inchesToMeters(-11.250),
+          Units.inchesToMeters(25.938),
+          new Rotation3d(0, Units.degreesToRadians(-30), 45));
   public static Transform3d robotToCamera1 =
       new Transform3d(
-          Units.inchesToMeters(2),
-          Units.inchesToMeters(-12.355),
-          Units.inchesToMeters(23.952),
-          new Rotation3d(0, Units.degreesToRadians(-30), Units.degreesToRadians(-90)));
+          Units.inchesToMeters(11.490),
+          Units.inchesToMeters(11.250),
+          Units.inchesToMeters(25.938),
+          new Rotation3d(0, Units.degreesToRadians(-30), Units.degreesToRadians(-45)));
   public static Transform3d robotToCamera2 =
       new Transform3d(
           Units.inchesToMeters(1),
@@ -51,18 +51,22 @@ public class VisionConstants {
   // (Adjusted automatically based on distance and # of tags)
   public static double linearStdDevBaseline = 0.02; // Meters
   public static double angularStdDevBaseline = 0.06; // Radians
-
+  // Number of frames to skip when processing
+  // Reccomended value taken from limelight docs
+  public static int disabledThrottleAmount = 0;
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
   public static double[] cameraStdDevFactors =
       new double[] {
-        1.0, // Front
-        1.0, // Back
-        1.0 // Turret
+        1.0, // Left
+        1.0, // Right
+        10.0 // Turret
       };
 
+  // Vertical offset: 0.676
+  public static final double turretForwardOffsetMeters = 0.218274;
   // Multipliers to apply for MegaTag 2 observations
-  public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
+  public static double linearStdDevMegatag2Factor = 1.0; // More stable than full 3D solve
   public static double angularStdDevMegatag2Factor =
       Double.POSITIVE_INFINITY; // No rotation data available
 }

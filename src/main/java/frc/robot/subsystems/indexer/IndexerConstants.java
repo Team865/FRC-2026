@@ -1,5 +1,6 @@
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.util.Units;
@@ -7,37 +8,34 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.Constants.ControlSystemConstants;
 import frc.robot.Constants.ControlSystemContext;
 import frc.robot.subsystems.rollers.RollersSpecifications;
-import java.util.Optional;
 
 public final class IndexerConstants {
-  public static final String CANBUS = "rio";
+  public static final String CANBUS = "CANivore";
+  public static final double antiStallTimeoutSeconds = 5.0;
 
   public static final class Serializer {
     public static final int CAN_ID = 17;
-    public static final AngularVelocity SPINDEXING_SPEED = RotationsPerSecond.of(5);
-
+    public static final AngularVelocity SERIALIZING_SPEED = RotationsPerSecond.of(1.2);
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(5, true, 40, Units.inchesToMeters(8));
+        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 90, 200);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
-            ControlSystemConstants.EMPTY_CONTEXT,
-            new ControlSystemContext(
-                2.5, 5.0, 0.15, 0.0, 5.0, 0.0, Optional.empty(), Optional.empty()));
+            new ControlSystemContext(2.1862, 0.27345, 0.8, 0, 5, 0),
+            new ControlSystemContext(0.02, 0.01, 0.0, 0.0, 0.5, 0.0));
   }
 
   public static final class BallTunneler {
     public static final int CAN_ID = 18;
-    public static final AngularVelocity TUNNELING_SPEED = RotationsPerSecond.of(20);
+    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(290);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(1.0 / 10.0, false, 40, Units.inchesToMeters(13.08 / 2.0));
+        new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 50, 140);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
-            ControlSystemConstants.EMPTY_CONTEXT,
-            new ControlSystemContext(
-                0.12, 0.01, 0.05, 0.0, 0.5, 0.0, Optional.empty(), Optional.empty()));
+            new ControlSystemContext(0.202555, 0.05, 0.45, 0, 1.0, 0.0),
+            new ControlSystemContext(0.02, 0.01, 0, 0.0, 0.5, 0.0));
   }
 
   private IndexerConstants() {}

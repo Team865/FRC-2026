@@ -41,11 +41,13 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.Constants.Mode;
+import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.util.Benchmark;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.VisionUtil;
 import java.util.concurrent.locks.Lock;
@@ -66,7 +68,7 @@ public class Drive extends SubsystemBase {
   private Pose2d[] ppPath = new Pose2d[] {};
 
   // TunerConstants doesn't include these constants, so they are declared locally
-  static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 250.0 : 100.0;
+  static final double ODOMETRY_FREQUENCY = TunerConstants.kCANBus.isNetworkFD() ? 200.0 : 100.0;
   public static final double DRIVE_BASE_RADIUS =
       Math.max(
           Math.max(
@@ -93,12 +95,14 @@ public class Drive extends SubsystemBase {
               TunerConstants.FrontLeft.SlipCurrent,
               1),
           getModuleTranslations());
+  private static final double visionDenialThresholdRPS = 0.5;
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-  private final SysIdRoutine sysId;
+  private final SysIdRoutine driveSysId;
+  private final SysIdRoutine turnSysId;
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
@@ -116,12 +120,14 @@ public class Drive extends SubsystemBase {
           kinematics,
           rawGyroRotation,
           lastModulePositions,
-          new Pose2d(
-              new Translation2d(Units.inchesToMeters(651.22), Units.inchesToMeters(317.69)),
-              Rotation2d.k180deg));
+          new Pose2d(FieldConstants.fieldLength, FieldConstants.fieldWidth, Rotation2d.k180deg));
 
   // For controlling drive speed
-  private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts;
+  private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts.times(0.8);
+
+  private boolean shouldReseedOnRotationStop = false;
+
+  private final Benchmark benchmark = new Benchmark("Drive Periodic");
 
   public Drive(
       GyroIO gyroIO,
@@ -149,7 +155,7 @@ public class Drive extends SubsystemBase {
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(2.0, 0.0, 0.0), new PIDConstants(2.5, 0.0, 0.0)),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -180,19 +186,30 @@ public class Drive extends SubsystemBase {
           field.getObject("Path").setPoses(poses);
         });
     // Configure SysId
-    sysId =
+    driveSysId =
         new SysIdRoutine(
             new SysIdRoutine.Config(
+                Volts.of(3.0).per(Second),
+                Volts.of(15.0),
                 null,
-                null,
-                null,
-                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+                (state) -> Logger.recordOutput("Drive/DriveSysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
-                (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+                (voltage) -> runDriveCharacterization(voltage.in(Volts)), null, this));
+
+    turnSysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                Volts.of(3.0).per(Second),
+                Volts.of(15.0),
+                null,
+                (state) -> Logger.recordOutput("Drive/TurnSysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> runTurnCharacterization(voltage.in(Volts)), null, this));
   }
 
   @Override
   public void periodic() {
+    // benchmark.start();
     odometryLock.lock(); // Prevents odometry updates while reading data
     gyroIO.updateInputs(gyroInputs);
     Logger.processInputs("Drive/Gyro", gyroInputs);
@@ -246,8 +263,21 @@ public class Drive extends SubsystemBase {
       poseEstimator.updateWithTime(sampleTimestamps[i], rawGyroRotation, modulePositions);
     }
 
+    double absOmegaRPS = Math.abs(Units.radiansToRotations(getAngularVelocityRadPerSec()));
+
+    if (absOmegaRPS >= visionDenialThresholdRPS) {
+      shouldReseedOnRotationStop = true;
+    } else if (shouldReseedOnRotationStop) {
+      shouldReseedOnRotationStop = false;
+      VisionUtil.reseedAllLimelight4s();
+    }
+
+    field.setRobotPose(getPose());
+
     // Update gyro alert
-    gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);
+    gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Constants.simMode);
+
+    // benchmark.end(TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -275,9 +305,15 @@ public class Drive extends SubsystemBase {
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
-  public void runCharacterization(double output) {
+  public void runDriveCharacterization(double output) {
     for (int i = 0; i < 4; i++) {
-      modules[i].runCharacterization(output);
+      modules[i].runDriveCharacterization(output);
+    }
+  }
+
+  public void runTurnCharacterization(double output) {
+    for (int i = 0; i < 4; i++) {
+      modules[i].runTurnCharacterization(output);
     }
   }
 
@@ -300,15 +336,31 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns a command to run a quasistatic test in the specified direction. */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0))
+  public Command driveSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> runDriveCharacterization(0.0))
         .withTimeout(1.0)
-        .andThen(sysId.quasistatic(direction));
+        .andThen(driveSysId.quasistatic(direction));
   }
 
   /** Returns a command to run a dynamic test in the specified direction. */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(0.0)).withTimeout(1.0).andThen(sysId.dynamic(direction));
+  public Command driveSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> runDriveCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(driveSysId.dynamic(direction));
+  }
+
+  /** Returns a command to run a quasistatic test in the specified direction. */
+  public Command turnSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> runTurnCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(turnSysId.quasistatic(direction));
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command turnSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> runTurnCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(turnSysId.dynamic(direction));
   }
 
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
@@ -334,6 +386,12 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
   public ChassisSpeeds getChassisSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
+  }
+
+  @AutoLogOutput(key = "SwerveChassisSpeeds/FieldOriented")
+  /** Returns the chassis speeds of the robot relative to the field */
+  public ChassisSpeeds getFieldOrientedSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getChassisSpeeds(), getRotation());
   }
 
   /** Returns the position of each module in radians. */
@@ -367,6 +425,7 @@ public class Drive extends SubsystemBase {
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
+    // gyroIO.setYaw(pose.getRotation());
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     VisionUtil.reseedAllLimelight4s();
   }
@@ -376,13 +435,22 @@ public class Drive extends SubsystemBase {
       Pose2d visionRobotPoseMeters,
       double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
+
+    // Don't accept if the robot is rotating too quickly
+    if (shouldReseedOnRotationStop) return;
+
     poseEstimator.addVisionMeasurement(
         visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
   }
 
   /** Sets the drivetrain maximum speed */
-  public Command setMaxLinearSpeed(LinearVelocity maxSpeed) {
-    return runOnce(() -> currentMaxSpeed = maxSpeed);
+  public void setMaxLinearSpeed(LinearVelocity maxSpeed) {
+    currentMaxSpeed = maxSpeed;
+  }
+
+  /** Sets the drivetrain maximum speed */
+  public Command setMaxLinearSpeedCmd(LinearVelocity maxSpeed) {
+    return Commands.runOnce(() -> setMaxLinearSpeed(maxSpeed));
   }
 
   /** Returns the maximum linear speed */

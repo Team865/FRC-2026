@@ -1,19 +1,26 @@
 package frc.robot.subsystems.pivot;
 
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants.ControlSystemConstants;
 
 public class PivotIOSim implements PivotIO {
   private double appliedVolts = 0.0;
-  private double targetAngleRads = 0.0;
+  private Angle targetAngle = Rotations.zero();
   private boolean voltageOverridesTarget = false;
-  private double extraOmegaRadPerSec = 0.0;
+  private AngularVelocity extraOmega = RotationsPerSecond.zero();
 
   private final DCMotorSim motorSim;
 
@@ -24,6 +31,8 @@ public class PivotIOSim implements PivotIO {
   public PivotIOSim(DCMotor motor, ControlSystemConstants constants) {
     this.motorSim =
         new DCMotorSim(LinearSystemId.createDCMotorSystem(constants.kV, constants.kA), motor);
+
+    motorSim.setAngle(0.0);
 
     setControlConstants(constants.kS, constants.kV, constants.kA, constants.kP, constants.kD);
     setMotionProfile(constants.maxVelocity.get(), constants.maxAcceleration.get());
@@ -40,20 +49,23 @@ public class PivotIOSim implements PivotIO {
   }
 
   @Override
-  public void setPosition(double angleRads) {
-    this.targetAngleRads = angleRads;
+  public void setPosition(Angle angle) {
+    this.targetAngle = angle;
     this.voltageOverridesTarget = false;
+    this.extraOmega = RotationsPerSecond.zero();
   }
 
   @Override
-  public void setPositionWithExtraOmega(double angleRads, double omegaRadPerSec) {
-    setPosition(angleRads);
-    this.extraOmegaRadPerSec = omegaRadPerSec;
+  public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
+    this.targetAngle = angle;
+    this.voltageOverridesTarget = false;
+    this.extraOmega = omega;
   }
 
   @Override
   public void stop() {
     this.appliedVolts = 0.0;
+    this.voltageOverridesTarget = true;
   }
 
   @Override
@@ -61,9 +73,10 @@ public class PivotIOSim implements PivotIO {
     if (!this.voltageOverridesTarget) {
       double angRad = motorSim.getAngularPositionRad();
 
-      double pidOutput = this.pidController.calculate(angRad, this.targetAngleRads);
+      double pidOutput = this.pidController.calculate(angRad, this.targetAngle.in(Radians));
+
       double feedforwardOutput =
-          this.feedforwardController.calculate(pidOutput + extraOmegaRadPerSec);
+          this.feedforwardController.calculate(pidOutput + extraOmega.in(RadiansPerSecond));
 
       this.setClampedVolts(pidOutput + feedforwardOutput);
     }
@@ -75,10 +88,10 @@ public class PivotIOSim implements PivotIO {
     inputs.appliedVoltage = this.appliedVolts;
     inputs.supplyCurrentAmps = this.motorSim.getCurrentDrawAmps();
     inputs.statorCurrentAmps = inputs.supplyCurrentAmps;
-    inputs.torqueCurrent = inputs.supplyCurrentAmps;
-    inputs.velocityRadsPerSec = this.motorSim.getAngularVelocityRadPerSec();
-    inputs.targetPositionRads = targetAngleRads;
-    inputs.positionRads = this.motorSim.getAngularPositionRad();
+    inputs.torqueCurrentAmps = inputs.supplyCurrentAmps;
+    inputs.velocity = this.motorSim.getAngularVelocity();
+    inputs.targetPosition = targetAngle;
+    inputs.position = this.motorSim.getAngularPosition();
   }
 
   @Override
@@ -93,5 +106,11 @@ public class PivotIOSim implements PivotIO {
   @Override
   public void setMotionProfile(double maxVelocity, double maxAcceleration) {
     this.pidController.setConstraints(new Constraints(maxVelocity, maxAcceleration));
+  }
+
+  @Override
+  public boolean seedPosition(Angle position) {
+    this.motorSim.setAngle(position.in(Radians));
+    return true;
   }
 }

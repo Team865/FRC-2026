@@ -1,0 +1,85 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.8240583333362625,
+        "y": 3.3774249999978383
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.58020166073547,
+        "y": 2.2758718861209966
+      },
+      "isLocked": false,
+      "linkedName": "RightNZEndA"
+    },
+    {
+      "anchor": {
+        "x": 3.3948749999999994,
+        "y": 2.765200000000001
+      },
+      "prevControl": {
+        "x": 4.271641666666666,
+        "y": 2.508216666666667
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "RightFirstSwipeEnd"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.44035087719298377,
+      "rotationDegrees": 135.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.4341957255343137,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 1.5,
+        "maxAcceleration": 10.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "HalfStowIntake",
+      "waypointRelativePos": 0.060742407199100866,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "HalfStowIntake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 10.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": 135.0
+  },
+  "reversed": false,
+  "folder": "Right",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -73.7798063043972
+  },
+  "useDefaultConstraints": true
+}

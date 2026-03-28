@@ -69,6 +69,13 @@ public class Module {
     driveDisconnectedAlert.set(!inputs.driveConnected);
     turnDisconnectedAlert.set(!inputs.turnConnected);
     turnEncoderDisconnectedAlert.set(!inputs.turnEncoderConnected);
+
+    if (index == 0) {
+      Logger.recordOutput("Drive/Voltage", inputs.driveAppliedVolts);
+      Logger.recordOutput(
+          "Drive/VelocityRotsPerSec", Units.radiansToRotations(inputs.driveVelocityRadPerSec));
+      Logger.recordOutput("Drive/PositionRots", Units.radiansToRotations(inputs.drivePositionRad));
+    }
   }
 
   /** Runs the module with the specified setpoint state. Mutates the state to optimize it. */
@@ -83,9 +90,15 @@ public class Module {
   }
 
   /** Runs the module with the specified output while controlling to zero degrees. */
-  public void runCharacterization(double output) {
+  public void runDriveCharacterization(double output) {
     io.setDriveOpenLoop(output);
     io.setTurnPosition(Rotation2d.kZero);
+  }
+
+  /** Runs the module with the specified output while controlling to zero degrees. */
+  public void runTurnCharacterization(double output) {
+    io.setDriveOpenLoop(0.0);
+    io.setTurnOpenLoop(output);
   }
 
   /** Disables all outputs to motors. */

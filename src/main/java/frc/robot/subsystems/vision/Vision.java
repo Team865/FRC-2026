@@ -3,22 +3,23 @@ package frc.robot.subsystems.vision;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.VisionUtil;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
@@ -27,12 +28,7 @@ public class Vision extends SubsystemBase {
   private final Alert[] disconnectedAlerts;
   private final Map<String, VisionConsumer> cameraConsumers;
   private final Map<String, Integer> cameraNameToIndex = new HashMap<>();
-
-  private double turretTxDegrees = 0.0;
-  private int turretSeenTagId = -1;
-  private int turretCandidateTagId = -1;
-  private int turretTagFrames = 0;
-  private static final int TURRET_DEBOUNCE_FRAMES = 3;
+  private final Debouncer shouldUseTurretLLDebouncer = new Debouncer(1.0, DebounceType.kRising);
 
   public Vision(Drive drive, VisionIO... io) {
     this.io = io;
@@ -49,45 +45,23 @@ public class Vision extends SubsystemBase {
     }
 
     // Drivetrain camera consumer, outputs to the drivetrain pose
-    VisionConsumer drivetrainConsumer =
+    VisionConsumer positionConsumer =
         (pose, ts, stdDevs) -> {
           drive.addVisionMeasurement(pose, ts, stdDevs);
         };
 
-    cameraConsumers.put(camera0Name, drivetrainConsumer);
-    cameraConsumers.put(camera1Name, drivetrainConsumer);
-
-    // Turret Camera consumer, outputs the horizontal offset from the current alliances hub tag
-    // debounced
-    cameraConsumers.put(
-        camera2Name,
+    VisionConsumer turretConsumer =
         (pose, ts, stdDevs) -> {
-          int cameraIndex = cameraNameToIndex.get(camera2Name);
-          VisionIOInputsAutoLogged inputs2 = inputs[cameraIndex];
-          int[] seenTags = inputs2.tagIds;
+          if (shouldUseTurretLLDebouncer.calculate(
+              inputs[0].tagIds.length + inputs[1].tagIds.length == 0)) {
+            pose = pose.plus(new Transform2d(-turretForwardOffsetMeters, 0, Rotation2d.kZero));
+            drive.addVisionMeasurement(pose, ts, stdDevs);
+          }
+        };
 
-          double tx = 0.0;
-          int newCandidate = -1;
-          for (int hubTagId : AllianceFlipUtil.apply(FieldConstants.hubTagIds)) {
-            if (IntStream.of(seenTags).anyMatch(t -> t == hubTagId)) {
-              newCandidate = hubTagId;
-              if (inputs2.latestTargetObservation != null) {
-                tx = inputs2.latestTargetObservation.tx().getDegrees();
-              }
-              break;
-            }
-          }
-          if (newCandidate == turretCandidateTagId) {
-            turretTagFrames++;
-          } else {
-            turretCandidateTagId = newCandidate;
-            turretTagFrames = 1;
-          }
-          if (turretTagFrames >= TURRET_DEBOUNCE_FRAMES) {
-            turretSeenTagId = turretCandidateTagId;
-            turretTxDegrees = tx;
-          }
-        });
+    cameraConsumers.put(camera0Name, positionConsumer);
+    cameraConsumers.put(camera1Name, positionConsumer);
+    cameraConsumers.put(camera2Name, turretConsumer);
   }
 
   public VisionIOInputsAutoLogged getInputs(int cameraIndex) {
@@ -102,18 +76,8 @@ public class Vision extends SubsystemBase {
     return idx;
   }
 
-  public double getTurretTxDegrees() {
-    return turretTxDegrees;
-  }
-
-  public int getTurretSeenTagId() {
-    return turretSeenTagId;
-  }
-
   @Override
   public void periodic() {
-    List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
     List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
     List<Pose3d> allRobotPosesRejected = new LinkedList<>();
 
@@ -129,27 +93,19 @@ public class Vision extends SubsystemBase {
       }
 
       VisionConsumer consumer = cameraConsumers.get(cameraName);
+      if (consumer == null) continue;
       VisionUtil.PoseProcessingResult poseResult =
           VisionUtil.processPoseObservations(inputs[i], consumer, i);
 
-      Logger.recordOutput("Vision/" + cameraName + "/TagPoses", tagPoses.toArray(new Pose3d[0]));
-      Logger.recordOutput(
-          "Vision/" + cameraName + "/RobotPoses", poseResult.all.toArray(new Pose3d[0]));
       Logger.recordOutput(
           "Vision/" + cameraName + "/RobotPosesAccepted",
           poseResult.accepted.toArray(new Pose3d[0]));
       Logger.recordOutput(
           "Vision/" + cameraName + "/RobotPosesRejected",
           poseResult.rejected.toArray(new Pose3d[0]));
-
-      allTagPoses.addAll(tagPoses);
-      allRobotPoses.addAll(poseResult.all);
       allRobotPosesAccepted.addAll(poseResult.accepted);
       allRobotPosesRejected.addAll(poseResult.rejected);
     }
-
-    Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
-    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
     Logger.recordOutput(
@@ -164,7 +120,9 @@ public class Vision extends SubsystemBase {
         Matrix<N3, N1> visionMeasurementStdDevs);
   }
 
-  public static Vision createPerCameraVision(Drive drive, VisionIO... io) {
-    return new Vision(drive, io);
+  public void throttleCameras(int throttleAmount) {
+    for (VisionIO visionIO : io) {
+      visionIO.throttleCamera(throttleAmount);
+    }
   }
 }

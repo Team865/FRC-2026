@@ -1,5 +1,7 @@
 package frc.robot.subsystems.climber;
 
+import static edu.wpi.first.units.Units.Hertz;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -18,7 +20,7 @@ import frc.robot.Constants.ControlSystemConstants;
 import frc.robot.util.PhoenixUtil;
 
 public class ClimberIOTalonFX implements ClimberIO {
-  private final TalonFX motor;
+  private final TalonFX talon;
   private final TalonFXConfiguration config = new TalonFXConfiguration();
 
   private final VoltageOut voltageRequest =
@@ -38,7 +40,7 @@ public class ClimberIOTalonFX implements ClimberIO {
 
   @SuppressWarnings("removal")
   public ClimberIOTalonFX() {
-    motor = new TalonFX(ClimberConstants.CAN_ID, ClimberConstants.CANBUS);
+    talon = new TalonFX(ClimberConstants.CAN_ID, ClimberConstants.CANBUS);
 
     ControlSystemConstants constants = ClimberConstants.SYSTEM_CONSTANTS;
 
@@ -54,26 +56,40 @@ public class ClimberIOTalonFX implements ClimberIO {
     config.Slot0.kP = constants.kP;
     config.Slot0.kD = constants.kD;
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(config));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config, 0.25));
 
-    positionMetersSignal = motor.getPosition();
-    velocityMetersPerSecSignal = motor.getVelocity();
-    voltageSignal = motor.getMotorVoltage();
-    supplyCurrentSignal = motor.getSupplyCurrent();
-    statorCurrentSignal = motor.getStatorCurrent();
+    positionMetersSignal = talon.getPosition();
+    velocityMetersPerSecSignal = talon.getVelocity();
+    voltageSignal = talon.getMotorVoltage();
+    supplyCurrentSignal = talon.getSupplyCurrent();
+    statorCurrentSignal = talon.getStatorCurrent();
+
+    talon.optimizeBusUtilization();
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                Hertz.of(50.0),
+                positionMetersSignal,
+                velocityMetersPerSecSignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal));
   }
 
   @Override
   public void updateInputs(ClimberIOInputsAutoLogged inputs) {
-    inputs.connected =
-        connectedDebouncer.calculate(
-            BaseStatusSignal.refreshAll(
-                    positionMetersSignal,
-                    velocityMetersPerSecSignal,
-                    voltageSignal,
-                    supplyCurrentSignal,
-                    statorCurrentSignal)
-                .isOK());
+    boolean refreshSucceeded =
+        BaseStatusSignal.refreshAll(
+                positionMetersSignal,
+                velocityMetersPerSecSignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal)
+            .isOK();
+    inputs.connected = connectedDebouncer.calculate(refreshSucceeded);
+
+    if (!refreshSucceeded) return;
 
     inputs.appliedVoltage = voltageSignal.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();
@@ -84,12 +100,12 @@ public class ClimberIOTalonFX implements ClimberIO {
 
   @Override
   public void setVoltage(double volts) {
-    motor.setControl(voltageRequest.withOutput(volts));
+    talon.setControl(voltageRequest.withOutput(volts));
   }
 
   @Override
   public void setPosition(double positionMeters) {
-    motor.setControl(positionRequest.withPosition(positionMeters));
+    talon.setControl(positionRequest.withPosition(positionMeters));
   }
 
   @Override
@@ -101,7 +117,7 @@ public class ClimberIOTalonFX implements ClimberIO {
     config.Slot0.kP = kP;
     config.Slot0.kD = kD;
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(config));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
   }
 
   @Override
@@ -109,11 +125,11 @@ public class ClimberIOTalonFX implements ClimberIO {
     config.MotionMagic.MotionMagicCruiseVelocity = maxVelocity;
     config.MotionMagic.MotionMagicAcceleration = maxAcceleration;
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(config));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
   }
 
   @Override
   public void stop() {
-    motor.setControl(neutralRequest);
+    talon.setControl(neutralRequest);
   }
 }

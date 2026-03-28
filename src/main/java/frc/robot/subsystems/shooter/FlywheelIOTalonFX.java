@@ -1,8 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -23,8 +20,8 @@ import frc.robot.Constants.ControlSystemConstants;
 import frc.robot.util.PhoenixUtil;
 
 public class FlywheelIOTalonFX implements FlywheelIO {
-  private final TalonFX masterMotor;
-  private final TalonFX followerMotor;
+  private final TalonFX masterTalon;
+  private final TalonFX followerTalon;
 
   private final TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -50,13 +47,13 @@ public class FlywheelIOTalonFX implements FlywheelIO {
 
   @SuppressWarnings("removal")
   public FlywheelIOTalonFX() {
-    masterMotor = new TalonFX(ShooterConstants.Flywheel.MASTER_CAN_ID, ShooterConstants.CANBUS);
-    followerMotor = new TalonFX(ShooterConstants.Flywheel.FOLLOWER_CAN_ID, ShooterConstants.CANBUS);
-    followerMotor.setControl(new Follower(masterMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+    masterTalon = new TalonFX(ShooterConstants.Flywheel.MASTER_CAN_ID, ShooterConstants.CANBUS);
+    followerTalon = new TalonFX(ShooterConstants.Flywheel.FOLLOWER_CAN_ID, ShooterConstants.CANBUS);
+    followerTalon.setControl(new Follower(masterTalon.getDeviceID(), MotorAlignmentValue.Opposed));
 
     ControlSystemConstants constants = ShooterConstants.Flywheel.SYSTEM_CONSTANTS;
 
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     config.Feedback.SensorToMechanismRatio = ShooterConstants.Flywheel.GEAR_RATIO;
@@ -66,19 +63,28 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     config.Slot0.kP = constants.kP;
     config.Slot0.kD = constants.kD;
 
-    PhoenixUtil.tryUntilOk(5, () -> masterMotor.getConfigurator().apply(config));
-    PhoenixUtil.tryUntilOk(5, () -> followerMotor.getConfigurator().apply(config));
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = 70.0;
 
-    position = masterMotor.getPosition();
-    velocity = masterMotor.getVelocity();
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 200.0;
 
-    masterAppliedVoltage = masterMotor.getMotorVoltage();
-    masterSupplyCurrent = masterMotor.getSupplyCurrent();
-    masterStatorCurrent = masterMotor.getStatorCurrent();
+    PhoenixUtil.tryUntilOk(5, () -> masterTalon.getConfigurator().apply(config));
+    PhoenixUtil.tryUntilOk(5, () -> followerTalon.getConfigurator().apply(config));
 
-    followerAppliedVoltage = followerMotor.getMotorVoltage();
-    followerSupplyCurrent = followerMotor.getSupplyCurrent();
-    followerStatorCurrent = followerMotor.getStatorCurrent();
+    position = masterTalon.getPosition();
+    velocity = masterTalon.getVelocity();
+
+    masterAppliedVoltage = masterTalon.getMotorVoltage();
+    masterSupplyCurrent = masterTalon.getSupplyCurrent();
+    masterStatorCurrent = masterTalon.getStatorCurrent();
+
+    followerAppliedVoltage = followerTalon.getMotorVoltage();
+    followerSupplyCurrent = followerTalon.getSupplyCurrent();
+    followerStatorCurrent = followerTalon.getStatorCurrent();
+
+    masterTalon.optimizeBusUtilization();
+    followerTalon.optimizeBusUtilization();
 
     PhoenixUtil.tryUntilOk(
         5,
@@ -113,8 +119,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
                     followerAppliedVoltage, followerSupplyCurrent, followerStatorCurrent)
                 .isOK());
 
-    inputs.positionRads = position.getValue().in(Radians);
-    inputs.velocityRadsPerSec = velocity.getValue().in(RadiansPerSecond);
+    inputs.position = position.getValue();
+    inputs.velocity = velocity.getValue();
 
     inputs.masterAppliedVoltage = masterAppliedVoltage.getValueAsDouble();
     inputs.masterSupplyCurrentAmps = masterSupplyCurrent.getValueAsDouble();
@@ -126,28 +132,29 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   }
 
   @Override
-  public void setControlConstants(double kS, double kV, double kP, double kD) {
+  public void setControlConstants(double kS, double kV, double kA, double kP, double kD) {
     config.Slot0.kS = kS;
     config.Slot0.kV = kV;
+    config.Slot0.kA = kA;
     config.Slot0.kP = kP;
     config.Slot0.kD = kD;
 
-    PhoenixUtil.tryUntilOk(5, () -> masterMotor.getConfigurator().apply(config));
-    PhoenixUtil.tryUntilOk(5, () -> followerMotor.getConfigurator().apply(config));
+    PhoenixUtil.tryUntilOk(5, () -> masterTalon.getConfigurator().apply(config));
+    PhoenixUtil.tryUntilOk(5, () -> followerTalon.getConfigurator().apply(config));
   }
 
   @Override
   public void setVolts(double volts) {
-    masterMotor.setControl(voltageRequest.withOutput(volts));
+    masterTalon.setControl(voltageRequest.withOutput(volts));
   }
 
   @Override
-  public void setVelocity(double velocityRadPerSec) {
-    masterMotor.setControl(velocityRequest.withVelocity(velocityRadPerSec));
+  public void setVelocity(AngularVelocity velocity) {
+    masterTalon.setControl(velocityRequest.withVelocity(velocity));
   }
 
   @Override
   public void stop() {
-    masterMotor.setControl(neutralRequest);
+    masterTalon.setControl(neutralRequest);
   }
 }

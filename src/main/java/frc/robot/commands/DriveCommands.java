@@ -12,7 +12,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -22,8 +21,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
+import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
+import frc.robot.util.AllianceFlipUtil;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
@@ -45,18 +47,39 @@ public class DriveCommands {
 
   private DriveCommands() {}
 
-  private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
+  public static Translation2d getLinearVelocityFromJoysticks(Drive drive, double x, double y) {
+    if (Constants.shouldUseLockoutZones()) {
+      // Apply lockout
+      Translation2d robotTranslation = drive.getPose().getTranslation();
+      var lockoutZoneBoundingBox = FieldConstants.Lockout.getZone();
+
+      Translation2d minCoords = lockoutZoneBoundingBox.getFirst();
+      Translation2d maxCoords = lockoutZoneBoundingBox.getSecond();
+      boolean shouldFlip = AllianceFlipUtil.shouldFlip();
+
+      x *=
+          getLockoutSpeedFactor(
+              shouldFlip ? -x : x, robotTranslation.getX(), minCoords.getX(), maxCoords.getX());
+      y *=
+          getLockoutSpeedFactor(
+              shouldFlip ? -y : y, robotTranslation.getY(), minCoords.getY(), maxCoords.getY());
+    }
+
     // Apply deadband
     double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
-    // Square magnitude for more precise control
-    linearMagnitude = linearMagnitude * linearMagnitude;
+    // Cube magnitude for more precise control
+    linearMagnitude = Math.abs(linearMagnitude * linearMagnitude * linearMagnitude);
 
     // Return new linear velocity
-    return new Pose2d(Translation2d.kZero, linearDirection)
-        .transformBy(new Transform2d(linearMagnitude, 0.0, Rotation2d.kZero))
-        .getTranslation();
+    return new Translation2d(linearMagnitude, linearDirection);
+  }
+
+  public static double getLinearVelocityMagnitude(double x, double y) {
+    double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+
+    return Math.abs(linearMagnitude * linearMagnitude * linearMagnitude);
   }
 
   public static Command resetGyro(Drive drive) {
@@ -75,35 +98,7 @@ public class DriveCommands {
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
-    return Commands.run(
-        () -> {
-          // Get linear velocity
-          Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-          // Apply rotation deadband
-          double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-
-          // Square rotation value for more precise control
-          omega = Math.copySign(omega * omega, omega);
-
-          // Convert to field relative speeds & send command
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                  linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                  omega * drive.getMaxAngularSpeedRadPerSec());
-          boolean isFlipped =
-              DriverStation.getAlliance().isPresent()
-                  && DriverStation.getAlliance().get() == Alliance.Red;
-          drive.runVelocity(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  speeds,
-                  isFlipped
-                      ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                      : drive.getRotation()));
-        },
-        drive);
+    return new JoystickDrive(drive, xSupplier, ySupplier, omegaSupplier);
   }
 
   /**
@@ -131,7 +126,8 @@ public class DriveCommands {
             () -> {
               // Get linear velocity
               Translation2d linearVelocity =
-                  getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
+                  getLinearVelocityFromJoysticks(
+                      drive, xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
               // Calculate angular speed
               double omega =
@@ -162,6 +158,20 @@ public class DriveCommands {
         .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
   }
 
+  private static double getLockoutSpeedFactor(
+      double speed, double currentPos, double minPos, double maxPos) {
+    double lockoutThreshold = FieldConstants.Lockout.thresholdMeters;
+
+    // Check x-axis
+    if (speed > 0 && (currentPos + lockoutThreshold >= maxPos)) {
+      return Math.abs(Math.max(maxPos - currentPos, 0) / lockoutThreshold);
+    } else if (speed < 0 && (currentPos - lockoutThreshold <= minPos)) {
+      return Math.abs(Math.max(currentPos - minPos, 0) / lockoutThreshold);
+    }
+
+    return 1.0;
+  }
+
   /**
    * Measures the velocity feedforward constants for the drive motors.
    *
@@ -183,7 +193,7 @@ public class DriveCommands {
         // Allow modules to orient
         Commands.run(
                 () -> {
-                  drive.runCharacterization(0.0);
+                  drive.runDriveCharacterization(0.0);
                 },
                 drive)
             .withTimeout(FF_START_DELAY),
@@ -195,7 +205,7 @@ public class DriveCommands {
         Commands.run(
                 () -> {
                   double voltage = timer.get() * FF_RAMP_RATE;
-                  drive.runCharacterization(voltage);
+                  drive.runDriveCharacterization(voltage);
                   velocitySamples.add(drive.getFFCharacterizationVelocity());
                   voltageSamples.add(voltage);
                 },

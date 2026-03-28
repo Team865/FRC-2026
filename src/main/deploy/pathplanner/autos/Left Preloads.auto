@@ -1,0 +1,19 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Start Shoot Only"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Preloads Only",
+  "choreoAuto": false
+}

@@ -1,0 +1,157 @@
+{
+  "name": "Laminar",
+  "disableSimplification": true,
+  "rotations": [
+    {
+      "axis": "x",
+      "degrees": 0
+    },
+    {
+      "axis": "y",
+      "degrees": -180
+    },
+    {
+      "axis": "z",
+      "degrees": -90
+    }
+  ],
+  "position": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "components": [
+    {
+      "name": "DyeRotor",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": -90
+        }
+      ],
+      "zeroedPosition": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Turret",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": 34.5
+        }
+      ],
+      "zeroedPosition": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Hood",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": 34.5
+        }
+      ],
+      "zeroedPosition": [
+        -0.10180629334,
+        0,
+        -0.635
+      ]
+    },
+    {
+      "name": "Lintake",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": -90
+        }
+      ],
+      "zeroedPosition": [
+        0.0858345255673,
+        0,
+        0.0270635219554
+      ]
+    },
+    {
+      "name": "Hopper",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": 0
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": -90
+        }
+      ],
+      "zeroedPosition": [
+        0.0858345255673,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Climber",
+      "zeroedRotations": [
+        {
+          "axis": "x",
+          "degrees": -90
+        },
+        {
+          "axis": "y",
+          "degrees": -180
+        },
+        {
+          "axis": "z",
+          "degrees": -90
+        }
+      ],
+      "zeroedPosition": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

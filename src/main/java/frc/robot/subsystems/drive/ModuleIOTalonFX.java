@@ -108,6 +108,8 @@ public class ModuleIOTalonFX implements ModuleIO {
     driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -constants.SlipCurrent;
     driveConfig.CurrentLimits.StatorCurrentLimit = constants.SlipCurrent;
     driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    driveConfig.CurrentLimits.SupplyCurrentLimit = DriveConstants.driveMotorSupplyCurrentLimit;
+    driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     driveConfig.MotorOutput.Inverted =
         constants.DriveMotorInverted
             ? InvertedValue.Clockwise_Positive
@@ -207,6 +209,12 @@ public class ModuleIOTalonFX implements ModuleIO {
     inputs.turnVelocityRadPerSec = Units.rotationsToRadians(turnVelocity.getValueAsDouble());
     inputs.turnAppliedVolts = turnAppliedVolts.getValueAsDouble();
     inputs.turnCurrentAmps = turnCurrent.getValueAsDouble();
+
+    inputs.drivePositionRots = drivePosition.getValueAsDouble();
+    inputs.driveVelocityRotsPerSec = drivePosition.getValueAsDouble();
+
+    inputs.steerPositionRots = turnPosition.getValueAsDouble();
+    inputs.steerPositionRotsPerSec = turnVelocity.getValueAsDouble();
 
     // Update odometry inputs
     inputs.odometryTimestamps =

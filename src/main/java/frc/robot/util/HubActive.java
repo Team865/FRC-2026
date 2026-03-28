@@ -34,12 +34,16 @@ public class HubActive {
 
     // Every check passed, check if we are active alliance
     return Optional.of(
-        (myAlliance == Alliance.Red) ? (allianceChar == 'R') : (allianceChar == 'B'));
+        (myAlliance == Alliance.Red) ? (allianceChar == 'B') : (allianceChar == 'R'));
   }
 
   /** Returns a pair of booleans in the form of (isHubActive, isHubAboutToChange) */
   public static Pair<Boolean, Boolean> getHubState(
       boolean fmsAttached, double teleopTimeElapsedSeconds) {
+
+    if (teleopTimeElapsedSeconds <= transitionPeriodSeconds)
+      return new Pair<Boolean, Boolean>(true, teleopTimeElapsedSeconds > phaseShiftPeriodSeconds);
+
     Optional<Boolean> didStartActive = isCurrentAllianceActiveFirst(fmsAttached);
     if (didStartActive.isEmpty()) return new Pair<Boolean, Boolean>(isHubActive, isAboutToShift);
 

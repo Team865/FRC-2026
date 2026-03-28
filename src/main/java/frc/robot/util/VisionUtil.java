@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public final class VisionUtil {
+
   private VisionUtil() {}
 
   private static final List<VisionIOLimelight> limelight4s = new LinkedList<>();
@@ -26,45 +27,35 @@ public final class VisionUtil {
 
   public static PoseProcessingResult processPoseObservations(
       VisionIOInputsAutoLogged inputs, VisionConsumer consumer, int cameraIndex) {
+    List<Pose3d> robotPoses = new LinkedList<>();
+    List<Pose3d> robotPosesAccepted = new LinkedList<>();
+    List<Pose3d> robotPosesRejected = new LinkedList<>();
 
-    List<Pose3d> allObservedPoses = new LinkedList<>();
-    List<Pose3d> acceptedPoses = new LinkedList<>();
-    List<Pose3d> rejectedPoses = new LinkedList<>();
+    for (var observation : inputs.poseObservations) {
+      boolean isMT1 = observation.type() == VisionIO.PoseObservationType.MEGATAG_1;
+      boolean rejectPose =
+          observation.tagCount() == 0
+              || (isMT1 && observation.tagCount() == 1 && observation.ambiguity() > maxAmbiguity)
+              || Math.abs(observation.pose().getZ()) > maxZError
+              || observation.pose().getX() < 0.0
+              || observation.pose().getX() > aprilTagLayout.getFieldLength()
+              || observation.pose().getY() < 0.0
+              || observation.pose().getY() > aprilTagLayout.getFieldWidth();
 
-    if (inputs.poseObservations.length == 0)
-      return new PoseProcessingResult(allObservedPoses, acceptedPoses, rejectedPoses);
-
-    for (var obs : inputs.poseObservations) {
-      Pose3d pose = obs.pose();
-      allObservedPoses.add(pose);
-
-      boolean isMT2 = obs.type() == VisionIO.PoseObservationType.MEGATAG_2;
-
-      // Accept only MT2 or sim poses
-      boolean acceptPose = isMT2 || obs.type() == VisionIO.PoseObservationType.PHOTONVISION;
-
-      if (acceptPose && isMT2) {
-        acceptPose =
-            obs.tagCount() > 0
-                && Math.abs(pose.getZ()) <= maxZError
-                && pose.getX() >= 0.0
-                && pose.getX() <= aprilTagLayout.getFieldLength()
-                && pose.getY() >= 0.0
-                && pose.getY() <= aprilTagLayout.getFieldWidth();
-      }
-
-      if (!acceptPose) {
-        rejectedPoses.add(pose);
+      robotPoses.add(observation.pose());
+      if (rejectPose) {
+        robotPosesRejected.add(observation.pose());
         continue;
+      } else {
+        robotPosesAccepted.add(observation.pose());
       }
 
-      acceptedPoses.add(pose);
-
-      double stdDevFactor = Math.pow(obs.averageTagDistance(), 2.0) / obs.tagCount();
+      double stdDevFactor =
+          Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
       double linearStdDev = linearStdDevBaseline * stdDevFactor;
       double angularStdDev = angularStdDevBaseline * stdDevFactor;
 
-      if (isMT2) {
+      if (observation.type() == VisionIO.PoseObservationType.MEGATAG_2) {
         linearStdDev *= linearStdDevMegatag2Factor;
         angularStdDev *= angularStdDevMegatag2Factor;
       }
@@ -75,12 +66,12 @@ public final class VisionUtil {
       }
 
       consumer.accept(
-          pose.toPose2d(),
-          obs.timestamp(),
+          observation.pose().toPose2d(),
+          observation.timestamp(),
           VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
     }
 
-    return new PoseProcessingResult(allObservedPoses, acceptedPoses, rejectedPoses);
+    return new PoseProcessingResult(robotPoses, robotPosesAccepted, robotPosesRejected);
   }
 
   public static class PoseProcessingResult {

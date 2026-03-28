@@ -1,7 +1,8 @@
 package frc.robot.subsystems.pivot;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -20,7 +21,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.PhoenixUtil;
 
 public class PivotIOTalonFX implements PivotIO {
-  public final TalonFX motor;
+  public final TalonFX talon;
   private final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
   private final VoltageOut voltageRequest =
@@ -34,14 +35,17 @@ public class PivotIOTalonFX implements PivotIO {
   private final StatusSignal<Voltage> voltageSignal;
   private final StatusSignal<Current> supplyCurrentSignal;
   private final StatusSignal<Current> statorCurrentSignal;
+  private final StatusSignal<Current> torqueCurrentSignal;
 
-  private double targetAngleRads = 0.0;
+  private double extraEffort = 0.0;
+  private Angle extraEffortTolerance = Rotations.zero();
+  private Angle targetAngle = Rotations.zero();
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
 
   @SuppressWarnings("removal")
   public PivotIOTalonFX(int canId, String canBus, PivotSpecifications specs) {
-    motor = new TalonFX(canId, canBus);
+    talon = new TalonFX(canId, canBus);
 
     motorConfig.MotorOutput.Inverted =
         specs.clockwisePositive()
@@ -50,61 +54,102 @@ public class PivotIOTalonFX implements PivotIO {
 
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+    motorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    motorConfig.CurrentLimits.StatorCurrentLimit = specs.statorCurrentLimit();
+    motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    motorConfig.CurrentLimits.SupplyCurrentLimit = specs.supplyCurrentLimit();
+
     motorConfig.Feedback.SensorToMechanismRatio = specs.gearRatio();
+    motorConfig.CurrentLimits.SupplyCurrentLimit = 60.0;
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(motorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(0));
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
+    positionSignal = talon.getPosition();
+    velocitySignal = talon.getVelocity();
+    voltageSignal = talon.getMotorVoltage();
+    supplyCurrentSignal = talon.getSupplyCurrent();
+    statorCurrentSignal = talon.getStatorCurrent();
+    torqueCurrentSignal = talon.getTorqueCurrent();
 
-    positionSignal = motor.getPosition();
-    velocitySignal = motor.getVelocity();
-    voltageSignal = motor.getMotorVoltage();
-    supplyCurrentSignal = motor.getSupplyCurrent();
-    statorCurrentSignal = motor.getStatorCurrent();
+    talon.optimizeBusUtilization();
+    PhoenixUtil.tryUntilOk(
+        5,
+        () ->
+            BaseStatusSignal.setUpdateFrequencyForAll(
+                Hertz.of(50.0),
+                positionSignal,
+                velocitySignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal,
+                torqueCurrentSignal));
   }
 
   @Override
   public void setVolts(double volts) {
-    motor.setControl(voltageRequest.withOutput(volts));
+    talon.setControl(voltageRequest.withOutput(volts));
   }
 
   @Override
-  public void setPosition(double angleRads) {
-    motor.setControl(positionRequest.withPosition(Radians.of(angleRads)));
-    this.targetAngleRads = angleRads;
+  public void setPosition(Angle angle) {
+    this.targetAngle = angle;
+    Angle currentAngle = positionSignal.getValue();
+    MotionMagicVoltage request = positionRequest.withPosition(angle);
+
+    if (!currentAngle.isNear(targetAngle, extraEffortTolerance)) {
+      double deltaSign = Math.signum(targetAngle.minus(currentAngle).baseUnitMagnitude());
+      request = request.withFeedForward(extraEffort * deltaSign);
+    }
+
+    talon.setControl(positionRequest.withPosition(angle));
   }
 
   @Override
-  public void setPositionWithExtraOmega(double angleRads, double omegaRadPerSec) {
-    double omegaRPS = omegaRadPerSec / (2 * Math.PI);
+  public void setPositionWithExtraOmega(Angle angle, AngularVelocity omega) {
+    double omegaRPS = omega.in(RotationsPerSecond);
 
-    motor.setControl(
-        positionRequest
-            .withPosition(Radians.of(omegaRadPerSec))
-            .withFeedForward(motorConfig.Slot0.kV * omegaRPS));
+    this.targetAngle = angle;
+    Angle currentAngle = positionSignal.getValue();
+
+    MotionMagicVoltage request =
+        positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS / 5);
+
+    if (!currentAngle.isNear(targetAngle, extraEffortTolerance)) {
+      double deltaSign = Math.signum(targetAngle.minus(currentAngle).baseUnitMagnitude());
+      request = request.withFeedForward(extraEffort * deltaSign);
+    }
+
+    talon.setControl(request);
   }
 
   @Override
   public void stop() {
-    motor.setControl(neutralRequest);
+    talon.setControl(neutralRequest);
   }
 
   @Override
   public void updateInputs(PivotIOInputsAutoLogged inputs) {
-    inputs.connected =
-        connectedDebouncer.calculate(
-            BaseStatusSignal.refreshAll(
-                    positionSignal,
-                    velocitySignal,
-                    voltageSignal,
-                    supplyCurrentSignal,
-                    statorCurrentSignal)
-                .isOK());
+    boolean refreshSucceeded =
+        BaseStatusSignal.refreshAll(
+                positionSignal,
+                velocitySignal,
+                voltageSignal,
+                supplyCurrentSignal,
+                statorCurrentSignal,
+                torqueCurrentSignal)
+            .isOK();
 
-    inputs.targetPositionRads = targetAngleRads;
-    inputs.positionRads = positionSignal.getValue().in(Radians);
-    inputs.velocityRadsPerSec = velocitySignal.getValue().in(RadiansPerSecond);
+    inputs.connected = connectedDebouncer.calculate(refreshSucceeded);
+
+    if (!refreshSucceeded) return;
+
+    inputs.targetPosition = targetAngle;
+    inputs.position = positionSignal.getValue();
+    inputs.velocity = velocitySignal.getValue();
     inputs.appliedVoltage = voltageSignal.getValueAsDouble();
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentSignal.getValueAsDouble();
+    inputs.torqueCurrentAmps = torqueCurrentSignal.getValueAsDouble();
   }
 
   @Override
@@ -115,7 +160,7 @@ public class PivotIOTalonFX implements PivotIO {
     motorConfig.Slot0.kP = kP;
     motorConfig.Slot0.kD = kD;
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(motorConfig));
   }
 
   @Override
@@ -123,6 +168,17 @@ public class PivotIOTalonFX implements PivotIO {
     motorConfig.MotionMagic.MotionMagicCruiseVelocity = maxVelocity;
     motorConfig.MotionMagic.MotionMagicAcceleration = maxAcceleration;
 
-    PhoenixUtil.tryUntilOk(5, () -> motor.getConfigurator().apply(motorConfig));
+    PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(motorConfig));
+  }
+
+  @Override
+  public boolean seedPosition(Angle position) {
+    return PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(position, 0.5));
+  }
+
+  @Override
+  public void setExtraEffort(double voltage, Angle tolerance) {
+    this.extraEffort = voltage;
+    this.extraEffortTolerance = tolerance;
   }
 }

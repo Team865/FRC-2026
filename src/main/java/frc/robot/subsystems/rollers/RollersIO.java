@@ -1,13 +1,22 @@
 package frc.robot.subsystems.rollers;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import org.littletonrobotics.junction.AutoLog;
 
 public interface RollersIO {
 
   @AutoLog
   class RollersIOInputs {
-    public double positionRads = 0.0;
-    public double velocityRadsPerSec = 0.0;
+    public Angle position = Rotations.zero();
+    public AngularVelocity angularVelocity = RotationsPerSecond.zero();
+    public AngularVelocity targetAngularVelocity = RotationsPerSecond.zero();
+    public LinearVelocity linearVelocity = MetersPerSecond.zero();
     public double appliedVoltage = 0.0;
     public double supplyCurrentAmps = 0.0;
     public double torqueCurrentAmps = 0.0;
@@ -20,13 +29,13 @@ public interface RollersIO {
 
   public default void stop() {}
 
-  public default void setAngularVelocity(double velocityRadPerSec) {}
+  public default void setAngularVelocity(AngularVelocity velocity) {}
 
-  public default void setLinearVelocity(double velocityMetersPerSec) {}
+  public default void setLinearVelocity(LinearVelocity velocity) {}
 
-  public default void setControlConstants(double kS, double kV, double kP, double kD) {}
+  public default void setControlConstants(double kS, double kV, double kA, double kP, double kD) {}
 
-  public default double getVelocityRadPerSec() {
-    return 0.0;
+  public default AngularVelocity linearToAngularVelocity(LinearVelocity linearVelocity) {
+    return RotationsPerSecond.zero();
   }
 }

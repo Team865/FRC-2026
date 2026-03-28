@@ -21,19 +21,22 @@ Code for the 2026 FRC season
     * Encoder = 10
     * Drive = 11
     * Steer = 12
-  * Pigeon = 13
-* Intake (rio):
-  * IntakeRollers = 14
-  * IntakePivot = 15
-  * IntakeCANcoder = 16
-* Indexer (rio):
-  * Serializer (Spindexer) = 17
+  * Pidgeon = 13
+
+* Intake:
+  * IntakeRollers (rio) = 14
+  * IntakeExtension(CANivore) = 15
+
+* Indexer (CANivore):
+  * Serializer (Dye rotor) = 17
   * Balltunneler = 18
-* Shooter (CANivore):
+
+* Shooter (rio):
   * FlywheelMain = 19
   * FlyWheelFollower = 20
   * TurretMotor = 21
   * TurretCANcoder = 22
   * Hood = 23
-* Climber(rio):
+
+* Climber(Disabled):
   * Climber = 24

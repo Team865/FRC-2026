@@ -3,12 +3,13 @@ package frc.robot.subsystems.climber;
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.FullSubsystem;
 import frc.robot.util.LoggedTunableNumber;
-import org.littletonrobotics.junction.Logger;
 
-public class Climber extends SubsystemBase {
+public class Climber extends FullSubsystem {
   private final ClimberIO climberIO;
   private final ClimberIOInputsAutoLogged climberIOInputs = new ClimberIOInputsAutoLogged();
 
@@ -26,12 +27,22 @@ public class Climber extends SubsystemBase {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("Climber/kD", ClimberConstants.SYSTEM_CONSTANTS.kD);
 
+  private final LoggedTunableNumber maxVelocity =
+      new LoggedTunableNumber(
+          "Climber/maxVelocity", ClimberConstants.SYSTEM_CONSTANTS.maxVelocity.get());
+  private final LoggedTunableNumber maxAcceleration =
+      new LoggedTunableNumber(
+          "Climber/maxAcceleration", ClimberConstants.SYSTEM_CONSTANTS.maxAcceleration.get());
+
+  private final Alert disconnectedAlert =
+      new Alert("Climber motor disconnected.", AlertType.kError);
   private Distance target = Meters.of(0);
 
   public Climber(ClimberIO climberIO) {
     this.climberIO = climberIO;
 
     climberIO.setControlGains(kG.get(), kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
+    climberIO.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
   }
 
   public Command setPosition(Distance positionTarget) {
@@ -54,23 +65,35 @@ public class Climber extends SubsystemBase {
     return climberIOInputs.positionMeters;
   }
 
+  public Command stop() {
+    return runOnce(climberIO::stop);
+  }
+
   @Override
   public void periodic() {
-    climberIO.updateInputs(climberIOInputs);
-    Logger.processInputs("Climber/inputs", climberIOInputs);
+    // climberIO.updateInputs(climberIOInputs);
+    // disconnectedAlert.set(!climberIOInputs.connected);
+    // Logger.processInputs("Climber/inputs", climberIOInputs);
 
-    LoggedTunableNumber.ifChanged(
-        hashCode(),
-        (constants) ->
-            climberIO.setControlGains(
-                constants[0], constants[1], constants[2], constants[3], constants[4], constants[5]),
-        kG,
-        kS,
-        kV,
-        kA,
-        kP,
-        kD);
+    // LoggedTunableNumber.ifChanged(
+    //     hashCode(),
+    //     (constants) ->
+    //         climberIO.setControlGains(
+    //             constants[0], constants[1], constants[2], constants[3], constants[4],
+    // constants[5]),
+    //     kG,
+    //     kS,
+    //     kV,
+    //     kA,
+    //     kP,
+    //     kD);
 
-    Logger.recordOutput("Climber/targetMeters", target.in(Meters));
+    // LoggedTunableNumber.ifChanged(
+    //     hashCode(),
+    //     (constants) -> climberIO.setMotionProfile(constants[0], constants[1]),
+    //     maxVelocity,
+    //     maxAcceleration);
+
+    // Logger.recordOutput("Climber/targetMeters", target.in(Meters));
   }
 }

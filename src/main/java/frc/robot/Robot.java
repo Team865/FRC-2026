@@ -7,14 +7,22 @@
 
 package frc.robot;
 
+import static frc.robot.Constants.Mode;
+
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.Mode;
+import frc.robot.subsystems.leds.LEDConstants;
+import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.HubActive;
 import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -31,9 +39,9 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private double teleopStartTime;
+  private boolean isFMSAttached;
 
   public Robot() {
-
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
     Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -54,6 +62,7 @@ public class Robot extends LoggedRobot {
         // Running on a real robot, log to a USB stick ("/U/logs")
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
+        SignalLogger.enableAutoLogging(false);
         break;
 
       case SIM:
@@ -70,7 +79,10 @@ public class Robot extends LoggedRobot {
         break;
     }
 
+    SmartDashboard.putBoolean("MATCH WON", false);
+
     // Start AdvantageKit logger
+    LoggedPowerDistribution.getInstance(50, ModuleType.kRev); // Example: PDH on CAN ID 50
     Logger.start();
 
     // Instantiate our RobotContainer. This will perform all our button bindings,
@@ -92,7 +104,9 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    robotContainer.updateComponentPoses();
+    if (!Constants.currentMode.equals(Mode.REAL)) { // Only update when not running on real hardware
+      robotContainer.updateComponentPoses();
+    }
 
     // Return to non-RT thread priority (do not modify the first argument)
     // Threads.setCurrentThreadPriority(false, 10);
@@ -100,23 +114,35 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    robotContainer.throttleCameras(VisionConstants.disabledThrottleAmount);
+  }
 
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
     SmartDashboard.putBoolean("RobotEnabled", false);
     SmartDashboard.putBoolean("Hub Active", false);
+
+    if (SmartDashboard.getBoolean("MATCH WON", false)) {
+      robotContainer.leds.updateRainbowWave();
+    } else {
+      robotContainer.leds.setAll(LEDConstants.PresetColor.RED);
+    }
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+
+    robotContainer.throttleCameras(0);
     autonomousCommand = robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(autonomousCommand);
+    } else {
+      robotContainer.stopManualOverride();
     }
   }
 
@@ -127,7 +153,11 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
+
+    isFMSAttached = DriverStation.isFMSAttached();
+    robotContainer.throttleCameras(0);
     SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
+
     teleopStartTime = Timer.getFPGATimestamp();
     HubActive.randomizeOnTeleop();
     if (autonomousCommand != null) {
@@ -138,15 +168,20 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+
+    // var colors = PresetColor.values();
+    // int colorIndex = (int) (Timer.getFPGATimestamp() * 2) % colors.length;
+    // robotContainer.leds.setAll(colors[colorIndex].color);
+
     SmartDashboard.putBoolean("RobotEnabled", DriverStation.isEnabled());
     double teleopTimeElapsedSeconds;
-    boolean isFMSAttached = DriverStation.isFMSAttached();
-
     if (isFMSAttached) {
-      teleopTimeElapsedSeconds = 220 - DriverStation.getMatchTime();
+      teleopTimeElapsedSeconds = 140 - DriverStation.getMatchTime();
     } else {
       teleopTimeElapsedSeconds = Timer.getFPGATimestamp() - teleopStartTime;
     }
+
+    Logger.recordOutput("TeleopTimeElapsedSeconds", teleopTimeElapsedSeconds);
 
     Pair<Boolean, Boolean> hubState =
         HubActive.getHubState(isFMSAttached, teleopTimeElapsedSeconds);
@@ -156,7 +191,9 @@ public class Robot extends LoggedRobot {
         shouldBlink && (teleopTimeElapsedSeconds % blinkPeriodSeconds > blinkPeriodSeconds / 2);
 
     SmartDashboard.putBoolean("Hub Active", hubState.getFirst());
+    Logger.recordOutput("Hub Active", hubState.getFirst());
     SmartDashboard.putBoolean("Hub Changing", isLightOn);
+    Logger.recordOutput("Hub About To Change", hubState.getSecond());
   }
   /** This function is called once when test mode is enabled. */
   @Override
