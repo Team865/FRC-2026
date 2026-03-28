@@ -16,7 +16,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Flywheel extends SubsystemBase {
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
-  private final FlywheelIO io;
+  public final FlywheelIO io;
 
   @AutoLogOutput(key = "Shooter/TargetFlywheelVelocityRadsPerSec")
   private AngularVelocity targetVelocity = RotationsPerSecond.zero();

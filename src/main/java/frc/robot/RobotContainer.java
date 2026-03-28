@@ -328,7 +328,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("RezeroIntake", intake.currentSensedRezero());
     NamedCommands.registerCommand(
-        "HalfStowIntake", superstructure.forceState(IntakingState.HALF_STOW));
+        "HalfStowIntake", superstructure.forceState(IntakingState.PARTIAL_STOW));
 
     // NamedCommands.registerCommand("ExtendClimber", climber.extend());
     // NamedCommands.registerCommand("RetractClimber", climber.retract());
@@ -337,12 +337,11 @@ public class RobotContainer {
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     autoChooser.addOption("Intake Pit Check", superstructure.intakePitCheck());
-    autoChooser.addOption("Turret Pit Check", turret.pitCheck());
+    autoChooser.addOption("Turret Pit Check", superstructure.turretPitCheck());
     autoChooser.addOption("Shooting Pit Check", superstructure.shootingPitCheck());
-    autoChooser.addOption("Flywheel Pit Check", superstructure.flywheelPitCheck());
     autoChooser.addOption("Balltunneler Pit Check", superstructure.balltunnelerPitCheck());
     autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
-    autoChooser.addOption("Hood Pit Check", hood.pitCheck());
+    autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
     // // Set up SysId routines
 
     // autoChooser.addOption(
@@ -500,7 +499,7 @@ public class RobotContainer {
 
     operatorController.b().whileTrue(serializer.runVolts(-2.0));
 
-    operatorController.leftBumper().onTrue(superstructure.requestState(IntakingState.HALF_STOW));
+    operatorController.leftBumper().onTrue(superstructure.requestState(IntakingState.PARTIAL_STOW));
 
     operatorController
         .back()

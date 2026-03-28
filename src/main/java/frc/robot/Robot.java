@@ -176,10 +176,12 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putBoolean("RobotEnabled", DriverStation.isEnabled());
     double teleopTimeElapsedSeconds;
     if (isFMSAttached) {
-      teleopTimeElapsedSeconds = 220 - DriverStation.getMatchTime();
+      teleopTimeElapsedSeconds = 140 - DriverStation.getMatchTime();
     } else {
       teleopTimeElapsedSeconds = Timer.getFPGATimestamp() - teleopStartTime;
     }
+
+    Logger.recordOutput("TeleopTimeElapsedSeconds", teleopTimeElapsedSeconds);
 
     Pair<Boolean, Boolean> hubState =
         HubActive.getHubState(isFMSAttached, teleopTimeElapsedSeconds);

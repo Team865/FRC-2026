@@ -146,8 +146,19 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "StopShooting",
+      "waypointRelativePos": 0.19797525309335975,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StopShooting"
+        }
+      }
+    },
+    {
       "name": "DeployIntake",
-      "waypointRelativePos": 0.3599550056243009,
+      "waypointRelativePos": 0.2609673790776157,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",

@@ -1,22 +1,25 @@
 package frc.robot.subsystems.rollers;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.FullSubsystem;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Rollers extends SubsystemBase {
+public class Rollers extends FullSubsystem {
   public final String name;
   public final RollersIO io;
   protected final RollersIOInputsAutoLogged inputs = new RollersIOInputsAutoLogged();
 
   protected final Alert motorDisconnectedAlert;
+  protected AngularVelocity atSetpointTolerance = RadiansPerSecond.of(10.0);
 
   // private final SysIdRoutine sysIdRoutine;
 
@@ -77,6 +80,14 @@ public class Rollers extends SubsystemBase {
 
   public AngularVelocity getAngularVelocity() {
     return inputs.angularVelocity;
+  }
+
+  public boolean isAtSetpoint(AngularVelocity setpoint) {
+    return inputs.angularVelocity.isNear(setpoint, atSetpointTolerance);
+  }
+
+  public boolean isAtSetpoint(LinearVelocity setpoint) {
+    return isAtSetpoint(io.linearToAngularVelocity(setpoint));
   }
 
   // @Override

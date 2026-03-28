@@ -45,6 +45,8 @@ public class Serializer extends Rollers implements SysIdTestable {
             .withDynamicStepVoltage(6)
             .withQuasistaticRampRate(0.6)
             .build();
+
+    atSetpointTolerance = RotationsPerSecond.of(0.1);
   }
 
   public Command runSerializer() {

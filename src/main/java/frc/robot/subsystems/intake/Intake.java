@@ -80,7 +80,7 @@ public class Intake extends SubsystemBase {
   }
 
   public Command halfStow() {
-    return extension.setPosition(IntakeConstants.Extension.HALF_STOWED_POSITION);
+    return extension.setPosition(IntakeConstants.Extension.PARTIAL_STOWED_POSITION);
   }
 
   public Command currentSensedRezero() {
@@ -110,7 +110,7 @@ public class Intake extends SubsystemBase {
     return rollers.runLinearVelocity(
         () -> {
           ChassisSpeeds robotSpeeds = drivetrainSpeedsSupplier.get();
-          if(robotSpeeds.vxMetersPerSecond == 0 && robotSpeeds.vyMetersPerSecond == 0)
+          if (robotSpeeds.vxMetersPerSecond == 0 && robotSpeeds.vyMetersPerSecond == 0)
             return IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED;
 
           Rotation2d driverHeading = driveHeadingSupplier.get();

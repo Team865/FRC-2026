@@ -76,4 +76,9 @@ public class RollersIOSim implements RollersIO {
     feedforward = new SimpleMotorFeedforward(kS, kV);
     feedback.setPID(kP, 0.0, kD);
   }
+
+  @Override
+  public AngularVelocity linearToAngularVelocity(LinearVelocity linearVelocity) {
+    return RadiansPerSecond.of(linearVelocity.in(MetersPerSecond) / specs.rollerRadiusMeters());
+  }
 }

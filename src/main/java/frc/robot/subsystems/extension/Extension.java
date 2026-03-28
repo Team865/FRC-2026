@@ -4,17 +4,19 @@ import static edu.wpi.first.units.Units.Inches;
 
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.util.FullSubsystem;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Extension extends SubsystemBase {
+public class Extension extends FullSubsystem {
   private final String name;
 
   public final ExtensionIOInputsAutoLogged inputs = new ExtensionIOInputsAutoLogged();
   public final ExtensionIO io;
+
+  protected Distance atSetpointTolerance = Inches.of(1.0);
 
   // private final SysIdRoutine sysIdRoutine;
 
@@ -69,6 +71,10 @@ public class Extension extends SubsystemBase {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs(name + "/Motor", inputs);
+  }
+
+  public boolean isAtSetpoint(Distance setpoint) {
+    return inputs.position.isNear(inputs.targetPosition, atSetpointTolerance);
   }
 
   // @Override

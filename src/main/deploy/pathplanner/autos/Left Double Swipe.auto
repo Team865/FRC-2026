@@ -53,18 +53,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "StopShooting"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "DeployIntake"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Left Double Swipe Second Pass"

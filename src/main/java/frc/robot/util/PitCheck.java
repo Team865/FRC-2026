@@ -3,10 +3,11 @@ package frc.robot.util;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.Superstructure;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class PitCheck<Goal> extends Command {
   private final Consumer<Goal> driver;
@@ -14,6 +15,7 @@ public class PitCheck<Goal> extends Command {
   private final double timeoutSeconds;
   private final Goal[] goals;
   private final Debouncer goalDebouncer;
+  private final Command[] stopCommands;
 
   private static Superstructure superstructure;
   private int currentGoalIndex = 0;
@@ -26,7 +28,7 @@ public class PitCheck<Goal> extends Command {
       double goalDebounceSeconds,
       double timeoutSeconds,
       Goal[] goals,
-      Subsystem... subsystems) {
+      FullSubsystem... subsystems) {
     return superstructure
         .startManualOverride()
         .andThen(
@@ -38,7 +40,7 @@ public class PitCheck<Goal> extends Command {
                     timeoutSeconds,
                     goals,
                     subsystems)
-                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                .ignoringDisable(true));
   }
 
   private PitCheck(
@@ -48,7 +50,7 @@ public class PitCheck<Goal> extends Command {
       double goalDebounceSeconds,
       double timeoutSeconds,
       Goal[] goals,
-      Subsystem... subsystems) {
+      FullSubsystem... subsystems) {
     if (goals.length == 0) throw new IllegalArgumentException("There must be at least 1 goal.");
 
     this.setName(name);
@@ -59,6 +61,10 @@ public class PitCheck<Goal> extends Command {
     this.goalDebouncer = new Debouncer(goalDebounceSeconds, DebounceType.kRising);
 
     addRequirements(subsystems);
+    this.stopCommands =
+        Stream.of(subsystems)
+            .map(subsystem -> subsystem.stop().ignoringDisable(true))
+            .toArray(Command[]::new);
   }
 
   public static void registerSuperstructure(Superstructure superstructure) {
@@ -96,6 +102,7 @@ public class PitCheck<Goal> extends Command {
 
       currentGoalIndex++;
       goalStartTimeMillis = System.currentTimeMillis();
+      goalDebouncer.calculate(false); // Reset Debouncer
     }
   }
 
@@ -108,5 +115,7 @@ public class PitCheck<Goal> extends Command {
   public void end(boolean interrupted) {
     if (!interrupted) System.out.println(getName() + " ended.");
     else System.out.println(getName() + " got interrupted.");
+
+    CommandScheduler.getInstance().schedule(stopCommands);
   }
 }

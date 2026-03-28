@@ -1,5 +1,7 @@
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,6 +36,7 @@ public class BallTunneler extends Rollers implements SysIdTestable {
 
     io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
     sysIdRoutine = new SysIdBuilder(this, io::setVolts).withDynamicStepVoltage(6.0).build();
+    atSetpointTolerance = RadiansPerSecond.of(10.0);
   }
 
   public Command runTunneler() {

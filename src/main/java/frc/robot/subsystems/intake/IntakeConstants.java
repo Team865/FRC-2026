@@ -21,7 +21,7 @@ public final class IntakeConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(0.24252, 0.005021, 0.30791, 0.0, 1.0, 0.0),
-            new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 0.1, 0.0));
+            new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 0.5, 0.0));
 
     public static final RollersSpecifications ROLLER_SPECS =
         new RollersSpecifications(2.0, false, Units.inchesToMeters(1), 80.0, 170.0);
@@ -36,7 +36,7 @@ public final class IntakeConstants {
     public static final String CANBUS = "CANivore";
 
     public static final Distance STOWED_POSITION = Inches.of(3.0);
-    public static final Distance HALF_STOWED_POSITION = Inches.of(11.0);
+    public static final Distance PARTIAL_STOWED_POSITION = Inches.of(11.0);
     public static final Distance DEPLOYED_POSITION = Inches.of(12.25);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =

@@ -1,12 +1,18 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -24,6 +30,7 @@ import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.Serializer;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
@@ -51,8 +58,8 @@ public class Superstructure extends SubsystemBase {
     STOWING,
     /** Requestable: The intake is currently being deployed */
     DEPLOYING,
-    /** Requestable: The intake is half stowed to prevent fuel from leaking */
-    HALF_STOW,
+    /** Requestable: The intake is partially stowed to prevent fuel from leaking */
+    PARTIAL_STOW,
     /** Intermediate: The intake is deployed and running */
     DEPLOYED
   }
@@ -147,7 +154,7 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine.stateRequirements.put(
         IntakingState.DEPLOYED, StateMachine.STATE_ALWAYS_AVAILABLE);
     intakingStateMachine.stateRequirements.put(
-        IntakingState.HALF_STOW, () -> intakingStateMachine.isInState(IntakingState.DEPLOYED));
+        IntakingState.PARTIAL_STOW, () -> intakingStateMachine.isInState(IntakingState.DEPLOYED));
   }
 
   /** Configure what the behaviours of each state are */
@@ -212,7 +219,7 @@ public class Superstructure extends SubsystemBase {
         .onTrue(forceState(IntakingState.STOWED)); // move to appropriate state
 
     intakingStateMachine.stateTriggers.get(IntakingState.DEPLOYING).onTrue(intake.deploy());
-    intakingStateMachine.stateTriggers.get(IntakingState.HALF_STOW).onTrue(intake.halfStow());
+    intakingStateMachine.stateTriggers.get(IntakingState.PARTIAL_STOW).onTrue(intake.halfStow());
 
     intakingStateMachine
         .stateTriggers
@@ -225,7 +232,7 @@ public class Superstructure extends SubsystemBase {
         .get(IntakingState.DEPLOYED)
         .or(intakingStateMachine.stateTriggers.get(IntakingState.DEPLOYING))
         .or(intakingStateMachine.stateTriggers.get(IntakingState.STOWING))
-        .or(intakingStateMachine.stateTriggers.get(IntakingState.HALF_STOW))
+        .or(intakingStateMachine.stateTriggers.get(IntakingState.PARTIAL_STOW))
         .whileTrue( // Run the intake based on drivetrain speed
             intake.runRollers(drive::getRotation, drive::getChassisSpeeds));
   }
@@ -246,11 +253,13 @@ public class Superstructure extends SubsystemBase {
                 () ->
                     ShootingUtil.getAngularVelocityCompensation(
                         drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds()))
-            .onlyIf(manualOverrideTrigger.negate()));
+            .onlyIf(manualOverrideTrigger.negate())
+            .onlyWhile(manualOverrideTrigger.negate()));
 
     hood.setDefaultCommand(
         hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromTargetMeters))
-            .onlyIf(manualOverrideTrigger.negate()));
+            .onlyIf(manualOverrideTrigger.negate())
+            .onlyWhile(manualOverrideTrigger.negate()));
 
     passingModeTrigger.whileTrue(hood.runTargetAngle(() -> Degrees.of(26.5)));
 
@@ -316,97 +325,144 @@ public class Superstructure extends SubsystemBase {
         new PrintCommand("Anti-stalling Stopped"));
   }
 
-  public SequentialCommandGroup intakePitCheck() {
+  public Command intakePitCheck() {
+    Distance[] extensionSetpoints = {
+      IntakeConstants.Extension.STOWED_POSITION,
+      IntakeConstants.Extension.PARTIAL_STOWED_POSITION,
+      IntakeConstants.Extension.DEPLOYED_POSITION,
+      IntakeConstants.Extension.STOWED_POSITION
+    };
+
+    LinearVelocity[] rollersSetpoints = {
+      MetersPerSecond.of(2.0),
+      MetersPerSecond.of(4.0),
+      MetersPerSecond.of(6.0),
+      MetersPerSecond.of(7.0)
+    };
+
     return new SequentialCommandGroup(
-        startManualOverride(),
-        intake.currentSensedRezero(),
-        forceState(IntakingState.DEPLOYING),
-        new WaitCommand(3.0),
-        new PrintCommand(intake.extension.getPosition().toString()),
-        forceState(IntakingState.STOWING),
-        new WaitCommand(3.0),
-        new PrintCommand(intake.extension.getPosition().toString()));
+            startManualOverride(),
+            intake.currentSensedRezero(),
+            PitCheck.createCommand(
+                "Intake Extension Pit Check",
+                intake.extension.io::setPosition,
+                intake.extension::isAtSetpoint,
+                1.0,
+                5.0,
+                extensionSetpoints),
+            PitCheck.createCommand(
+                "Intake Rollers Pit Check",
+                intake.rollers.io::setLinearVelocity,
+                intake.rollers::isAtSetpoint,
+                1.0,
+                5.0,
+                rollersSetpoints))
+        .finallyDo(
+            () -> {
+              intake.extension.stop();
+              intake.rollers.stop();
+            });
   }
 
-  public SequentialCommandGroup hoodPitCheck() {
-    return new SequentialCommandGroup(
-        startManualOverride(),
-        hood.currentSensedRezero(),
-        hood.setTargetAngle(Degrees.of(0)),
-        new WaitCommand(1.0),
-        hood.setTargetAngle(Degrees.of(15)),
-        new WaitCommand(1.0),
-        hood.setTargetAngle(Degrees.of(26.5)),
-        new WaitCommand(1.0),
-        hood.setTargetAngle(Degrees.of(5)),
-        new WaitCommand(1.0),
-        hood.setTargetAngle(Degrees.of(0)),
-        new WaitCommand(4.0));
+  public Command hoodPitCheck() {
+    Angle[] setpoints = {
+      Degrees.of(0), Degrees.of(5), Degrees.of(10), Degrees.of(15), Degrees.of(20), Degrees.of(26.5)
+    };
+
+    return startManualOverride()
+        .andThen(
+            hood.currentSensedRezero()
+                .andThen(
+                    PitCheck.createCommand(
+                        "Hood Pit Checks",
+                        hood.io::setPosition,
+                        hood::isAtSetpoint,
+                        1,
+                        5,
+                        setpoints,
+                        hood)));
   }
 
-  public SequentialCommandGroup balltunnelerPitCheck() {
+  public Command balltunnelerPitCheck() {
+    AngularVelocity[] setpoints = {
+      RadiansPerSecond.of(100),
+      RadiansPerSecond.of(150),
+      RadiansPerSecond.of(200),
+      RadiansPerSecond.of(250),
+      RadiansPerSecond.of(300)
+    };
+
     return new SequentialCommandGroup(
-        startManualOverride(),
-        ballTunneler.startTunneler(),
-        flywheel.setVelocity(RadiansPerSecond.of(150)),
-        new WaitCommand(4.0),
-        ballTunneler.setAngularVelocity(RadiansPerSecond.of(0)),
-        flywheel.setVelocity(RadiansPerSecond.of(0)));
+            flywheel.setVelocity(RadiansPerSecond.of(150)),
+            PitCheck.createCommand(
+                "Ball Tunneler Pit Check",
+                ballTunneler.io::setAngularVelocity,
+                ballTunneler::isAtSetpoint,
+                1.0,
+                5.0,
+                setpoints,
+                ballTunneler))
+        .finallyDo(flywheel.io::stop);
   }
 
-  public SequentialCommandGroup serializerPitCheck() {
-    return new SequentialCommandGroup(
-        startManualOverride(),
-        serializer.runSerializer(),
-        new WaitCommand(4.0),
-        new PrintCommand(serializer.getAngularVelocity().toString()),
-        serializer.setAngularVelocity(RadiansPerSecond.of(0)));
+  public Command serializerPitCheck() {
+    AngularVelocity[] setpoints = {
+      RotationsPerSecond.of(0.5), RotationsPerSecond.of(1.0), RotationsPerSecond.of(1.5)
+    };
+
+    return PitCheck.createCommand(
+        "Serializer Pit Check",
+        serializer.io::setAngularVelocity,
+        serializer::isAtSetpoint,
+        1.0,
+        5.0,
+        setpoints,
+        serializer);
   }
 
-  public SequentialCommandGroup flywheelPitCheck() {
-    return new SequentialCommandGroup(
-        startManualOverride(),
-        flywheel.setVelocity(RadiansPerSecond.of(560)),
-        new WaitCommand(4.0),
-        new PrintCommand(flywheel.getAngularVelocity().toString()),
-        flywheel.setVelocity(RadiansPerSecond.of(0)));
+  public Command turretPitCheck() {
+    Angle[] setpoints = {
+      Degrees.of(0),
+      Degrees.of(90),
+      Degrees.of(0),
+      Degrees.of(180),
+      Degrees.of(0),
+      Degrees.of(-90),
+      Degrees.of(0),
+      Degrees.of(-180),
+      Degrees.of(0)
+    };
+
+    return PitCheck.createCommand(
+        "Turret Pit Checks",
+        turret.io::setPosition,
+        turret::isAtSetpoint,
+        0.5,
+        5.0,
+        setpoints,
+        turret);
   }
 
-  public SequentialCommandGroup shootingPitCheck() {
+  public Command shootingPitCheck() {
     return new SequentialCommandGroup(
-        startManualOverride(),
-        flywheel.setVelocity(RadiansPerSecond.of(150)),
-        serializer.startSerializer(),
-        ballTunneler.startTunneler(),
-        new WaitCommand(4.0),
-        new PrintCommand(serializer.getAngularVelocity().toString()),
-        new PrintCommand(ballTunneler.getAngularVelocity().toString()),
-        new PrintCommand(flywheel.getAngularVelocity().toString()),
-        flywheel.setVelocity(RadiansPerSecond.of(0)),
-        ballTunneler.setAngularVelocity(RadiansPerSecond.of(0)),
-        serializer.setAngularVelocity(RadiansPerSecond.of(0)));
-  }
-
-  public SequentialCommandGroup turretPitCheck() {
-    return new SequentialCommandGroup(
-        startManualOverride(),
-        turret.setTargetAngle(Degrees.of(90)),
-        new WaitCommand(1.0),
-        new PrintCommand(turret.getOrientation().toString()),
-        turret.setTargetAngle(Degrees.of(180)),
-        new WaitCommand(1.0),
-        new PrintCommand(turret.getOrientation().toString()),
-        turret.setTargetAngle(Degrees.of(0)),
-        new WaitCommand(1.0),
-        new PrintCommand(turret.getOrientation().toString()),
-        turret.setTargetAngle(Degrees.of(-90)),
-        new WaitCommand(1.0),
-        new PrintCommand(turret.getOrientation().toString()),
-        turret.setTargetAngle(Degrees.of(-180)),
-        new WaitCommand(1.0),
-        new PrintCommand(turret.getOrientation().toString()),
-        turret.setTargetAngle(Degrees.of(0)),
-        new WaitCommand(4.0));
+            startManualOverride(),
+            flywheel.setVelocity(RadiansPerSecond.of(150)),
+            serializer.startSerializer(),
+            ballTunneler.startTunneler(),
+            new WaitCommand(4.0),
+            new PrintCommand(serializer.getAngularVelocity().toString()),
+            new PrintCommand(ballTunneler.getAngularVelocity().toString()),
+            new PrintCommand(flywheel.getAngularVelocity().toString()),
+            flywheel.setVelocity(RadiansPerSecond.of(0)),
+            ballTunneler.setAngularVelocity(RadiansPerSecond.of(0)),
+            serializer.setAngularVelocity(RadiansPerSecond.of(0)))
+        .finallyDo(
+            () -> {
+              flywheel.io.stop();
+              serializer.io.stop();
+              ballTunneler.io.stop();
+              isManualOverride = false;
+            });
   }
 
   public Command toggleSlowMode() {
@@ -470,6 +526,7 @@ public class Superstructure extends SubsystemBase {
         shootingTarget.getTranslation().getDistance(drivePose.getTranslation());
 
     isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
+    passingSide = FieldConstants.isOnRightSide(drivePose) ? PassingSide.RIGHT : PassingSide.LEFT;
 
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());

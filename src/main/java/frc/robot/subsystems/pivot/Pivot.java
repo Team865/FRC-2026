@@ -6,12 +6,12 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.FullSubsystem;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
-public class Pivot extends SubsystemBase {
+public class Pivot extends FullSubsystem {
   public final String name;
 
   public final PivotIO io;

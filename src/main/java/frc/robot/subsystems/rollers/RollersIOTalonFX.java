@@ -128,13 +128,17 @@ public class RollersIOTalonFX implements RollersIO {
 
   @Override
   public void setLinearVelocity(LinearVelocity velocity) {
-    setAngularVelocity(
-        RadiansPerSecond.of(velocity.in(MetersPerSecond) / specs.rollerRadiusMeters()));
+    setAngularVelocity(linearToAngularVelocity(velocity));
   }
 
   @Override
   public void stop() {
     this.targetAngularVelocity = RotationsPerSecond.zero();
     talon.setControl(neutralOut);
+  }
+
+  @Override
+  public AngularVelocity linearToAngularVelocity(LinearVelocity linearVelocity) {
+    return RadiansPerSecond.of(linearVelocity.in(MetersPerSecond) / specs.rollerRadiusMeters());
   }
 }

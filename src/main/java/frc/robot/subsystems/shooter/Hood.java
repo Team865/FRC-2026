@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.pivot.Pivot;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.util.LoggedTunableNumber;
-import frc.robot.util.PitCheck;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.DoubleSupplier;
@@ -134,17 +133,6 @@ public class Hood extends Pivot implements SysIdTestable {
     //     maxAcceleration);
 
     super.periodic();
-  }
-
-  public Command pitCheck() {
-    Angle[] setpoints = {
-      Degrees.of(0), Degrees.of(5), Degrees.of(10), Degrees.of(15), Degrees.of(20), Degrees.of(26.5)
-    };
-
-    return currentSensedRezero()
-        .andThen(
-            PitCheck.createCommand(
-                "Hood Pit Checks", io::setPosition, this::isAtSetpoint, 1, 5, setpoints, this));
   }
 
   @Override

@@ -6,10 +6,10 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.util.FullSubsystem;
 import frc.robot.util.LoggedTunableNumber;
 
-public class Climber extends SubsystemBase {
+public class Climber extends FullSubsystem {
   private final ClimberIO climberIO;
   private final ClimberIOInputsAutoLogged climberIOInputs = new ClimberIOInputsAutoLogged();
 
@@ -63,6 +63,10 @@ public class Climber extends SubsystemBase {
 
   public double getPositionMeters() {
     return climberIOInputs.positionMeters;
+  }
+
+  public Command stop() {
+    return runOnce(climberIO::stop);
   }
 
   @Override

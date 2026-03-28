@@ -42,13 +42,13 @@ public class FieldConstants {
   // Scoring element positions
   public static final Pose2d allianceHubPoseBlue =
       new Pose2d(
-          Units.inchesToMeters(181.56),
-          Units.inchesToMeters(158.845),
+          Units.inchesToMeters(182.25),
+          Units.inchesToMeters(158.125),
           Rotation2d.fromDegrees(180)); // Towards origin
   public static final Pose2d allianceHubPoseRed =
       new Pose2d(
-          Units.inchesToMeters(468.56),
-          FieldConstants.fieldWidth / 2,
+          fieldLength - Units.inchesToMeters(182.25),
+          Units.inchesToMeters(158.125),
           Rotation2d.fromDegrees(0)); // Away from origin
 
   public static final Pose2d allianceRightClimbPose =
@@ -96,8 +96,8 @@ public class FieldConstants {
   }
 
   public static boolean isOnRightSide(Pose2d robotPose) {
-    if (AllianceFlipUtil.shouldFlip()) return robotPose.getY() < fieldWidth / 2;
-    else return robotPose.getY() > fieldWidth / 2;
+    if (AllianceFlipUtil.shouldFlip()) return robotPose.getY() > fieldWidth / 2;
+    else return robotPose.getY() < fieldWidth / 2;
   }
 
   public static final class Lockout {

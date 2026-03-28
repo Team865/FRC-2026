@@ -37,4 +37,8 @@ public interface RollersIO {
   public default void setLinearVelocity(LinearVelocity velocity) {}
 
   public default void setControlConstants(double kS, double kV, double kA, double kP, double kD) {}
+
+  public default AngularVelocity linearToAngularVelocity(LinearVelocity linearVelocity) {
+    return RotationsPerSecond.zero();
+  }
 }
