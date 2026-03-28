@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.leds.LEDConstants;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.util.HubActive;
+import frc.robot.util.GamePeriods;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -159,7 +159,7 @@ public class Robot extends LoggedRobot {
     SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
 
     teleopStartTime = Timer.getFPGATimestamp();
-    HubActive.randomizeOnTeleop();
+    GamePeriods.randomizeOnTeleop();
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
@@ -182,9 +182,12 @@ public class Robot extends LoggedRobot {
     }
 
     Logger.recordOutput("TeleopTimeElapsedSeconds", teleopTimeElapsedSeconds);
+    Logger.recordOutput(
+        "TimeLeftInShift",
+        GamePeriods.getSecondsLeftInShift(isFMSAttached, teleopTimeElapsedSeconds));
 
     Pair<Boolean, Boolean> hubState =
-        HubActive.getHubState(isFMSAttached, teleopTimeElapsedSeconds);
+        GamePeriods.getHubState(isFMSAttached, teleopTimeElapsedSeconds);
     double blinkPeriodSeconds = 1;
     boolean shouldBlink = hubState.getSecond();
     boolean isLightOn =

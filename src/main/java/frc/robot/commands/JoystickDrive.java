@@ -78,6 +78,7 @@ public class JoystickDrive extends Command {
       Logger.recordOutput("Test", clampedJoysticks);
 
       targetLinearVelocityMagnitude = clampedJoysticks.getNorm();
+      // if(targetLinearVelocityMagnitude > 0)
       previousHeading = clampedJoysticks.getAngle();
     } else if (magDiffFromLastUpdate < 0) {
       // Clamp acceleration

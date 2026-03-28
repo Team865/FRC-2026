@@ -55,6 +55,14 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
+  public Command setVelocity(Supplier<AngularVelocity> velocitySupplier) {
+    return this.runOnce(
+        () -> {
+          targetVelocity = velocitySupplier.get();
+          io.setVelocity(targetVelocity);
+        });
+  }
+
   public Command runVolts(double volts) {
     return this.runEnd(() -> io.setVolts(volts), () -> io.setVolts(0));
   }
@@ -72,6 +80,14 @@ public class Flywheel extends SubsystemBase {
         () -> {
           targetVelocity = RotationsPerSecond.zero();
           io.stop();
+        });
+  }
+
+  public Command runVelocityWithoutStopping(Supplier<AngularVelocity> velocitySupplier) {
+    return this.run(
+        () -> {
+          targetVelocity = velocitySupplier.get();
+          io.setVelocity(targetVelocity);
         });
   }
 

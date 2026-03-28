@@ -16,6 +16,9 @@ import frc.robot.subsystems.shooter.ShooterConstants;
 import org.littletonrobotics.junction.Logger;
 
 public class ShootingUtil {
+  private static final LoggedTunableNumber longDistanceSlope = new LoggedTunableNumber("ShootingUtil/LongDistanceSlope", 7.0125);
+  private static final LoggedTunableNumber longDistanceYInt = new LoggedTunableNumber("ShootingUtil/LongDistanceYInt", -8.6826);
+
   public static Angle calculateHoodAngle(double distanceFromTargetMeters) {
     // Determined from experimental data and linear regression
     double angleDeg; // = (7.84808 * distanceFromTargetMeters) - 6.31405;
@@ -23,7 +26,8 @@ public class ShootingUtil {
     if (distanceFromTargetMeters < 2.5) {
       angleDeg = (7.84808 * distanceFromTargetMeters) - 6.31405;
     } else {
-      angleDeg = (7.0125 * distanceFromTargetMeters) - 8.6826;
+      angleDeg = (longDistanceSlope.get() * distanceFromTargetMeters) - longDistanceYInt.get();
+      // angleDeg = (7.0125 * distanceFromTargetMeters) - 8.6826;
     }
 
     return Degrees.of(
@@ -78,9 +82,9 @@ public class ShootingUtil {
 
   public static AngularVelocity getPassingFlywheelVelocity(double lateralDistanceFromBump) {
     if (lateralDistanceFromBump > Units.inchesToMeters(200)) {
-      return RadiansPerSecond.of(550.0);
-    } else if (lateralDistanceFromBump > Units.inchesToMeters(140)) {
       return RadiansPerSecond.of(500.0);
+    } else if (lateralDistanceFromBump > Units.inchesToMeters(140)) {
+      return RadiansPerSecond.of(450.0);
     } else {
       return RadiansPerSecond.of(350.0);
     }
@@ -90,7 +94,7 @@ public class ShootingUtil {
     if (distanceFromTargetMeters < 2.5) {
       return RadiansPerSecond.of(350);
     } else {
-      return RadiansPerSecond.of(400);
+      return RadiansPerSecond.of(415);
     }
 
     // return RadiansPerSecond.of(150); // Add more velocities once we get more measurements

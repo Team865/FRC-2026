@@ -25,7 +25,7 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kD =
       new LoggedTunableNumber("BallTunneler/kD", IndexerConstants.BallTunneler.SYSTEM_CONSTANTS.kD);
 
-  private final Debouncer isFreeRunningDebouncer = new Debouncer(0.01, DebounceType.kRising);
+  private final Debouncer isStallingDebouncer = new Debouncer(0.01, DebounceType.kRising);
   private final SysIdRoutine sysIdRoutine;
 
   public BallTunneler(RollersIO io) {
@@ -43,9 +43,9 @@ public class BallTunneler extends Rollers implements SysIdTestable {
   }
 
   @AutoLogOutput(key = "Tunneler/IsNegative")
-  public boolean IsNegative() {
+  public boolean isNegative() {
 
-    return isFreeRunningDebouncer.calculate(inputs.torqueCurrentAmps < -50);
+    return isStallingDebouncer.calculate(inputs.torqueCurrentAmps <= -50);
   }
 
   public Command startTunneler() {
