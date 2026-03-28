@@ -19,8 +19,6 @@ public final class IndexerConstants {
     public static final RollersSpecifications ROLLERS_SPECS =
         new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 90, 200);
 
-    private static final double TAU = 1;
-
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(2.1862, 0.27345, 0.8, 0, 5, 0),

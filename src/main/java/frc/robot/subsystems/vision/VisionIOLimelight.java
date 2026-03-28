@@ -38,7 +38,6 @@ public class VisionIOLimelight implements VisionIO {
 
   private final String name;
   private final boolean isLL4;
-  private int throttleAmount = 0;
 
   /**
    * Creates a new VisionIOLimelight.

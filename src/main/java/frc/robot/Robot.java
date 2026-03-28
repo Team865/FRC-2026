@@ -190,7 +190,6 @@ public class Robot extends LoggedRobot {
     boolean isLightOn =
         shouldBlink && (teleopTimeElapsedSeconds % blinkPeriodSeconds > blinkPeriodSeconds / 2);
 
-  
     SmartDashboard.putBoolean("Hub Active", hubState.getFirst());
     Logger.recordOutput("Hub Active", hubState.getFirst());
     SmartDashboard.putBoolean("Hub Changing", isLightOn);

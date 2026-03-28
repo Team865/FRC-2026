@@ -202,7 +202,7 @@ public class Turret extends Pivot implements SysIdTestable {
 
   @Override
   public void periodic() {
-    int id = hashCode();
+    // int id = hashCode();
 
     // LoggedTunableNumber.ifChanged(
     //     id,

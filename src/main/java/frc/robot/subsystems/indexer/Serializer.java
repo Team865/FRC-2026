@@ -1,7 +1,6 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -17,7 +16,6 @@ import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class Serializer extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kV =
@@ -70,13 +68,10 @@ public class Serializer extends Rollers implements SysIdTestable {
 
   @Override
   public void periodic() {
-    int id = hashCode();
+    // int id = hashCode();
 
     // LoggedTunableNumber.ifChanged(
     //     id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
-
-    Logger.recordOutput("Serializer/PosRots", inputs.position.in(Rotations));
-    Logger.recordOutput("Serializer/VelRotsPerSec", inputs.angularVelocity.in(RotationsPerSecond));
 
     stallingAlert.set(isStalling());
 

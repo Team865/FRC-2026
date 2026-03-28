@@ -99,9 +99,6 @@ public class RollersIOTalonFX implements RollersIO {
     inputs.linearVelocity =
         MetersPerSecond.of(
             inputs.angularVelocity.in(RadiansPerSecond) * specs.rollerRadiusMeters());
-
-    // inputs.positionRots = inputs.position.in(Rotations);
-    // inputs.velocityRotsPerSec = inputs.angularVelocity.in(RotationsPerSecond);
   }
 
   @Override

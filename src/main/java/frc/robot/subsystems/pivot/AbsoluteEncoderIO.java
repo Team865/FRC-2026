@@ -10,6 +10,7 @@ public interface AbsoluteEncoderIO {
   public static class AbsoluteEncoderInputs {
     public boolean connected = false;
     public Angle position = Rotations.zero();
+    public Angle positionPreGearing = Rotations.zero();
   }
 
   public default void updateInputs(AbsoluteEncoderInputs inputs) {}

@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants.ControlSystemConstants;
 
 public class RollersIOSim implements RollersIO {
-
   private final DCMotorSim sim;
   private final RollersSpecifications specs;
 

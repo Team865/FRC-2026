@@ -5,10 +5,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.RollersIO;
@@ -49,19 +45,12 @@ public class BallTunneler extends Rollers implements SysIdTestable {
     return runOnce(() -> io.setAngularVelocity(IndexerConstants.BallTunneler.TUNNELING_SPEED));
   }
 
-  public Command waitUntilFreeRunning() {
-    return new SequentialCommandGroup(
-        Commands.runOnce(() -> isFreeRunningDebouncer.calculate(false)), // Reset debouncer
-        new WaitUntilCommand(() -> isFreeRunningDebouncer.calculate(inputs.torqueCurrentAmps < 65))
-            .raceWith(new WaitCommand(IndexerConstants.antiStallTimeoutSeconds)));
-  }
-
   @Override
   public void periodic() {
-    int id = hashCode();
+    // int id = hashCode();
 
-    LoggedTunableNumber.ifChanged(
-        id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
+    // LoggedTunableNumber.ifChanged(
+    //     id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
 
     super.periodic();
   }

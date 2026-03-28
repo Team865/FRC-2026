@@ -43,6 +43,7 @@ public class ExtensionIOTalonFX implements ExtensionIO {
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> torqueCurrentSignal;
 
+  // Implement this after Georgian
   private double extraGain = 0.0;
   private Angle extraGainTolerance = Rotations.zero();
 
@@ -143,9 +144,6 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     inputs.supplyCurrentAmps = supplyCurrentSignal.getValueAsDouble();
     inputs.statorCurrentAmps = statorCurrentSignal.getValueAsDouble();
     inputs.torqueCurrentAmps = torqueCurrentSignal.getValueAsDouble();
-
-    // inputs.positionRots = positionAngleSignal.getValue().in(Rotations);
-    // inputs.velocityRotsPerSec = angularVelocitySignal.getValue().in(RotationsPerSecond);
   }
 
   @Override

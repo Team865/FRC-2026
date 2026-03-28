@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import org.littletonrobotics.junction.Logger;
 
 public class SysIdBuilder {
-  private final SysIdRoutine.Config config;
   private final SysIdRoutine.Mechanism mechanism;
 
   private Velocity<VoltageUnit> rampRateVoltsPerSec = null;
@@ -22,7 +21,6 @@ public class SysIdBuilder {
   private Time timeout = null;
 
   public SysIdBuilder(Subsystem subsystem, Consumer<Double> voltageConsumer) {
-    this.config = new SysIdRoutine.Config();
     this.mechanism =
         new SysIdRoutine.Mechanism(
             voltage -> voltageConsumer.accept(voltage.in(Volts)), null, subsystem);

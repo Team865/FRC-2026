@@ -18,9 +18,6 @@ public interface ExtensionIO {
     public double supplyCurrentAmps = 0.0;
     public double statorCurrentAmps = 0.0;
     public double torqueCurrentAmps = 0.0;
-
-    // public double positionRots = 0.0;
-    // public double velocityRotsPerSec = 0.0;
   }
 
   public default void updateInputs(ExtensionIOInputsAutoLogged inputs) {}

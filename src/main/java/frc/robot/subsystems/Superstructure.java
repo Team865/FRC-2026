@@ -7,8 +7,6 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -202,12 +200,6 @@ public class Superstructure extends SubsystemBase {
         .onFalse(serializer.stop());
 
     shouldStopSerializer().onTrue(restartSerializerAntiStalled());
-
-    // intakingStateMachine
-    //     .stateTriggers
-    //     .get(IntakingState.STOWED)
-    //     .and(shootingStateMachine.stateTriggers.get(ShootingState.SHOOTING))
-    //     .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
 
     // Intaking state
     intakingStateMachine
@@ -518,7 +510,7 @@ public class Superstructure extends SubsystemBase {
               ? FieldConstants.Passing.getLeftCorner()
               : FieldConstants.Passing.getRightCorner();
     else
-      shootingTarget = // hubPoseSupplier.get();
+      shootingTarget =
           ShootingUtil.correctTargetPoseWhileMoving(
               drivePose, hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
@@ -533,12 +525,12 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput("Superstructure/SlowMode", isSlowMode);
     Logger.recordOutput("Superstructure/ShooterTarget", shootingTarget);
 
-    // Render a Pose showing where the turret (thinks it) is pointing
-    Logger.recordOutput(
-        "RobotRendering/TurretHeading",
-        drive
-            .getPose()
-            .plus(new Transform2d(0, 0, new Rotation2d(turret.getOrientation())))
-            .plus(new Transform2d(distanceFromTargetMeters, 0, Rotation2d.kZero)));
+    // // Render a Pose showing where the turret (thinks it) is pointing
+    // Logger.recordOutput(
+    //     "RobotRendering/TurretHeading",
+    //     drive
+    //         .getPose()
+    //         .plus(new Transform2d(0, 0, new Rotation2d(turret.getOrientation())))
+    //         .plus(new Transform2d(distanceFromTargetMeters, 0, Rotation2d.kZero)));
   }
 }

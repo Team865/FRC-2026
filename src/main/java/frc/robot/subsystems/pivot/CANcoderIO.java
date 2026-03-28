@@ -28,10 +28,8 @@ public class CANcoderIO implements AbsoluteEncoderIO {
     config.MagnetSensor.MagnetOffset = CANcoderSpecifications.magnetOffsetRots();
 
     absolutePositionSignal = cancoder.getAbsolutePosition();
-    Logger.recordOutput("Initial Offset Pre-Config", absolutePositionSignal.getValue());
 
     PhoenixUtil.tryUntilOk(5, () -> cancoder.getConfigurator().apply(config));
-    absolutePositionSignal.refresh();
 
     Logger.recordOutput("Initial Offset", absolutePositionSignal.getValue());
 
@@ -42,6 +40,7 @@ public class CANcoderIO implements AbsoluteEncoderIO {
   public void updateInputs(AbsoluteEncoderInputs inputs) {
     inputs.connected =
         encoderDisconnectDebouncer.calculate(absolutePositionSignal.refresh().getStatus().isOK());
-    inputs.position = absolutePositionSignal.getValue().div(cancoderToMechanismRatio);
+    inputs.positionPreGearing = absolutePositionSignal.getValue();
+    inputs.position = inputs.positionPreGearing.div(cancoderToMechanismRatio);
   }
 }

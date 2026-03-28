@@ -84,7 +84,6 @@ public class Intake extends SubsystemBase {
   }
 
   public Command currentSensedRezero() {
-
     if (Constants.currentMode == Constants.Mode.REAL) {
       return new SequentialCommandGroup(
           this.runOnce(() -> extension.io.setVolts(-5)),
@@ -110,6 +109,8 @@ public class Intake extends SubsystemBase {
     return rollers.runLinearVelocity(
         () -> {
           ChassisSpeeds robotSpeeds = drivetrainSpeedsSupplier.get();
+
+          // Just use minimum speed when not moving
           if (robotSpeeds.vxMetersPerSecond == 0 && robotSpeeds.vyMetersPerSecond == 0)
             return IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED;
 
@@ -130,30 +131,30 @@ public class Intake extends SubsystemBase {
         });
   }
 
-  @Override
-  public void periodic() {
-    int id = hashCode();
+  // @Override
+  // public void periodic() {
+  // int id = hashCode();
 
-    // LoggedTunableNumber.ifChanged(
-    //     id,
-    //     c -> rollers.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
-    //     rollersKs,
-    //     rollersKv,
-    //     rollersKa,
-    //     rollersKp,
-    //     rollersKd);
-    // LoggedTunableNumber.ifChanged(
-    //     id,
-    //     c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
-    //     extensionKs,
-    //     extensionKv,
-    //     extensionKa,
-    //     extensionKp,
-    //     extensionKd);
-    // LoggedTunableNumber.ifChanged(
-    //     id,
-    //     c -> extension.io.setMotionProfile(c[0], c[1]),
-    //     extensionMaxVelocity,
-    //     extensionMaxAcceleration);
-  }
+  // LoggedTunableNumber.ifChanged(
+  //     id,
+  //     c -> rollers.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+  //     rollersKs,
+  //     rollersKv,
+  //     rollersKa,
+  //     rollersKp,
+  //     rollersKd);
+  // LoggedTunableNumber.ifChanged(
+  //     id,
+  //     c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+  //     extensionKs,
+  //     extensionKv,
+  //     extensionKa,
+  //     extensionKp,
+  //     extensionKd);
+  // LoggedTunableNumber.ifChanged(
+  //     id,
+  //     c -> extension.io.setMotionProfile(c[0], c[1]),
+  //     extensionMaxVelocity,
+  //     extensionMaxAcceleration);
+  // }
 }

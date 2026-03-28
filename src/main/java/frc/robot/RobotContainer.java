@@ -41,6 +41,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.pivot.AbsoluteEncoderIO;
+import frc.robot.subsystems.pivot.CANcoderIO;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOSim;
 import frc.robot.subsystems.pivot.PivotIOTalonFX;
@@ -172,14 +173,14 @@ public class RobotContainer {
                     ShooterConstants.Turret.MOTOR_ID,
                     ShooterConstants.CANBUS,
                     ShooterConstants.Turret.PIVOT_SPECS),
-                new AbsoluteEncoderIO() {});
-        // new CANcoderIO(
-        //     ShooterConstants.Turret.CANCODER_ID,
-        //     ShooterConstants.CANBUS,
-        //     ShooterConstants.Turret.CANCODER_SPECS));
+                // new AbsoluteEncoderIO() {});
+                new CANcoderIO(
+                    ShooterConstants.Turret.CANCODER_ID,
+                    ShooterConstants.CANBUS,
+                    ShooterConstants.Turret.CANCODER_SPECS));
 
         vision =
-            Vision.createPerCameraVision(
+            new Vision(
                 drive,
                 new VisionIOLimelight(
                     VisionConstants.camera0Name, () -> drive.getPose().getRotation(), true),
@@ -248,7 +249,7 @@ public class RobotContainer {
                     IndexerConstants.BallTunneler.SYSTEM_CONSTANTS,
                     IndexerConstants.BallTunneler.ROLLERS_SPECS));
         vision =
-            Vision.createPerCameraVision(
+            new Vision(
                 drive,
                 new VisionIO() {
                   @Override
@@ -290,9 +291,7 @@ public class RobotContainer {
 
         climber = new Climber(new ClimberIO() {});
         intake = new Intake(new RollersIO() {}, new ExtensionIO() {});
-        vision =
-            Vision.createPerCameraVision(
-                drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
+        vision = new Vision(drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
 
         turret = new Turret(new PivotIO() {}, new AbsoluteEncoderIO() {});
         hood = new Hood(new PivotIO() {});
@@ -386,18 +385,6 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // ShopTesting.enable(
-    //     driverController,
-    //     drive,
-    //     serializer,
-    //     ballTunneler,
-    //     flywheel,
-    //     hood,
-    //     turret,
-    //     intake,
-    //     () -> getAllianceHubPose(),
-    //     () -> getDistanceFromHub());
-
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
@@ -409,27 +396,6 @@ public class RobotContainer {
 
     // Reset gyro to 0° when B button is pressed
     driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
-
-    // if (true) return;
-
-    // driverController
-    //     .leftBumper()
-    //     .onTrue(
-    //         turret.setTargetAngle(
-    //             () ->
-    //                 ShootingUtil.calculateTurretRelativeAngle(
-    //                     drive.getPose(), getAllianceHubPose())));
-
-    // driverController
-    //     .rightTrigger()
-    //     .whileTrue(
-    //         turret.lockOntoTarget(
-    //             () ->
-    //                 ShootingUtil.calculateTurretRelativeAngle(
-    //                     drive.getPose(), getAllianceHubPose()),
-    //             () ->
-    //                 ShootingUtil.getAngularVelocityCompensation(
-    //                     drive.getPose(), getAllianceHubPose(), drive.getChassisSpeeds())));
 
     // driverController
     //     .y()
@@ -473,14 +439,9 @@ public class RobotContainer {
         .whileTrue(superstructure.continuouslyRequestState(ShootingState.SHOOTING))
         .onFalse(superstructure.requestState(ShootingState.IDLE));
 
-    // driverController.povUp().onTrue(superstructure.requestState(IntakingState.STOWING));
-    // driverController.povDown().onTrue(superstructure.requestState(IntakingState.DEPLOYING));
-
     driverController.leftBumper().onTrue(superstructure.toggleIntakeExtension());
 
-    // // OPERATOR CONTROLLER
-    // turret.setDefaultCommand(turret.runVoltage(() -> -operatorController.getLeftX()));
-    // hood.setDefaultCommand(hood.runVoltage(() -> operatorController.getRightY()));
+    // OPERATOR CONTROLLER
     operatorController
         .a()
         .whileTrue(intake.rollers.runLinearVelocity(IntakeConstants.Rollers.AGITATING_VELOCITY));
@@ -521,9 +482,7 @@ public class RobotContainer {
   }
 
   public void updateComponentPoses() {
-    if (Constants.currentMode != Constants.Mode.REAL) {
-      ComponentPoseUtil.publishComponentPoses(serializer, turret, hood, intake.extension, climber);
-    }
+    ComponentPoseUtil.publishComponentPoses(serializer, turret, hood, intake.extension, climber);
   }
 
   public void throttleCameras(int throttleAmount) {

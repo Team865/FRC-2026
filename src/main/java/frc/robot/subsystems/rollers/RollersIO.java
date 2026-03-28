@@ -21,9 +21,6 @@ public interface RollersIO {
     public double supplyCurrentAmps = 0.0;
     public double torqueCurrentAmps = 0.0;
     public boolean connected = false;
-
-    // public double positionRots = 0.0;
-    // public double velocityRotsPerSec = 0.0;
   }
 
   public default void updateInputs(RollersIOInputsAutoLogged inputs) {}
