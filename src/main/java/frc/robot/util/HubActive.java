@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.Optional;
 import java.util.Random;
-import org.littletonrobotics.junction.Logger;
 
 public class HubActive {
   private static Random rand = new Random();
