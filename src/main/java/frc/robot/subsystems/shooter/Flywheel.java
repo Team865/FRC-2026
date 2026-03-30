@@ -92,7 +92,7 @@ public class Flywheel extends SubsystemBase {
   }
 
   public AngularVelocity getAngularVelocity() {
-    return inputs.velocity;
+    return inputs.masterVelocity;
   }
 
   public Command runVelocity(Supplier<AngularVelocity> velocitySupplier) {
@@ -113,7 +113,9 @@ public class Flywheel extends SubsystemBase {
 
   public Trigger atTargetVelocity() {
     return new Trigger(
-        () -> inputs.velocity.isNear(targetVelocity, ShooterConstants.Flywheel.SETPOINT_TOLERANCE));
+        () ->
+            inputs.masterVelocity.isNear(
+                targetVelocity, ShooterConstants.Flywheel.SETPOINT_TOLERANCE));
   }
 
   @Override

@@ -35,7 +35,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   private final Debouncer followerConnectedDebouncer = new Debouncer(0.5);
 
   private final StatusSignal<Angle> position;
-  private final StatusSignal<AngularVelocity> velocity;
+  private final StatusSignal<AngularVelocity> masterVelocity;
+  private final StatusSignal<AngularVelocity> followerVelocity;
 
   private final StatusSignal<Voltage> masterAppliedVoltage;
   private final StatusSignal<Current> masterSupplyCurrent;
@@ -73,7 +74,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     PhoenixUtil.tryUntilOk(5, () -> followerTalon.getConfigurator().apply(config));
 
     position = masterTalon.getPosition();
-    velocity = masterTalon.getVelocity();
+    masterVelocity = masterTalon.getVelocity();
+    followerVelocity = followerTalon.getVelocity();
 
     masterAppliedVoltage = masterTalon.getMotorVoltage();
     masterSupplyCurrent = masterTalon.getSupplyCurrent();
@@ -92,7 +94,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
             BaseStatusSignal.setUpdateFrequencyForAll(
                 50.0,
                 position,
-                velocity,
+                masterVelocity,
+                followerVelocity,
                 masterAppliedVoltage,
                 masterSupplyCurrent,
                 masterStatorCurrent,
@@ -107,7 +110,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
         masterConnectedDebouncer.calculate(
             BaseStatusSignal.refreshAll(
                     position,
-                    velocity,
+                    masterVelocity,
+                    followerVelocity,
                     masterAppliedVoltage,
                     masterSupplyCurrent,
                     masterStatorCurrent)
@@ -120,7 +124,8 @@ public class FlywheelIOTalonFX implements FlywheelIO {
                 .isOK());
 
     inputs.position = position.getValue();
-    inputs.velocity = velocity.getValue();
+    inputs.masterVelocity = masterVelocity.getValue();
+    inputs.followerVelocity = followerVelocity.getValue();
 
     inputs.masterAppliedVoltage = masterAppliedVoltage.getValueAsDouble();
     inputs.masterSupplyCurrentAmps = masterSupplyCurrent.getValueAsDouble();

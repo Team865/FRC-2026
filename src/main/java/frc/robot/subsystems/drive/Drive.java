@@ -437,7 +437,6 @@ public class Drive extends SubsystemBase {
       Matrix<N3, N1> visionMeasurementStdDevs) {
 
     // Don't accept if the robot is rotating too quickly
-    if (shouldReseedOnRotationStop) return;
 
     poseEstimator.addVisionMeasurement(
         visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);

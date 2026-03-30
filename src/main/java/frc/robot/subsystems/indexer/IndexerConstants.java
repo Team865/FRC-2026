@@ -20,7 +20,7 @@ public final class IndexerConstants {
     public static AngularVelocity getSerializingSpeed() {
       return DriverStation.isAutonomous()
           ? RotationsPerSecond.of(1.1)
-          : RotationsPerSecond.of(1.25);
+          : RotationsPerSecond.of(1.15);
     }
 
     public static final RollersSpecifications ROLLERS_SPECS =
@@ -34,7 +34,7 @@ public final class IndexerConstants {
 
   public static final class BallTunneler {
     public static final int CAN_ID = 18;
-    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(290);
+    public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(260);
 
     public static final RollersSpecifications ROLLERS_SPECS =
         new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 70, 200);

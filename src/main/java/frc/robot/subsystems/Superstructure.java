@@ -215,7 +215,6 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(IntakingState.STOWING)
         .onTrue(intake.stow()) // Stow the intake
-        .whileTrue(intake.rollers.runVolts(10.0))
         .and(intake.extensionAtSetpoint()) // If the intake is stowed,
         .onTrue(forceState(IntakingState.STOWED)); // move to appropriate state
 
@@ -232,22 +231,22 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(IntakingState.DEPLOYED)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+            intake.rollers.runVolts(12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYING)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+            intake.rollers.runVolts(12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWING)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+            intake.rollers.runVolts(12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.PARTIAL_STOW)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+            intake.rollers.runVolts(12.0));
   }
 
   private void configureGameStateTriggers() {
@@ -481,13 +480,20 @@ public class Superstructure extends SubsystemBase {
 
   public Command fullShootingPitCheck() {
     return new SequentialCommandGroup(
-            startManualOverride(), forceState(ShootingState.IDLE), new WaitCommand(15.0))
+            startManualOverride(),
+            flywheel.setVelocity(RadiansPerSecond.of(180.0)),
+            ballTunneler.startTunneler(),
+            new WaitCommand(0.5),
+            serializer.startSerializer(),
+            new WaitCommand(15.0))
         .finallyDo(
             () -> {
               System.out.println(serializer.getAngularVelocity().toString());
               System.out.println(ballTunneler.getAngularVelocity().toString());
               System.out.println(flywheel.getAngularVelocity().toString());
-              shootingStateMachine.forceState(ShootingState.IDLE);
+              flywheel.stop();
+              ballTunneler.stop();
+              serializer.stop();
               isManualOverride = false;
             });
   }
