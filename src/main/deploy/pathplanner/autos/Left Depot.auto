@@ -13,7 +13,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 1.5
           }
         },
         {
@@ -26,18 +26,6 @@
           "type": "path",
           "data": {
             "pathName": "Left Neutral - Depot Intake"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 5.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StowIntake"
           }
         }
       ]

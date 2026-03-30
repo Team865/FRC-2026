@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.6,
+        "x": 3.4,
         "y": 4.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.85,
+        "x": 3.65,
         "y": 4.0
       },
       "isLocked": false,
@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 3.395,
+        "x": 3.37,
         "y": 4.0
       },
       "prevControl": {
-        "x": 3.145,
+        "x": 3.12,
         "y": 4.0
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Middle Preload End"
     }
   ],
   "rotationTargets": [],
@@ -40,6 +40,30 @@
         "type": "named",
         "data": {
           "name": "StartShooting"
+        }
+      }
+    },
+    {
+      "name": "RezeroIntake",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "sequential",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "RezeroIntake"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "StowIntake"
+              }
+            }
+          ]
         }
       }
     }

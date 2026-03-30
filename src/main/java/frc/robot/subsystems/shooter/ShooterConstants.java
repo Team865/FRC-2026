@@ -66,7 +66,7 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                0.24, 0.01, 0.32, 0.0, 300.0, 0.0, Optional.of(3.0), Optional.of(5.0)),
+                0.24, 0.01, 0.32, 0.0, 300.0, 0.0, Optional.of(5.0), Optional.of(8.0)),
             new ControlSystemContext(
                 0.12, 0.001, 0.0, 0.0, 10.0, 0.15, Optional.of(26.0), Optional.of(52.0)));
 

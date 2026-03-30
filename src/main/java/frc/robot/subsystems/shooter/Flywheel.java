@@ -55,6 +55,14 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
+  public Command setVelocity(Supplier<AngularVelocity> velocitySupplier) {
+    return this.runOnce(
+        () -> {
+          targetVelocity = velocitySupplier.get();
+          io.setVelocity(targetVelocity);
+        });
+  }
+
   public Command runVolts(double volts) {
     return this.runEnd(() -> io.setVolts(volts), () -> io.setVolts(0));
   }
@@ -75,8 +83,16 @@ public class Flywheel extends SubsystemBase {
         });
   }
 
+  public Command runVelocityWithoutStopping(Supplier<AngularVelocity> velocitySupplier) {
+    return this.run(
+        () -> {
+          targetVelocity = velocitySupplier.get();
+          io.setVelocity(targetVelocity);
+        });
+  }
+
   public AngularVelocity getAngularVelocity() {
-    return inputs.velocity;
+    return inputs.masterVelocity;
   }
 
   public Command runVelocity(Supplier<AngularVelocity> velocitySupplier) {
@@ -97,7 +113,9 @@ public class Flywheel extends SubsystemBase {
 
   public Trigger atTargetVelocity() {
     return new Trigger(
-        () -> inputs.velocity.isNear(targetVelocity, ShooterConstants.Flywheel.SETPOINT_TOLERANCE));
+        () ->
+            inputs.masterVelocity.isNear(
+                targetVelocity, ShooterConstants.Flywheel.SETPOINT_TOLERANCE));
   }
 
   @Override

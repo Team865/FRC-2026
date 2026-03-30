@@ -11,7 +11,8 @@ public interface FlywheelIO {
   @AutoLog
   class FlywheelIOInputs {
     public Angle position = Rotations.zero();
-    public AngularVelocity velocity = RotationsPerSecond.zero();
+    public AngularVelocity masterVelocity = RotationsPerSecond.zero();
+    public AngularVelocity followerVelocity = RotationsPerSecond.zero();
 
     public double masterAppliedVoltage = 0.0;
     public double masterSupplyCurrentAmps = 0.0;

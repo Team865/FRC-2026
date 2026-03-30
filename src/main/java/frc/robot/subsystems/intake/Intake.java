@@ -123,11 +123,13 @@ public class Intake extends SubsystemBase {
           LinearVelocity totalDTSpeeds = MetersPerSecond.of(dtSpeedsVector.getNorm());
 
           LinearVelocity alignedDTSpeeds =
-              totalDTSpeeds
-                  .times(2 * Math.max(dtSpeedsVector.getAngle().minus(driverHeading).getCos(), 0))
-                  .unaryMinus();
+              totalDTSpeeds.times(
+                  2 * Math.max(dtSpeedsVector.getAngle().minus(driverHeading).getCos(), 0));
 
-          return alignedDTSpeeds.plus(IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED);
+          LinearVelocity totalSpeeds =
+              alignedDTSpeeds.plus(IntakeConstants.Rollers.MINIMUM_INTAKE_SPEED);
+
+          return totalSpeeds;
         });
   }
 

@@ -61,6 +61,17 @@
           "name": "HalfStowIntake"
         }
       }
+    },
+    {
+      "name": "StartShooting",
+      "waypointRelativePos": 0.8841394825646872,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartShooting"
+        }
+      }
     }
   ],
   "globalConstraints": {

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.58020166073547,
-        "y": 2.2758718861209966
+        "x": 6.408659549228946,
+        "y": 2.071447212336892
       },
       "isLocked": false,
       "linkedName": "RightNZEndA"
     },
     {
       "anchor": {
-        "x": 3.3948749999999994,
-        "y": 2.765200000000001
+        "x": 3.299252669039147,
+        "y": 2.225
       },
       "prevControl": {
-        "x": 4.271641666666666,
-        "y": 2.508216666666667
+        "x": 4.212904802725097,
+        "y": 2.225
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,14 +30,14 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.44035087719298377,
-      "rotationDegrees": 135.0
+      "waypointRelativePos": 0.44760213143872124,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.4341957255343137,
+      "minWaypointRelativePos": 0.4274465691788519,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.5,
@@ -61,6 +61,17 @@
           "name": "HalfStowIntake"
         }
       }
+    },
+    {
+      "name": "StartShooting",
+      "waypointRelativePos": 0.8886389201349862,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartShooting"
+        }
+      }
     }
   ],
   "globalConstraints": {
@@ -73,7 +84,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": 135.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Right",

@@ -337,10 +337,11 @@ public class RobotContainer {
 
     autoChooser.addOption("Intake Pit Check", superstructure.intakePitCheck());
     autoChooser.addOption("Turret Pit Check", superstructure.turretPitCheck());
-    autoChooser.addOption("Shooting Pit Check", superstructure.shootingPitCheck());
+    autoChooser.addOption("Shooting Pit Check", superstructure.fullShootingPitCheck());
     autoChooser.addOption("Balltunneler Pit Check", superstructure.balltunnelerPitCheck());
     autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
     autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
+    // autoChooser.addOption("Test 1", intake.rollers.setVolts(12.0));
     // // Set up SysId routines
 
     // autoChooser.addOption(
@@ -461,6 +462,7 @@ public class RobotContainer {
     operatorController.b().whileTrue(serializer.runVolts(-2.0));
 
     operatorController.leftBumper().onTrue(superstructure.requestState(IntakingState.PARTIAL_STOW));
+    operatorController.leftTrigger().whileTrue(superstructure.runOutake());
 
     operatorController
         .back()
