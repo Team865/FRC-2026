@@ -42,12 +42,14 @@ public final class IntakeConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                2.6, 0.001, 1, 0.0, 3.0, 0, Optional.of(10.0), Optional.of(40.0)),
+                2.6, 0.001, 1, 0.0, 3.0, 0, Optional.of(12.0), Optional.of(44.0)),
             new ControlSystemContext(
                 0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(2.0), Optional.of(20.0)));
 
     public static final ExtensionSpecifications EXTENSION_SPECS =
         new ExtensionSpecifications(20.0, Units.inchesToMeters(1.0), false);
+
+    public static final Distance SETPOINT_TOLERANCE = Inches.of(0.5);
   }
 
   private IntakeConstants() {}

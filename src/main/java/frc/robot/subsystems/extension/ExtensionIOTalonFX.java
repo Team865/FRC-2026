@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -43,9 +42,8 @@ public class ExtensionIOTalonFX implements ExtensionIO {
   private final StatusSignal<Current> statorCurrentSignal;
   private final StatusSignal<Current> torqueCurrentSignal;
 
-  // Implement this after Georgian
   private double extraGain = 0.0;
-  private Angle extraGainTolerance = Rotations.zero();
+  private Distance extraGainTolerance = Meters.zero();
 
   private Distance targetPosition = Meters.zero();
 
@@ -102,9 +100,15 @@ public class ExtensionIOTalonFX implements ExtensionIO {
   @Override
   public void setPosition(Distance position) {
     targetPosition = position;
+    var request = positionRequest.withPosition(linearToAngular(position));
+    Distance currentPosition = angularToLinear(positionAngleSignal.getValue());
 
-    talon.setControl(
-        positionRequest.withPosition(Radians.of(position.in(Meters) / drumRadiusMeters)));
+    if (!currentPosition.isNear(targetPosition, extraGainTolerance)) {
+      double deltaSign = Math.signum(targetPosition.minus(currentPosition).baseUnitMagnitude());
+      request = request.withFeedForward(extraGain * deltaSign);
+    }
+
+    talon.setControl(request);
   }
 
   @Override
@@ -163,5 +167,19 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     config.MotionMagic.MotionMagicAcceleration = maxAcceleration;
 
     PhoenixUtil.tryUntilOk(5, () -> talon.getConfigurator().apply(config));
+  }
+
+  @Override
+  public void setExtraGain(double volts, Distance tolerance) {
+    this.extraGain = volts;
+    this.extraGainTolerance = tolerance;
+  }
+
+  private Angle linearToAngular(Distance linearPosition) {
+    return Radians.of(linearPosition.in(Meters) / drumRadiusMeters);
+  }
+
+  private Distance angularToLinear(Angle angularPosition) {
+    return Meters.of(angularPosition.in(Radians) * drumRadiusMeters);
   }
 }

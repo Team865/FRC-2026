@@ -7,9 +7,7 @@ public final class LEDConstants {
 
   public static final int pwmPort = 0; // Pwm port the leds are running on
   public static final int totalNumLeds =
-      300; // Number of leds, this is 1 meter of lights by default
-  public static final int numTableLeds = 400;
-  public static final int numBellyPanLeds = 60;
+      200; // Number of leds, this is 1 meter of lights by default
 
   public enum PresetColor {
     RED(new Color(1.0, 0.0, 0.0)),
@@ -39,10 +37,9 @@ public final class LEDConstants {
 
   public enum Section {
     Right(0),
-    RightMiddle(1),
-    LeftMiddle(2),
-    Left(3),
-    Overflow(4);
+    Left(1),
+    Turret(2),
+    Overflow(3);
 
     private final int index;
 

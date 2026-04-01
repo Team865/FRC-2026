@@ -88,12 +88,12 @@ public class LEDs extends SubsystemBase {
 
   // Helper to set a named section using constants
   public void setSection(Section section, Color color) {
-    int quarterLength = numTableLeds / 4;
-    int start = quarterLength * section.getIndex();
-    int end = (section == Section.Overflow) ? numBellyPanLeds : start + quarterLength;
-    setRange(start, end, color);
+    // int quarterLength = numTableLeds / 4;
+    // int start = quarterLength * section.getIndex();
+    // int end = (section == Section.Overflow) ? numBellyPanLeds : start + quarterLength;
+    // setRange(start, end, color);
 
-    led.setData(buffer);
+    // led.setData(buffer);
   }
 
   public Command setSideColorCommand(Section section, Color color) {
@@ -171,7 +171,7 @@ public class LEDs extends SubsystemBase {
   }
 
   public Command shootingWaveCommand() {
-    return run(() -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.9, 2));
+    return run(() -> updateWave(PresetColor.IDLE.color, 0.02, 0.8, 5, 0.99, 2));
   }
 
   public Command idleWaveCommand() {

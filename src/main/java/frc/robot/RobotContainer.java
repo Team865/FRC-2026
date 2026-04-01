@@ -27,10 +27,8 @@ import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.extension.ExtensionIO;
 import frc.robot.subsystems.extension.ExtensionIOSim;
 import frc.robot.subsystems.extension.ExtensionIOTalonFX;
@@ -61,7 +59,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
-import frc.robot.util.ShootingUtil;
+import frc.robot.util.ShootingUtilLegacy;
+import frc.robot.util.SysIdRegister;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -134,13 +133,20 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
         // a CANcoder
+        // drive =
+        //     new Drive(
+        //         new GyroIOPigeon2(),
+        //         new ModuleIOTalonFX(TunerConstants.FrontLeft),
+        //         new ModuleIOTalonFX(TunerConstants.FrontRight),
+        //         new ModuleIOTalonFX(TunerConstants.BackLeft),
+        //         new ModuleIOTalonFX(TunerConstants.BackRight));
         drive =
             new Drive(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                new ModuleIOTalonFX(TunerConstants.BackRight));
+                new GyroIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {});
 
         intake =
             new Intake(
@@ -178,6 +184,7 @@ public class RobotContainer {
                     ShooterConstants.Turret.CANCODER_ID,
                     ShooterConstants.CANBUS,
                     ShooterConstants.Turret.CANCODER_SPECS));
+        // turret = new Turret(new PivotIO() {}, new AbsoluteEncoderIO() {});
 
         vision =
             new Vision(
@@ -191,17 +198,17 @@ public class RobotContainer {
                     () ->
                         drive.getPose().getRotation().plus(new Rotation2d(turret.getOrientation())),
                     false));
-        // new VisionIO() {
-        //   @Override
-        //   public String getName() {
-        //     return "limelight-turret";
-        //   }
-        // });
-        // new VisionIOLimelight(
-        //     VisionConstants.camera2Name,
-        //     () ->
-        //         drive.getPose().getRotation().plus(new Rotation2d(turret.getOrientation())),
-        //     false));
+        // // new VisionIO() {
+        // //   @Override
+        // //   public String getName() {
+        // //     return "limelight-turret";
+        // //   }
+        // // });
+        // // new VisionIOLimelight(
+        // //     VisionConstants.camera2Name,
+        // //     () ->
+        // //         drive.getPose().getRotation().plus(new Rotation2d(turret.getOrientation())),
+        // //     false));
 
         hood =
             new Hood(
@@ -368,12 +375,13 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Turn SysId (Dynamic Reverse)", drive.turnSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    // SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
+    SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
     // SysIdRegister.register(autoChooser, serializer, "Serializer");
     // SysIdRegister.register(autoChooser, turret, "Turret");
     // SysIdRegister.register(autoChooser, hood, "Hood");
     // SysIdRegister.register(autoChooser, intake.extension, "Intake/Extension");
     // SysIdRegister.register(autoChooser, intake.rollers, "Intake/Rollers");
+    // SysIdRegister.register(autoChooser, flywheel, "Flywheels");
 
     // Configure the button bindings
     configureButtonBindings();
@@ -386,6 +394,18 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
+    // ShopTesting.enable(
+    //     driverController,
+    //     drive,
+    //     serializer,
+    //     ballTunneler,
+    //     flywheel,
+    //     hood,
+    //     turret,
+    //     intake,
+    //     () -> getAllianceHubPose(),
+    //     () -> getDistanceFromHub());
+
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
     drive.setDefaultCommand(
@@ -453,7 +473,7 @@ public class RobotContainer {
         .whileTrue(
             flywheel.runVelocity(
                 () ->
-                    ShootingUtil.getScoringFlywheelVelocity(
+                    ShootingUtilLegacy.getScoringFlywheelVelocity(
                         drive
                             .getPose()
                             .getTranslation()

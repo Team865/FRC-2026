@@ -60,6 +60,9 @@ public class Intake extends SubsystemBase {
     this.rollers = new Rollers("Intake/Rollers", rollersIO);
     this.extension = new Extension("Intake/Extension", extensionIO);
 
+    this.extension.setSetpointTolerance(IntakeConstants.Extension.SETPOINT_TOLERANCE);
+    // extensionIO.setExtraGain(0.1, IntakeConstants.Extension.SETPOINT_TOLERANCE);
+
     rollersIO.setControlConstants(
         rollersKs.get(), rollersKv.get(), rollersKa.get(), rollersKp.get(), rollersKd.get());
     extensionIO.setControlConstants(
@@ -86,15 +89,20 @@ public class Intake extends SubsystemBase {
   public Command currentSensedRezero() {
     if (Constants.currentMode == Constants.Mode.REAL) {
       return new SequentialCommandGroup(
-          this.runOnce(() -> extension.io.setVolts(-5)),
-          this.runOnce(() -> rollers.io.stop()),
-          new WaitUntilCommand(
-                  () ->
-                      currentSenseDebouncer.calculate(
-                          Math.abs(extension.inputs.torqueCurrentAmps) > 60))
-              .raceWith(new WaitCommand(5)),
-          runOnce(() -> extension.io.seedPosition(Meters.zero())),
-          this.runOnce(() -> extension.io.stop()));
+              this.runOnce(
+                  () -> {
+                    extension.shouldAutoStopAtSetpoint = false;
+                    extension.io.setVolts(-5);
+                  }),
+              this.runOnce(() -> rollers.io.stop()),
+              new WaitUntilCommand(
+                      () ->
+                          currentSenseDebouncer.calculate(
+                              Math.abs(extension.inputs.torqueCurrentAmps) > 60))
+                  .raceWith(new WaitCommand(5)),
+              runOnce(() -> extension.io.seedPosition(Meters.zero())),
+              this.runOnce(() -> extension.io.stop()))
+          .finallyDo(() -> extension.shouldAutoStopAtSetpoint = true);
     } else {
       return this.runOnce(() -> rollers.io.stop()).andThen(new WaitCommand(0.5));
     }
@@ -133,30 +141,30 @@ public class Intake extends SubsystemBase {
         });
   }
 
-  // @Override
-  // public void periodic() {
-  // int id = hashCode();
+  @Override
+  public void periodic() {
+    // int id = hashCode();
 
-  // LoggedTunableNumber.ifChanged(
-  //     id,
-  //     c -> rollers.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
-  //     rollersKs,
-  //     rollersKv,
-  //     rollersKa,
-  //     rollersKp,
-  //     rollersKd);
-  // LoggedTunableNumber.ifChanged(
-  //     id,
-  //     c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
-  //     extensionKs,
-  //     extensionKv,
-  //     extensionKa,
-  //     extensionKp,
-  //     extensionKd);
-  // LoggedTunableNumber.ifChanged(
-  //     id,
-  //     c -> extension.io.setMotionProfile(c[0], c[1]),
-  //     extensionMaxVelocity,
-  //     extensionMaxAcceleration);
-  // }
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     c -> rollers.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+    //     rollersKs,
+    //     rollersKv,
+    //     rollersKa,
+    //     rollersKp,
+    //     rollersKd);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+    //     extensionKs,
+    //     extensionKv,
+    //     extensionKa,
+    //     extensionKp,
+    //     extensionKd);
+    // LoggedTunableNumber.ifChanged(
+    //     id,
+    //     c -> extension.io.setMotionProfile(c[0], c[1]),
+    //     extensionMaxVelocity,
+    //     extensionMaxAcceleration);
+  }
 }

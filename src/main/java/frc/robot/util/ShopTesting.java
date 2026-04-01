@@ -49,8 +49,7 @@ public class ShopTesting {
                 serializer.runSerializer(),
                 ballTunneler.runTunneler(),
                 hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())),
-                flywheel.runVelocity(
-                    () -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get()))));
+                flywheel.runVelocity(() -> RadiansPerSecond.of(450.0))));
 
     // driverController
     //     .y()

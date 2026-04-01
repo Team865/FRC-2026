@@ -34,7 +34,7 @@ import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
 import frc.robot.util.PitCheck;
-import frc.robot.util.ShootingUtil;
+import frc.robot.util.ShootingUtilLegacy;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -161,11 +161,11 @@ public class Superstructure extends SubsystemBase {
   /** Configure what the behaviours of each state are */
   private void configureStateBehaviours() {
     // Stop the flywheels when in Idle shooting state
-    shootingStateMachine.stateTriggers.get(ShootingState.IDLE).onTrue(leds.idleWaveCommand());
-    shootingStateMachine
-        .stateTriggers
-        .get(ShootingState.SHOOTING)
-        .onTrue(leds.shootingWaveCommand());
+    // shootingStateMachine.stateTriggers.get(ShootingState.IDLE).onTrue(leds.idleWaveCommand());
+    // shootingStateMachine
+    //     .stateTriggers
+    //     .get(ShootingState.SHOOTING)
+    //     .onTrue(leds.shootingWaveCommand());
 
     shootingStateMachine
         .stateTriggers
@@ -173,7 +173,7 @@ public class Superstructure extends SubsystemBase {
         .and(passingModeTrigger.negate())
         .onTrue(
             flywheel.runVelocityWithoutStopping(
-                () -> ShootingUtil.getScoringFlywheelVelocity(distanceFromTargetMeters)))
+                () -> ShootingUtilLegacy.getScoringFlywheelVelocity(distanceFromTargetMeters)))
         .onFalse(new WaitCommand(1.5).andThen(flywheel.stop()));
 
     shootingStateMachine
@@ -183,7 +183,7 @@ public class Superstructure extends SubsystemBase {
         .whileTrue(
             flywheel.runVelocity(
                 () ->
-                    ShootingUtil.getPassingFlywheelVelocity(
+                    ShootingUtilLegacy.getPassingFlywheelVelocity(
                         Math.abs(
                             drive.getPose().getX() - FieldConstants.Passing.getBumpLineXPos()))));
 
@@ -192,8 +192,14 @@ public class Superstructure extends SubsystemBase {
         .get(ShootingState.SHOOTING)
         .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
         .onFalse(
-            drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts).onlyIf(() -> !isSlowMode))
-        .onTrue(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
+            drive
+                .setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts)
+                .onlyIf(() -> !isSlowMode)
+                .alongWith(leds.allianceColorWaveCommand()))
+        .onTrue(
+            drive
+                .setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed)
+                .alongWith(leds.shootingWaveCommand()));
 
     shootingStateMachine
         .stateTriggers
@@ -201,7 +207,7 @@ public class Superstructure extends SubsystemBase {
         .and(manualOverrideTrigger.or(turret.canShoot()))
         .whileTrue(ballTunneler.runTunneler())
         .onTrue(
-            new WaitCommand(0.5)
+            new WaitCommand(1)
                 .andThen(
                     serializer
                         .startSerializer()
@@ -261,15 +267,17 @@ public class Superstructure extends SubsystemBase {
     turret.setDefaultCommand(
         turret
             .lockOntoTarget( // Have the turret track the target
-                () -> ShootingUtil.calculateTurretRelativeAngle(drive.getPose(), shootingTarget),
                 () ->
-                    ShootingUtil.getAngularVelocityCompensation(
+                    ShootingUtilLegacy.calculateTurretRelativeAngle(
+                        drive.getPose(), shootingTarget),
+                () ->
+                    ShootingUtilLegacy.getAngularVelocityCompensation(
                         drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds()))
             .onlyIf(manualOverrideTrigger.negate())
             .onlyWhile(manualOverrideTrigger.negate()));
 
     hood.setDefaultCommand(
-        hood.trackTarget(() -> ShootingUtil.calculateHoodAngle(distanceFromTargetMeters))
+        hood.trackTarget(() -> ShootingUtilLegacy.calculateHoodAngle(distanceFromTargetMeters))
             .onlyIf(manualOverrideTrigger.negate())
             .onlyWhile(manualOverrideTrigger.negate()));
 
@@ -329,11 +337,11 @@ public class Superstructure extends SubsystemBase {
               Logger.recordOutput("Serializer/StallsDetected", numStallsDetected);
             }),
         new PrintCommand("Anti-stalling Activated"),
-        serializer.setVolts(-2.0),
+        // serializer.setVolts(-2.0),
         new WaitUntilCommand(() -> !serializer.isStalling()).raceWith(new WaitCommand(0.05)),
-        serializer
-            .startSerializer()
-            .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING)),
+        // serializer
+        //     .startSerializer()
+        //     .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING)),
         new PrintCommand("Anti-stalling Stopped"));
   }
 
@@ -491,9 +499,9 @@ public class Superstructure extends SubsystemBase {
               System.out.println(serializer.getAngularVelocity().toString());
               System.out.println(ballTunneler.getAngularVelocity().toString());
               System.out.println(flywheel.getAngularVelocity().toString());
-              flywheel.stop();
-              ballTunneler.stop();
-              serializer.stop();
+              flywheel.io.stop();
+              ballTunneler.io.stop();
+              serializer.io.stop();
               isManualOverride = false;
             });
   }
@@ -556,7 +564,7 @@ public class Superstructure extends SubsystemBase {
               : FieldConstants.Passing.getRightCorner();
     else
       shootingTarget =
-          ShootingUtil.correctTargetPoseWhileMoving(
+          ShootingUtilLegacy.correctTargetPoseWhileMoving(
               drivePose, hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
 
     distanceFromTargetMeters =

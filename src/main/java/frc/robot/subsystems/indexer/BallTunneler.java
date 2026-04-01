@@ -1,6 +1,8 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
@@ -12,6 +14,7 @@ import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class BallTunneler extends Rollers implements SysIdTestable {
   private final LoggedTunableNumber kS =
@@ -54,10 +57,14 @@ public class BallTunneler extends Rollers implements SysIdTestable {
 
   @Override
   public void periodic() {
-    // int id = hashCode();
+    int id = hashCode();
 
-    // LoggedTunableNumber.ifChanged(
-    //     id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
+    LoggedTunableNumber.ifChanged(
+        id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
+
+    Logger.recordOutput("BallTunneler/PositionRots", inputs.position.in(Rotations));
+    Logger.recordOutput(
+        "BallTunneler/VelocityRotsPerSec", inputs.angularVelocity.in(RotationsPerSecond));
 
     super.periodic();
   }

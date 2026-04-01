@@ -134,6 +134,10 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     inputs.followerAppliedVoltage = followerAppliedVoltage.getValueAsDouble();
     inputs.followerSupplyCurrentAmps = followerSupplyCurrent.getValueAsDouble();
     inputs.followerStatorCurrentAmps = followerStatorCurrent.getValueAsDouble();
+
+    // Logger.recordOutput(
+    //     "Flywheel/VelocityRotsPerSec", inputs.masterVelocity.in(RotationsPerSecond));
+    // Logger.recordOutput("Flywheel/PositionRots", inputs.position.in(Rotations));
   }
 
   @Override
