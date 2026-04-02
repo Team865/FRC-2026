@@ -16,6 +16,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
+import frc.robot.util.Shooting.ShootingLogger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.DoubleSupplier;

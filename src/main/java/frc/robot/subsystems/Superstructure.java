@@ -34,6 +34,8 @@ import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
 import frc.robot.util.PitCheck;
+import frc.robot.util.Shooting.ShotCalculator;
+import frc.robot.util.Shooting.ShotCalculator.ShootingCalculation;
 import frc.robot.util.ShootingUtilLegacy;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -83,10 +85,14 @@ public class Superstructure extends SubsystemBase {
   private final LEDs leds;
   private final Supplier<Pose2d> hubPoseSupplier;
 
-  private Pose2d shootingTarget = Pose2d.kZero;
+  private Angle turretTargetAngle = Rotations.zero();
+  private Angle hoodTargetAngle = Rotations.zero();
+  private AngularVelocity flywheelTargetVelocity = RotationsPerSecond.zero();
+
   private double distanceFromTargetMeters = 0.0;
   private boolean isPassing = false;
   private boolean isSlowMode = false;
+  private boolean pitCheckMode = false;
 
   @AutoLogOutput(key = "Superstructure/IsOutaking")
   private boolean isOutaking = false;
@@ -97,6 +103,9 @@ public class Superstructure extends SubsystemBase {
 
   @AutoLogOutput(key = "Superstructure/ManualOverride")
   private final Trigger manualOverrideTrigger = new Trigger(() -> isManualOverride);
+
+  @AutoLogOutput(key = "Superstructure/PitCheck")
+  private final Trigger pitCheckTrigger = new Trigger(() -> pitCheckMode);
 
   @AutoLogOutput(key = "Superstructure/PassingMode")
   private final Trigger passingModeTrigger =
@@ -171,9 +180,7 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(ShootingState.SHOOTING)
         .and(passingModeTrigger.negate())
-        .onTrue(
-            flywheel.runVelocityWithoutStopping(
-                () -> ShootingUtilLegacy.getScoringFlywheelVelocity(distanceFromTargetMeters)))
+        .onTrue(flywheel.runVelocityWithoutStopping(() -> flywheelTargetVelocity))
         .onFalse(new WaitCommand(1.5).andThen(flywheel.stop()));
 
     shootingStateMachine
@@ -264,22 +271,26 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void configureShooter() {
+    Trigger shouldAutoAim = manualOverrideTrigger.or(pitCheckTrigger).negate();
+
     turret.setDefaultCommand(
         turret
             .lockOntoTarget( // Have the turret track the target
-                () ->
-                    ShootingUtilLegacy.calculateTurretRelativeAngle(
-                        drive.getPose(), shootingTarget),
+                () -> turretTargetAngle,
                 () ->
                     ShootingUtilLegacy.getAngularVelocityCompensation(
                         drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds()))
-            .onlyIf(manualOverrideTrigger.negate())
-            .onlyWhile(manualOverrideTrigger.negate()));
+            .onlyIf(shouldAutoAim)
+            .onlyWhile(shouldAutoAim));
 
     hood.setDefaultCommand(
-        hood.trackTarget(() -> ShootingUtilLegacy.calculateHoodAngle(distanceFromTargetMeters))
-            .onlyIf(manualOverrideTrigger.negate())
-            .onlyWhile(manualOverrideTrigger.negate()));
+        hood.trackTarget(() -> hoodTargetAngle).onlyIf(shouldAutoAim).onlyWhile(shouldAutoAim));
+
+    flywheel.setDefaultCommand(
+        flywheel
+            .runVelocity(flywheelTargetVelocity)
+            .onlyIf(pitCheckTrigger.negate())
+            .onlyWhile(pitCheckTrigger.negate()));
 
     passingModeTrigger.whileTrue(hood.runTargetAngle(() -> Degrees.of(26.5)));
 
@@ -556,19 +567,22 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
     Pose2d drivePose = drive.getPose();
+    Pose2d originalGoal =
+        (isPassing && DriverStation.isTeleopEnabled())
+            ? ((FieldConstants.isOnRightSide(drivePose)
+                ? FieldConstants.Passing.getRightCorner()
+                : FieldConstants.Passing.getLeftCorner()))
+            : hubPoseSupplier.get();
 
-    if (isPassing && DriverStation.isTeleopEnabled())
-      shootingTarget =
-          (passingSide.equals(PassingSide.LEFT))
-              ? FieldConstants.Passing.getLeftCorner()
-              : FieldConstants.Passing.getRightCorner();
-    else
-      shootingTarget =
-          ShootingUtilLegacy.correctTargetPoseWhileMoving(
-              drivePose, hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
+    if (false) {
+      ShootingCalculation shotCalculation =
+          ShotCalculator.calculate(drivePose, originalGoal, drive.getFieldOrientedSpeeds());
 
-    distanceFromTargetMeters =
-        shootingTarget.getTranslation().getDistance(drivePose.getTranslation());
+      turretTargetAngle = shotCalculation.yaw();
+      hoodTargetAngle = shotCalculation.pitch();
+      flywheelTargetVelocity = shotCalculation.flywheelVelocity();
+      Logger.recordOutput("Superstructure/ShooterTarget", shotCalculation.virtualGoal());
+    }
 
     isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
     passingSide = FieldConstants.isOnRightSide(drivePose) ? PassingSide.RIGHT : PassingSide.LEFT;
@@ -576,7 +590,6 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/SlowMode", isSlowMode);
-    Logger.recordOutput("Superstructure/ShooterTarget", shootingTarget);
 
     // // Render a Pose showing where the turret (thinks it) is pointing
     // Logger.recordOutput(

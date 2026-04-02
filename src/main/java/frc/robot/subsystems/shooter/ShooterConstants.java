@@ -56,8 +56,8 @@ public final class ShooterConstants {
     public static final Angle SHOOTING_TOLERANCE = Degrees.of(5);
     public static final Angle EXTRA_GAIN_TOLERANCE = Degrees.of(0.5);
 
-    // 0.75 rotations / second
-    public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.75).times(0.020);
+    // 0.5 rotations / second
+    public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.5).times(0.020);
   }
 
   public static final class Hood {

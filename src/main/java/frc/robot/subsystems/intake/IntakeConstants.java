@@ -21,7 +21,7 @@ public final class IntakeConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(0.24252, 0.005021, 0.30791, 0.0, 1.0, 0.0),
-            new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 0.5, 0.0));
+            new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 1.0, 0.0));
 
     public static final RollersSpecifications ROLLER_SPECS =
         new RollersSpecifications(2.0, false, Units.inchesToMeters(1), 80.0, 170.0);

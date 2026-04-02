@@ -127,6 +127,8 @@ public class Turret extends Pivot implements SysIdTestable {
 
             if (gain == 0.0) return;
 
+            gain = Math.copySign(gain * gain, gain);
+
             currentTargetPosition =
                 currentTargetPosition.plus(ShooterConstants.Turret.MANUAL_CONTROL_RATE.times(gain));
             Angle optimizedAngle = optimizeAngle(currentTargetPosition);

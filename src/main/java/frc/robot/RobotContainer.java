@@ -461,6 +461,11 @@ public class RobotContainer {
         .onFalse(superstructure.requestState(ShootingState.IDLE));
 
     driverController.leftBumper().onTrue(superstructure.toggleIntakeExtension());
+    driverController
+        .leftTrigger()
+        .whileTrue(
+            DriveCommands.intakeDrive(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // OPERATOR CONTROLLER
     operatorController

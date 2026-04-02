@@ -1,4 +1,4 @@
-package frc.robot.util;
+package frc.robot.util.Shooting;
 
 import edu.wpi.first.math.util.Units;
 import java.io.BufferedWriter;
