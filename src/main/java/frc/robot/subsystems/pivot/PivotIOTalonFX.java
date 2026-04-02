@@ -1,6 +1,7 @@
 package frc.robot.subsystems.pivot;
 
 import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -40,6 +41,7 @@ public class PivotIOTalonFX implements PivotIO {
   private double extraEffort = 0.0;
   private Angle extraEffortTolerance = Rotations.zero();
   private Angle targetAngle = Rotations.zero();
+  private double backwardsModifier = 1.0;
 
   private final Debouncer connectedDebouncer = new Debouncer(0.5);
 
@@ -115,8 +117,12 @@ public class PivotIOTalonFX implements PivotIO {
         positionRequest.withPosition(angle).withFeedForward(motorConfig.Slot0.kV * omegaRPS / 5);
 
     if (!currentAngle.isNear(targetAngle, extraEffortTolerance)) {
-      double deltaSign = Math.signum(targetAngle.minus(currentAngle).baseUnitMagnitude());
-      request = request.withFeedForward(extraEffort * deltaSign);
+      double deltaSign = Math.signum(targetAngle.minus(currentAngle).in(Radians));
+      double signedEffort = extraEffort * deltaSign;
+
+      if (deltaSign < 0) signedEffort *= backwardsModifier;
+
+      request = request.withFeedForward(signedEffort);
     }
 
     talon.setControl(request);
@@ -180,5 +186,10 @@ public class PivotIOTalonFX implements PivotIO {
   public void setExtraEffort(double voltage, Angle tolerance) {
     this.extraEffort = voltage;
     this.extraEffortTolerance = tolerance;
+  }
+
+  @Override
+  public void setBackwardModifier(double modifier) {
+    this.backwardsModifier = modifier;
   }
 }

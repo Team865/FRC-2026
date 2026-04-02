@@ -375,9 +375,9 @@ public class RobotContainer {
     // autoChooser.addOption(
     //     "Turn SysId (Dynamic Reverse)", drive.turnSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
+    // SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
     // SysIdRegister.register(autoChooser, serializer, "Serializer");
-    // SysIdRegister.register(autoChooser, turret, "Turret");
+    SysIdRegister.register(autoChooser, turret, "Turret");
     // SysIdRegister.register(autoChooser, hood, "Hood");
     // SysIdRegister.register(autoChooser, intake.extension, "Intake/Extension");
     // SysIdRegister.register(autoChooser, intake.rollers, "Intake/Rollers");

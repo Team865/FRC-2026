@@ -65,10 +65,10 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     config.Slot0.kD = constants.kD;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 70.0;
+    config.CurrentLimits.SupplyCurrentLimit = 200.0;
 
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = 200.0;
+    config.CurrentLimits.StatorCurrentLimit = 500.0;
 
     PhoenixUtil.tryUntilOk(5, () -> masterTalon.getConfigurator().apply(config));
     PhoenixUtil.tryUntilOk(5, () -> followerTalon.getConfigurator().apply(config));

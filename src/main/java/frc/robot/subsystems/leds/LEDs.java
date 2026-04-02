@@ -28,7 +28,7 @@ public class LEDs extends SubsystemBase {
 
   private final LEDPattern scrollingRainbow =
       LEDPattern.rainbow(255, 128)
-          .scrollAtAbsoluteSpeed(MetersPerSecond.of(5), Meters.of(1.0 / 60));
+          .scrollAtAbsoluteSpeed(MetersPerSecond.of(4), Meters.of(2.0 / 60));
 
   public LEDs() {
     led = new AddressableLED(pwmPort);

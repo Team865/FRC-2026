@@ -33,9 +33,8 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.PitCheck;
-import frc.robot.util.Shooting.ShotCalculator;
-import frc.robot.util.Shooting.ShotCalculator.ShootingCalculation;
 import frc.robot.util.ShootingUtilLegacy;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -114,6 +113,9 @@ public class Superstructure extends SubsystemBase {
   @AutoLogOutput(key = "Superstructure/PassingSide")
   private PassingSide passingSide;
 
+  private static final LoggedTunableNumber flywheelTestVelocityRadsPerSec =
+      new LoggedTunableNumber("Testing/FlywheelTestVelocityRadsPerSec", 350.0);
+
   public Superstructure(
       Drive drive,
       Intake intake,
@@ -174,14 +176,7 @@ public class Superstructure extends SubsystemBase {
     // shootingStateMachine
     //     .stateTriggers
     //     .get(ShootingState.SHOOTING)
-    //     .onTrue(leds.shootingWaveCommand());
-
-    shootingStateMachine
-        .stateTriggers
-        .get(ShootingState.SHOOTING)
-        .and(passingModeTrigger.negate())
-        .onTrue(flywheel.runVelocityWithoutStopping(() -> flywheelTargetVelocity))
-        .onFalse(new WaitCommand(1.5).andThen(flywheel.stop()));
+    //
 
     shootingStateMachine
         .stateTriggers
@@ -214,14 +209,12 @@ public class Superstructure extends SubsystemBase {
         .and(manualOverrideTrigger.or(turret.canShoot()))
         .whileTrue(ballTunneler.runTunneler())
         .onTrue(
-            new WaitCommand(1)
+            new WaitCommand(0.25)
                 .andThen(
                     serializer
                         .startSerializer()
                         .onlyIf(() -> shootingStateMachine.isInState(ShootingState.SHOOTING))))
         .onFalse(serializer.stop());
-
-    shouldStopSerializer().onTrue(restartSerializerAntiStalled());
 
     // Intaking state
     intakingStateMachine
@@ -288,7 +281,7 @@ public class Superstructure extends SubsystemBase {
 
     flywheel.setDefaultCommand(
         flywheel
-            .runVelocity(flywheelTargetVelocity)
+            .runVelocity(() -> flywheelTargetVelocity)
             .onlyIf(pitCheckTrigger.negate())
             .onlyWhile(pitCheckTrigger.negate()));
 
@@ -574,15 +567,18 @@ public class Superstructure extends SubsystemBase {
                 : FieldConstants.Passing.getLeftCorner()))
             : hubPoseSupplier.get();
 
-    if (false) {
-      ShootingCalculation shotCalculation =
-          ShotCalculator.calculate(drivePose, originalGoal, drive.getFieldOrientedSpeeds());
+    // if (false) {
+    //   ShootingCalculation shotCalculation =
+    //       ShotCalculator.calculate(drivePose, originalGoal, drive.getFieldOrientedSpeeds());
 
-      turretTargetAngle = shotCalculation.yaw();
-      hoodTargetAngle = shotCalculation.pitch();
-      flywheelTargetVelocity = shotCalculation.flywheelVelocity();
-      Logger.recordOutput("Superstructure/ShooterTarget", shotCalculation.virtualGoal());
-    }
+    //   turretTargetAngle = shotCalculation.yaw();
+    //   hoodTargetAngle = shotCalculation.pitch();
+    //   flywheelTargetVelocity = shotCalculation.flywheelVelocity();
+    //   Logger.recordOutput("Superstructure/ShooterTarget", shotCalculation.virtualGoal());
+    // }
+
+    // Testing
+    flywheelTargetVelocity = RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get());
 
     isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
     passingSide = FieldConstants.isOnRightSide(drivePose) ? PassingSide.RIGHT : PassingSide.LEFT;
