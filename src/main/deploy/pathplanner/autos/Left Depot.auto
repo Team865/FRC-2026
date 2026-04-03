@@ -5,15 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Left Start Shoot Only"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.5
+            "name": "RezeroIntake"
           }
         },
         {
@@ -32,6 +26,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Single Swipe and depot",
   "choreoAuto": false
 }

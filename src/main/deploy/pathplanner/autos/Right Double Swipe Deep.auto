@@ -5,21 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "path",
-          "data": {
-            "pathName": "Right shoot only"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.5
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "StopShooting"
+            "name": "RezeroIntake"
           }
         },
         {
@@ -43,7 +31,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.5
+            "waitTime": 2.0
           }
         },
         {
