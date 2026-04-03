@@ -152,7 +152,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-
+    robotContainer.leds.idleWaveCommand();
     isFMSAttached = DriverStation.isFMSAttached();
     robotContainer.throttleCameras(0);
     SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
@@ -167,10 +167,6 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-
-    // var colors = PresetColor.values();
-    // int colorIndex = (int) (Timer.getFPGATimestamp() * 2) % colors.length;
-    // robotContainer.leds.setAll(colors[colorIndex].color);
 
     SmartDashboard.putBoolean("RobotEnabled", DriverStation.isEnabled());
     double teleopTimeElapsedSeconds;

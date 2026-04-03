@@ -5,12 +5,12 @@ import edu.wpi.first.wpilibj.util.Color;
 public final class LEDConstants {
   private LEDConstants() {}
 
-  public static final int pwmPort = 1; // Pwm port the leds are running on
-  public static final int totalNumLeds =
-      189; // Number of leds, this is 1 meter of lights by default
+  public static final int pwmPort = 1; // PWM port the leds are running on
+  public static final int totalNumLeds = 189;
+
   public static final int rightLeds = 62;
   public static final int leftLeds = 62;
-  public static final int igusLeds = 65;
+  public static final int turretLeds = 65;
 
   public enum PresetColor {
     RED(new Color(1.0, 0.0, 0.0)),
@@ -29,30 +29,39 @@ public final class LEDConstants {
     TEAL(new Color(0.0, 0.5, 0.5)),
     GREY(new Color(0.5, 0.5, 0.5)),
 
-    IDLE(new Color(120.0 / 255, 0, 200.0 / 255));
+    IDLE(new Color(120.0 / 255.0, 0.0, 200.0 / 255.0));
 
     public final Color color;
 
-    private PresetColor(Color color) {
+    PresetColor(Color color) {
       this.color = color;
     }
   }
 
   public enum Section {
-    Right(0),
-    Left(1),
-    Turret(2),
-    Overflow(3);
+    Right(0, rightLeds),
+    Left(rightLeds, rightLeds + leftLeds),
+    Turret(rightLeds + leftLeds, rightLeds + leftLeds + turretLeds),
+    Overflow(rightLeds + leftLeds + turretLeds, totalNumLeds);
 
-    private final int index;
+    private final int start;
+    private final int end;
 
-    Section(int index) {
-      this.index = index;
+    Section(int start, int end) {
+      this.start = start;
+      this.end = end;
     }
 
-    // Getter
-    public int getIndex() {
-      return index;
+    public int getStart() {
+      return start;
+    }
+
+    public int getEnd() {
+      return end;
+    }
+
+    public int getLength() {
+      return end - start;
     }
   }
 }

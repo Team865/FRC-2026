@@ -197,11 +197,18 @@ public class Superstructure extends SubsystemBase {
             drive
                 .setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts)
                 .onlyIf(() -> !isSlowMode)
-                .alongWith(leds.allianceColorWaveCommand()))
+                .alongWith(leds.shootingIdleWaveCommand()))
         .onTrue(
             drive
                 .setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed)
-                .alongWith(leds.shootingWaveCommand()));
+                .alongWith(leds.shootingActiveWaveCommand()));
+
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.SHOOTING)
+        .and(new Trigger(() -> DriverStation.isAutonomous()))
+        .onTrue(leds.autoShootingActiveWaveCommand())
+        .onFalse(leds.idleWaveCommand());
 
     shootingStateMachine
         .stateTriggers
