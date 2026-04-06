@@ -42,10 +42,11 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                4.25, 0.05, 0.38, 0.0, 25.0, 0.0, Optional.of(5.0), Optional.of(8.0)),
+                4.8, 0.05, 0.38, 0.0, 1000.0, 0.0, Optional.of(5.0), Optional.of(8.0)),
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 
+                
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(52.0, false);
     public static final CANcoderSpecifications CANCODER_SPECS =
         new CANcoderSpecifications(360.0 / 400, false, -0.0373);
@@ -53,7 +54,7 @@ public final class ShooterConstants {
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);
     public static final Angle DEADZONE = Degrees.of(2);
-    public static final Angle SHOOTING_TOLERANCE = Degrees.of(5);
+    public static final Angle SHOOTING_TOLERANCE = Degrees.of(10);
     public static final Angle EXTRA_GAIN_TOLERANCE = Degrees.of(0.5);
 
     // 0.5 rotations / second

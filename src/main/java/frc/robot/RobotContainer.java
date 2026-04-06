@@ -27,11 +27,12 @@ import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
+import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.extension.ExtensionIO;
 import frc.robot.subsystems.extension.ExtensionIOSim;
-import frc.robot.subsystems.extension.ExtensionIOTalonFX;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.indexer.Serializer;
@@ -133,32 +134,26 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         // ModuleIOTalonFX is intended for modules with TalonFX drive, TalonFX turn, and
         // a CANcoder
-        // drive =
-        //     new Drive(
-        //         new GyroIOPigeon2(),
-        //         new ModuleIOTalonFX(TunerConstants.FrontLeft),
-        //         new ModuleIOTalonFX(TunerConstants.FrontRight),
-        //         new ModuleIOTalonFX(TunerConstants.BackLeft),
-        //         new ModuleIOTalonFX(TunerConstants.BackRight));
         drive =
             new Drive(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
+                new GyroIOPigeon2(),
+                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                new ModuleIOTalonFX(TunerConstants.BackRight));
 
         intake =
             new Intake(
-                new RollersIOTalonFX(
-                    IntakeConstants.Rollers.CAN_ID,
-                    IntakeConstants.Rollers.CANBUS,
-                    IntakeConstants.Rollers.ROLLER_SPECS),
-                // new ExtensionIO() {
-                new ExtensionIOTalonFX(
-                    IntakeConstants.Extension.MOTOR_CAN_ID,
-                    IntakeConstants.Extension.CANBUS,
-                    IntakeConstants.Extension.EXTENSION_SPECS));
+                new RollersIO() {},
+                // new RollersIOTalonFX(
+                //     IntakeConstants.Rollers.CAN_ID,
+                //     IntakeConstants.Rollers.CANBUS,
+                //     IntakeConstants.Rollers.ROLLER_SPECS),
+                new ExtensionIO() {});
+        // new ExtensionIOTalonFX(
+        //     IntakeConstants.Extension.MOTOR_CAN_ID,
+        //     IntakeConstants.Extension.CANBUS,
+        //     IntakeConstants.Extension.EXTENSION_SPECS));
 
         serializer =
             new Serializer(
@@ -321,6 +316,7 @@ public class RobotContainer {
             hood,
             flywheel,
             leds,
+            driverController,
             operatorController,
             () -> getAllianceHubPose());
 

@@ -24,7 +24,7 @@ public final class IntakeConstants {
             new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 1.0, 0.0));
 
     public static final RollersSpecifications ROLLER_SPECS =
-        new RollersSpecifications(2.0, false, Units.inchesToMeters(1), 80.0, 170.0);
+        new RollersSpecifications(2.0, false, Units.inchesToMeters(1), 40.0, 170.0);
 
     public static final LinearVelocity MINIMUM_INTAKE_SPEED = MetersPerSecond.of(3.5);
     public static final LinearVelocity AGITATING_VELOCITY = MetersPerSecond.of(5);
@@ -37,7 +37,8 @@ public final class IntakeConstants {
 
     public static final Distance STOWED_POSITION = Inches.of(3.0);
     public static final Distance PARTIAL_STOWED_POSITION = Inches.of(11.0);
-    public static final Distance DEPLOYED_POSITION = Inches.of(12.25);
+    public static final Distance DEPLOYED_POSITION = Inches.of(11.0);
+    // Inches.of(12.25);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(

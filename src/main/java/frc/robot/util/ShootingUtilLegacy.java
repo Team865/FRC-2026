@@ -93,9 +93,9 @@ public class ShootingUtilLegacy {
 
   public static AngularVelocity getScoringFlywheelVelocity(double distanceFromTargetMeters) {
     if (distanceFromTargetMeters < 2.5) {
-      return RadiansPerSecond.of(340);
+      return RadiansPerSecond.of(315);
     } else {
-      return RadiansPerSecond.of(400);
+      return RadiansPerSecond.of(380);
     }
 
     // return RadiansPerSecond.of(150); // Add more velocities once we get more measurements

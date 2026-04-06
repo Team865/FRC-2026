@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -33,8 +34,10 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
+import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.PitCheck;
+import frc.robot.util.Shooting.ShootingLogger;
 import frc.robot.util.ShootingUtilLegacy;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -88,7 +91,9 @@ public class Superstructure extends SubsystemBase {
   private Angle hoodTargetAngle = Rotations.zero();
   private AngularVelocity flywheelTargetVelocity = RotationsPerSecond.zero();
 
+  @AutoLogOutput(key = "Superstructure/DistanceFromShootingGoalMeters")
   private double distanceFromTargetMeters = 0.0;
+
   private boolean isPassing = false;
   private boolean isSlowMode = false;
   private boolean pitCheckMode = false;
@@ -116,6 +121,11 @@ public class Superstructure extends SubsystemBase {
   private static final LoggedTunableNumber flywheelTestVelocityRadsPerSec =
       new LoggedTunableNumber("Testing/FlywheelTestVelocityRadsPerSec", 350.0);
 
+  private static final LoggedTunableNumber hoodTestAngleDeg =
+      new LoggedTunableNumber("Testing/HoodTestAngleDeg", 0.0);
+
+  private static final ShootingLogger SHOOTING_LOGGER = new ShootingLogger();
+
   public Superstructure(
       Drive drive,
       Intake intake,
@@ -125,6 +135,7 @@ public class Superstructure extends SubsystemBase {
       Hood hood,
       Flywheel flywheel,
       LEDs leds,
+      CommandXboxController driverController,
       CommandXboxController operatorController,
       Supplier<Pose2d> hubPoseSupplier) {
     this.drive = drive;
@@ -147,6 +158,17 @@ public class Superstructure extends SubsystemBase {
 
     this.passingSide =
         FieldConstants.isOnRightSide(drive.getPose()) ? PassingSide.RIGHT : PassingSide.LEFT;
+
+    driverController
+        .rightBumper()
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    SHOOTING_LOGGER.addMeasurement(
+                        distanceFromTargetMeters,
+                        hoodTestAngleDeg.get(),
+                        flywheelTestVelocityRadsPerSec.get())));
+    driverController.back().onTrue(Commands.runOnce(() -> SHOOTING_LOGGER.save()));
   }
 
   /** Configure the requirements of each state */
@@ -239,6 +261,12 @@ public class Superstructure extends SubsystemBase {
         .get(IntakingState.DEPLOYING) // Deploy the intake
         .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
         .onTrue(forceState(IntakingState.DEPLOYED)); // Move to appropriate state
+
+    intakingStateMachine
+        .stateTriggers
+        .get(IntakingState.STOWED)
+        .whileTrue( // Run the intake based on drivetrain speed
+            intake.rollers.runVolts(12.0));
 
     intakingStateMachine
         .stateTriggers
@@ -567,6 +595,10 @@ public class Superstructure extends SubsystemBase {
   @Override
   public void periodic() {
     Pose2d drivePose = drive.getPose();
+
+    isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
+    passingSide = FieldConstants.isOnRightSide(drivePose) ? PassingSide.RIGHT : PassingSide.LEFT;
+
     Pose2d originalGoal =
         (isPassing && DriverStation.isTeleopEnabled())
             ? ((FieldConstants.isOnRightSide(drivePose)
@@ -584,12 +616,34 @@ public class Superstructure extends SubsystemBase {
     //   Logger.recordOutput("Superstructure/ShooterTarget", shotCalculation.virtualGoal());
     // }
 
-    // Testing
+    // Legacy Shot Calc
+    hoodTargetAngle = Degrees.of(hoodTestAngleDeg.get());
     flywheelTargetVelocity = RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get());
 
-    isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
-    passingSide = FieldConstants.isOnRightSide(drivePose) ? PassingSide.RIGHT : PassingSide.LEFT;
+    if (!isPassing) {
+      turretTargetAngle = ShootingUtilLegacy.calculateTurretRelativeAngle(drivePose, originalGoal);
 
+      // Pose2d virtualGoal =
+      //     ShootingUtilLegacy.correctTargetPoseWhileMoving(
+      //         drivePose, originalGoal, drive.getChassisSpeeds());
+      // distanceFromTargetMeters =
+      //     virtualGoal.getTranslation().getDistance(drivePose.getTranslation());
+
+      // turretTargetAngle = ShootingUtilLegacy.calculateTurretRelativeAngle(drivePose,
+      // virtualGoal);
+      // hoodTargetAngle = ShootingUtilLegacy.calculateHoodAngle(distanceFromTargetMeters);
+      // flywheelTargetVelocity =
+      //     ShootingUtilLegacy.getScoringFlywheelVelocity(distanceFromTargetMeters);
+    } else {
+      turretTargetAngle =
+          ((AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)
+                  .minus(drivePose.getRotation()))
+              .getMeasure();
+    }
+
+    Logger.recordOutput(
+        "Superstructure/DistanceFromBumpMeters",
+        Math.abs(drivePose.getX() - FieldConstants.Passing.getBumpLineXPos()));
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/SlowMode", isSlowMode);

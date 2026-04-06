@@ -22,7 +22,7 @@ public final class IndexerConstants {
     }
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 90, 200);
+        new RollersSpecifications(64 / 3, true, Units.inchesToMeters(8), 50, 200);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
@@ -35,7 +35,7 @@ public final class IndexerConstants {
     public static final AngularVelocity TUNNELING_SPEED = RadiansPerSecond.of(246.0);
 
     public static final RollersSpecifications ROLLERS_SPECS =
-        new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 70, 200);
+        new RollersSpecifications(1.6875, false, Units.inchesToMeters(13.08 / 2.0), 50, 200);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
