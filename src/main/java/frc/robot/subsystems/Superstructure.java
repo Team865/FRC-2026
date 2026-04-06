@@ -158,17 +158,6 @@ public class Superstructure extends SubsystemBase {
 
     this.passingSide =
         FieldConstants.isOnRightSide(drive.getPose()) ? PassingSide.RIGHT : PassingSide.LEFT;
-
-    driverController
-        .rightBumper()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    SHOOTING_LOGGER.addMeasurement(
-                        distanceFromTargetMeters,
-                        hoodTestAngleDeg.get(),
-                        flywheelTestVelocityRadsPerSec.get())));
-    driverController.back().onTrue(Commands.runOnce(() -> SHOOTING_LOGGER.save()));
   }
 
   /** Configure the requirements of each state */

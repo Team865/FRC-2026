@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.AllianceFlipUtil;
 import java.util.function.DoubleSupplier;
-import org.littletonrobotics.junction.Logger;
 
 public class JoystickDrive extends Command {
   private static final double DEADBAND = 0.1;
@@ -75,8 +74,6 @@ public class JoystickDrive extends Command {
 
       Translation2d clampedJoysticks = previousJoystickTarget.plus(delta.times(MAX_SLOW_RATE));
 
-      Logger.recordOutput("Test", clampedJoysticks);
-
       targetLinearVelocityMagnitude = clampedJoysticks.getNorm();
       // if(targetLinearVelocityMagnitude > 0)
       previousHeading = clampedJoysticks.getAngle();
@@ -84,8 +81,6 @@ public class JoystickDrive extends Command {
       // Clamp acceleration
       targetLinearVelocityMagnitude =
           previousJoystickLinMagnitude + Math.max(magDiffFromLastUpdate, -MAX_SLOW_RATE);
-    } else {
-      // Logger.recordOutput("Test", Translation2d.kZero);
     }
 
     previousJoystickLinMagnitude = targetLinearVelocityMagnitude;

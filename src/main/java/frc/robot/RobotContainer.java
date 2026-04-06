@@ -459,6 +459,13 @@ public class RobotContainer {
     driverController.leftBumper().onTrue(superstructure.toggleIntakeExtension());
     driverController
         .leftTrigger()
+        .and(
+            superstructure
+                .intakingStateMachine
+                .stateTriggers
+                .get(IntakingState.STOWED)
+                .or(superstructure.intakingStateMachine.stateTriggers.get(IntakingState.STOWING))
+                .negate())
         .whileTrue(
             DriveCommands.intakeDrive(
                 drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
