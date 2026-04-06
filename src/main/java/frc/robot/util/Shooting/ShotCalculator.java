@@ -49,7 +49,7 @@ public final class ShotCalculator {
           vectorToGoal.getAngle().minus(robotPose.getRotation()).getMeasure());
     }
 
-    double timeOfFlightSeconds;
+    double timeOfFlightSeconds = 0.0;
     Translation2d virtualGoal = goal;
 
     double dragCoefficient = testDragCoefficient.get();
@@ -58,9 +58,10 @@ public final class ShotCalculator {
       double distanceFromGoalMeters = virtualGoal.getDistance(origin);
 
       timeOfFlightSeconds = ShootingMeasurements.getScoringToFSeconds(distanceFromGoalMeters);
-      
+
       // // Apply drag coefficient
-      // timeOfFlightSeconds = (1 - Math.exp(-dragCoefficient * timeOfFlightSeconds)) / dragCoefficient;
+      // timeOfFlightSeconds = (1 - Math.exp(-dragCoefficient * timeOfFlightSeconds)) /
+      // dragCoefficient;
 
       Translation2d previousGoal = virtualGoal;
       virtualGoal = goal.plus(relativeTargetSpeedMPS.times(timeOfFlightSeconds));
@@ -105,7 +106,9 @@ public final class ShotCalculator {
       pitchDegrees = 5.0 * distanceFromTarget - 34;
     }
 
-    pitchDegrees = MathUtil.clamp(pitchDegrees, ShooterConstants.Hood.MIN_ANGLE_DEG, ShooterConstants.Hood.MAX_ANGLE_DEG);
+    pitchDegrees =
+        MathUtil.clamp(
+            pitchDegrees, ShooterConstants.Hood.MIN_ANGLE_DEG, ShooterConstants.Hood.MAX_ANGLE_DEG);
 
     return new ShootingCalculation(
         virtualGoal,

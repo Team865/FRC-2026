@@ -101,7 +101,9 @@ public final class ShootingMeasurements {
       pitchDegrees = scoringLongRange.distanceToPitchDegrees.get(distanceMeters);
     }
 
-    pitchDegrees = MathUtil.clamp(pitchDegrees, ShooterConstants.Hood.MIN_ANGLE_DEG, ShooterConstants.Hood.MAX_ANGLE_DEG);
+    pitchDegrees =
+        MathUtil.clamp(
+            pitchDegrees, ShooterConstants.Hood.MIN_ANGLE_DEG, ShooterConstants.Hood.MAX_ANGLE_DEG);
 
     return Degrees.of(pitchDegrees);
   }
