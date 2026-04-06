@@ -34,11 +34,11 @@ import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
-import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.PitCheck;
 import frc.robot.util.Shooting.ShootingLogger;
-import frc.robot.util.ShootingUtilLegacy;
+import frc.robot.util.Shooting.ShotCalculator;
+import frc.robot.util.Shooting.ShotCalculator.ShootingCalculation;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -193,24 +193,6 @@ public class Superstructure extends SubsystemBase {
 
   /** Configure what the behaviours of each state are */
   private void configureStateBehaviours() {
-    // Stop the flywheels when in Idle shooting state
-    // shootingStateMachine.stateTriggers.get(ShootingState.IDLE).onTrue(leds.idleWaveCommand());
-    // shootingStateMachine
-    //     .stateTriggers
-    //     .get(ShootingState.SHOOTING)
-    //
-
-    shootingStateMachine
-        .stateTriggers
-        .get(ShootingState.SHOOTING)
-        .and(passingModeTrigger)
-        .whileTrue(
-            flywheel.runVelocity(
-                () ->
-                    ShootingUtilLegacy.getPassingFlywheelVelocity(
-                        Math.abs(
-                            drive.getPose().getX() - FieldConstants.Passing.getBumpLineXPos()))));
-
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
@@ -306,7 +288,7 @@ public class Superstructure extends SubsystemBase {
             .lockOntoTarget( // Have the turret track the target
                 () -> turretTargetAngle,
                 () ->
-                    ShootingUtilLegacy.getAngularVelocityCompensation(
+                    ShotCalculator.getAngularVelocityCompensation(
                         drive.getPose(), hubPoseSupplier.get(), drive.getChassisSpeeds()))
             .onlyIf(shouldAutoAim)
             .onlyWhile(shouldAutoAim));
@@ -319,8 +301,6 @@ public class Superstructure extends SubsystemBase {
             .runVelocity(() -> flywheelTargetVelocity)
             .onlyIf(pitCheckTrigger.negate())
             .onlyWhile(pitCheckTrigger.negate()));
-
-    passingModeTrigger.whileTrue(hood.runTargetAngle(() -> Degrees.of(26.5)));
 
     manualOverrideTrigger
         .and(operatorController.povUp().negate())
@@ -599,13 +579,6 @@ public class Superstructure extends SubsystemBase {
     isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
     passingSide = FieldConstants.isOnRightSide(drivePose) ? PassingSide.RIGHT : PassingSide.LEFT;
 
-    Pose2d originalGoal =
-        (isPassing && DriverStation.isTeleopEnabled())
-            ? ((FieldConstants.isOnRightSide(drivePose)
-                ? FieldConstants.Passing.getRightCorner()
-                : FieldConstants.Passing.getLeftCorner()))
-            : hubPoseSupplier.get();
-
     // if (false) {
     //   ShootingCalculation shotCalculation =
     //       ShotCalculator.calculate(drivePose, originalGoal, drive.getFieldOrientedSpeeds());
@@ -617,29 +590,26 @@ public class Superstructure extends SubsystemBase {
     // }
 
     // Legacy Shot Calc
-    hoodTargetAngle = Degrees.of(hoodTestAngleDeg.get());
-    flywheelTargetVelocity = RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get());
+    // hoodTargetAngle = Degrees.of(hoodTestAngleDeg.get());
+    // flywheelTargetVelocity = RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get());
 
-    if (!isPassing) {
-      turretTargetAngle = ShootingUtilLegacy.calculateTurretRelativeAngle(drivePose, originalGoal);
+    ShootingCalculation shotCalculation;
 
-      // Pose2d virtualGoal =
-      //     ShootingUtilLegacy.correctTargetPoseWhileMoving(
-      //         drivePose, originalGoal, drive.getChassisSpeeds());
-      // distanceFromTargetMeters =
-      //     virtualGoal.getTranslation().getDistance(drivePose.getTranslation());
-
-      // turretTargetAngle = ShootingUtilLegacy.calculateTurretRelativeAngle(drivePose,
-      // virtualGoal);
-      // hoodTargetAngle = ShootingUtilLegacy.calculateHoodAngle(distanceFromTargetMeters);
-      // flywheelTargetVelocity =
-      //     ShootingUtilLegacy.getScoringFlywheelVelocity(distanceFromTargetMeters);
+    if (isPassing) {
+      shotCalculation =
+          ShotCalculator.calculatePassingShot(drivePose, drive.getFieldOrientedSpeeds());
     } else {
-      turretTargetAngle =
-          ((AllianceFlipUtil.shouldFlip() ? Rotation2d.kZero : Rotation2d.k180deg)
-                  .minus(drivePose.getRotation()))
-              .getMeasure();
+      shotCalculation =
+          ShotCalculator.calculateScoringShot(
+              drivePose, hubPoseSupplier.get(), drive.getFieldOrientedSpeeds());
     }
+
+    turretTargetAngle = shotCalculation.yaw();
+    hoodTargetAngle = shotCalculation.pitch();
+    flywheelTargetVelocity = shotCalculation.flywheelVelocity();
+    Logger.recordOutput(
+        "Superstructure/ShooterTarget",
+        new Pose2d(shotCalculation.virtualGoal(), Rotation2d.kZero));
 
     Logger.recordOutput(
         "Superstructure/DistanceFromBumpMeters",

@@ -102,10 +102,13 @@ public class ShootingUtilLegacy {
   }
 
   public static double angleRadsBetweenTwoVectors(Translation2d vector1, Translation2d vector2) {
-    if (vector1.getNorm() == 0) {
-      if (vector2.getNorm() == 0) return 0.0;
+    double vector1Length = MathUtil.applyDeadband(vector1.getNorm(), 0.01);
+    double vector2Length = MathUtil.applyDeadband(vector2.getNorm(), 0.01);
+
+    if (vector1Length == 0) {
+      if (vector2Length == 0) return 0.0;
       else return vector2.getAngle().getRadians();
-    } else if (vector2.getNorm() == 0) {
+    } else if (vector2Length == 0) {
       return vector1.getAngle().getRadians();
     } else {
       return vector2.getAngle().minus(vector1.getAngle()).getRadians();

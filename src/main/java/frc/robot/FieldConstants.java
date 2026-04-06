@@ -66,32 +66,30 @@ public class FieldConstants {
     private static final double redBumpLineXPos = Units.inchesToMeters(651.22 - 182.11);
     private static final double blueBumpLineXPos = Units.inchesToMeters(182.11);
 
-    private static final Pose2d redLeftCorner =
-        new Pose2d(Units.inchesToMeters(651.22), Units.inchesToMeters(20.0), Rotation2d.kZero);
-    private static final Pose2d blueLeftCorner =
-        new Pose2d(0.0, Units.inchesToMeters(293.69), Rotation2d.kZero);
+    private static final double redPassingTargetXPos = fieldLength - 0.5;
+    private static final double bluePassingTargetXPos = 0.5;
 
-    private static final Pose2d redRightCorner =
-        new Pose2d(Units.inchesToMeters(651.22), Units.inchesToMeters(293.69), Rotation2d.kZero);
-    private static final Pose2d blueRightCorner =
-        new Pose2d(0.0, Units.inchesToMeters(20.0), Rotation2d.kZero);
+    private static final double blueRightPassingTargetYPos = 2.0;
+    private static final double blueLeftPassingTargetYPos = fieldWidth - 2.0;
 
     public static double getBumpLineXPos() {
       return AllianceFlipUtil.shouldFlip() ? redBumpLineXPos : blueBumpLineXPos;
+    }
+
+    public static Translation2d getPassingTargetPos(boolean isLeftSide) {
+      return AllianceFlipUtil.shouldFlip()
+          ? new Translation2d(
+              redPassingTargetXPos,
+              isLeftSide ? blueRightPassingTargetYPos : blueLeftPassingTargetYPos)
+          : new Translation2d(
+              bluePassingTargetXPos,
+              isLeftSide ? blueLeftPassingTargetYPos : blueRightPassingTargetYPos);
     }
 
     public static boolean shouldBePassing(Pose2d robotPose) {
       return (AllianceFlipUtil.shouldFlip())
           ? robotPose.getX() < redBumpLineXPos
           : robotPose.getX() > blueBumpLineXPos;
-    }
-
-    public static Pose2d getLeftCorner() {
-      return AllianceFlipUtil.shouldFlip() ? redLeftCorner : blueLeftCorner;
-    }
-
-    public static Pose2d getRightCorner() {
-      return AllianceFlipUtil.shouldFlip() ? redRightCorner : blueRightCorner;
     }
   }
 

@@ -46,7 +46,6 @@ public final class ShooterConstants {
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 
-                
     public static final PivotSpecifications PIVOT_SPECS = new PivotSpecifications(52.0, false);
     public static final CANcoderSpecifications CANCODER_SPECS =
         new CANcoderSpecifications(360.0 / 400, false, -0.0373);
