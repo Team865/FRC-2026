@@ -5,12 +5,6 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "RezeroIntake"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Right Start - Neutral Intake"

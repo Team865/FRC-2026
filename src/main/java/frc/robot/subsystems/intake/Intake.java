@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -21,6 +22,7 @@ import frc.robot.subsystems.rollers.Rollers;
 import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 public class Intake extends SubsystemBase {
   public final Rollers rollers;
@@ -55,6 +57,7 @@ public class Intake extends SubsystemBase {
           IntakeConstants.Extension.SYSTEM_CONSTANTS.maxAcceleration.get());
 
   private final Debouncer currentSenseDebouncer = new Debouncer(0.1);
+  private final Debouncer intakeDebouncer = new Debouncer(0.25, DebounceType.kRising);
 
   public Intake(RollersIO rollersIO, ExtensionIO extensionIO) {
     this.rollers = new Rollers("Intake/Rollers", rollersIO);
@@ -84,6 +87,11 @@ public class Intake extends SubsystemBase {
 
   public Command halfStow() {
     return extension.setPosition(IntakeConstants.Extension.PARTIAL_STOWED_POSITION);
+  }
+
+  @AutoLogOutput(key = "Intake/IsIntakingInAuto")
+  public boolean isIntakingInAuto() {
+    return intakeDebouncer.calculate(rollers.inputs.supplyCurrentAmps > 20);
   }
 
   public Command currentSensedRezero() {

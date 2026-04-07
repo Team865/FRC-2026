@@ -24,9 +24,9 @@ public final class ShotCalculator {
 
   private static final double CONVERGENCE_TOLERANCE_METERS = 0.1;
 
-  private static final double kDrag = 1.0;
+  private static final double kDrag = 0.3;
   private static final LoggedTunableNumber testDragCoefficient =
-      new LoggedTunableNumber("Test/DragCoefficient", 1.0);
+      new LoggedTunableNumber("Test/DragCoefficient", kDrag);
 
   public static ShootingCalculation calculateScoringShot(
       Pose2d robotPose, Pose2d targetPose, ChassisSpeeds robotSpeedsFieldOriented) {
@@ -60,8 +60,8 @@ public final class ShotCalculator {
       timeOfFlightSeconds = ShootingMeasurements.getScoringToFSeconds(distanceFromGoalMeters);
 
       // // Apply drag coefficient
-      // timeOfFlightSeconds = (1 - Math.exp(-dragCoefficient * timeOfFlightSeconds)) /
-      // dragCoefficient;
+      timeOfFlightSeconds =
+          (1 - Math.exp(-dragCoefficient * timeOfFlightSeconds)) / dragCoefficient;
 
       Translation2d previousGoal = virtualGoal;
       virtualGoal = goal.plus(relativeTargetSpeedMPS.times(timeOfFlightSeconds));

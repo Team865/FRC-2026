@@ -193,16 +193,29 @@ public class Superstructure extends SubsystemBase {
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
-        .and(new Trigger(() -> DriverStation.isAutonomous()))
-        .whileTrue(leds.autoShootingActiveWaveCommand());
+        .whileTrue(leds.ShootingActiveWaveCommand());
+
     shootingStateMachine
         .stateTriggers
-        .get(ShootingState.SHOOTING)
-        .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
-        .whileTrue(leds.shootingActiveWaveCommand());
+        .get(ShootingState.IDLE)
+        .and(() -> isSlowMode && DriverStation.isTeleop())
+        .whileTrue(leds.slowmodeWaveCommand());
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.IDLE)
+        .and(() -> !isSlowMode && DriverStation.isTeleop())
+        .whileTrue(leds.idleWaveCommand());
 
-    shootingStateMachine.stateTriggers.get(ShootingState.IDLE).whileTrue(leds.idleWaveCommand());
-
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.IDLE)
+        .and(() -> intake.isIntakingInAuto() && DriverStation.isAutonomous())
+        .whileTrue(leds.intakeWaveCommand());
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.IDLE)
+        .and(() -> !intake.isIntakingInAuto() && DriverStation.isAutonomous())
+        .whileTrue(leds.idleWaveCommand());
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
@@ -235,30 +248,24 @@ public class Superstructure extends SubsystemBase {
 
     intakingStateMachine
         .stateTriggers
-        .get(IntakingState.STOWED)
-        .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(12.0));
-
-    intakingStateMachine
-        .stateTriggers
         .get(IntakingState.DEPLOYED)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(12.0));
+            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYING)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(12.0));
+            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWING)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(12.0));
+            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.PARTIAL_STOW)
         .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(12.0));
+            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
   }
 
   private void configureGameStateTriggers() {

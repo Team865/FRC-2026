@@ -105,6 +105,17 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "RezeroIntake",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "RezeroIntake"
+        }
+      }
+    },
+    {
       "name": "DeployIntake",
       "waypointRelativePos": 0.47796610169491516,
       "endWaypointRelativePos": null,
@@ -112,17 +123,6 @@
         "type": "named",
         "data": {
           "name": "DeployIntake"
-        }
-      }
-    },
-    {
-      "name": "StopShooting",
-      "waypointRelativePos": 1.0191226096737758,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "StopShooting"
         }
       }
     }

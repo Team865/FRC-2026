@@ -12,6 +12,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,6 +34,7 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOTalonFX;
 import frc.robot.subsystems.extension.ExtensionIO;
 import frc.robot.subsystems.extension.ExtensionIOSim;
+import frc.robot.subsystems.extension.ExtensionIOTalonFX;
 import frc.robot.subsystems.indexer.BallTunneler;
 import frc.robot.subsystems.indexer.IndexerConstants;
 import frc.robot.subsystems.indexer.Serializer;
@@ -40,7 +42,6 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeConstants;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.pivot.AbsoluteEncoderIO;
-import frc.robot.subsystems.pivot.CANcoderIO;
 import frc.robot.subsystems.pivot.PivotIO;
 import frc.robot.subsystems.pivot.PivotIOSim;
 import frc.robot.subsystems.pivot.PivotIOTalonFX;
@@ -61,7 +62,6 @@ import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.ComponentPoseUtil;
 import frc.robot.util.ShootingUtilLegacy;
-import frc.robot.util.SysIdRegister;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -144,16 +144,16 @@ public class RobotContainer {
 
         intake =
             new Intake(
-                new RollersIO() {},
-                // new RollersIOTalonFX(
-                //     IntakeConstants.Rollers.CAN_ID,
-                //     IntakeConstants.Rollers.CANBUS,
-                //     IntakeConstants.Rollers.ROLLER_SPECS),
-                new ExtensionIO() {});
-        // new ExtensionIOTalonFX(
-        //     IntakeConstants.Extension.MOTOR_CAN_ID,
-        //     IntakeConstants.Extension.CANBUS,
-        //     IntakeConstants.Extension.EXTENSION_SPECS));
+                new RollersIOTalonFX(
+                    IntakeConstants.Rollers.CAN_ID,
+                    IntakeConstants.Rollers.CANBUS,
+                    IntakeConstants.Rollers.ROLLER_SPECS),
+                // new ExtensionIO() {});
+
+                new ExtensionIOTalonFX(
+                    IntakeConstants.Extension.MOTOR_CAN_ID,
+                    IntakeConstants.Extension.CANBUS,
+                    IntakeConstants.Extension.EXTENSION_SPECS));
 
         serializer =
             new Serializer(
@@ -174,11 +174,11 @@ public class RobotContainer {
                     ShooterConstants.Turret.MOTOR_ID,
                     ShooterConstants.CANBUS,
                     ShooterConstants.Turret.PIVOT_SPECS),
-                // new AbsoluteEncoderIO() {});
-                new CANcoderIO(
-                    ShooterConstants.Turret.CANCODER_ID,
-                    ShooterConstants.CANBUS,
-                    ShooterConstants.Turret.CANCODER_SPECS));
+                new AbsoluteEncoderIO() {});
+        // new CANcoderIO(
+        //     ShooterConstants.Turret.CANCODER_ID,
+        //     ShooterConstants.CANBUS,
+        //     ShooterConstants.Turret.CANCODER_SPECS));
         // turret = new Turret(new PivotIO() {}, new AbsoluteEncoderIO() {});
 
         vision =
@@ -338,14 +338,17 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    autoChooser.addOption("Intake Pit Check", superstructure.intakePitCheck());
-    autoChooser.addOption("Turret Pit Check", superstructure.turretPitCheck());
-    autoChooser.addOption("Shooting Pit Check", superstructure.fullShootingPitCheck());
-    autoChooser.addOption("Balltunneler Pit Check", superstructure.balltunnelerPitCheck());
-    autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
-    autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
-    // autoChooser.addOption("Test 1", intake.rollers.setVolts(12.0));
+    if (!DriverStation.isFMSAttached()) {
+      autoChooser.addOption("Intake Pit Check", superstructure.intakePitCheck());
+      autoChooser.addOption("Turret Pit Check", superstructure.turretPitCheck());
+      autoChooser.addOption("Shooting Pit Check", superstructure.fullShootingPitCheck());
+      autoChooser.addOption("Balltunneler Pit Check", superstructure.balltunnelerPitCheck());
+      autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
+      autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
+    }
     // // Set up SysId routines
+    // autoChooser.addOption(
+    //     "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
 
     // autoChooser.addOption(
     //     "Drive SysId (Quasistatic Forward)",
@@ -373,7 +376,7 @@ public class RobotContainer {
 
     // SysIdRegister.register(autoChooser, ballTunneler, "BallTunneler");
     // SysIdRegister.register(autoChooser, serializer, "Serializer");
-    SysIdRegister.register(autoChooser, turret, "Turret");
+    // SysIdRegister.register(autoChooser, turret, "Turret");
     // SysIdRegister.register(autoChooser, hood, "Hood");
     // SysIdRegister.register(autoChooser, intake.extension, "Intake/Extension");
     // SysIdRegister.register(autoChooser, intake.rollers, "Intake/Rollers");

@@ -101,6 +101,17 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
+      "name": "RezeroIntake",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "RezeroIntake"
+        }
+      }
+    },
+    {
       "name": "DeployIntake",
       "waypointRelativePos": 0.5796610169491523,
       "endWaypointRelativePos": null,
