@@ -187,21 +187,21 @@ public class Superstructure extends SubsystemBase {
         .get(ShootingState.SHOOTING)
         .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
         .onFalse(
-            drive
-                .setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts)
-                .onlyIf(() -> !isSlowMode)
-                .alongWith(leds.shootingIdleWaveCommand()))
-        .onTrue(
-            drive
-                .setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed)
-                .alongWith(leds.shootingActiveWaveCommand()));
+            drive.setMaxLinearSpeedCmd(TunerConstants.kSpeedAt12Volts).onlyIf(() -> !isSlowMode))
+        .onTrue(drive.setMaxLinearSpeedCmd(DriveConstants.shootingModeMaxSpeed));
 
     shootingStateMachine
         .stateTriggers
         .get(ShootingState.SHOOTING)
         .and(new Trigger(() -> DriverStation.isAutonomous()))
-        .onTrue(leds.autoShootingActiveWaveCommand())
-        .onFalse(leds.idleWaveCommand());
+        .whileTrue(leds.autoShootingActiveWaveCommand());
+    shootingStateMachine
+        .stateTriggers
+        .get(ShootingState.SHOOTING)
+        .and(new Trigger(() -> DriverStation.isTeleopEnabled()))
+        .whileTrue(leds.shootingActiveWaveCommand());
+
+    shootingStateMachine.stateTriggers.get(ShootingState.IDLE).whileTrue(leds.idleWaveCommand());
 
     shootingStateMachine
         .stateTriggers
@@ -614,5 +614,6 @@ public class Superstructure extends SubsystemBase {
     //         .getPose()
     //         .plus(new Transform2d(0, 0, new Rotation2d(turret.getOrientation())))
     //         .plus(new Transform2d(distanceFromTargetMeters, 0, Rotation2d.kZero)));
+
   }
 }

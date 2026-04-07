@@ -208,7 +208,7 @@ public class LEDs extends SubsystemBase {
   }
 
   public Command shootingActiveWaveCommand() {
-    return run(() -> updateWave(Section.Turret, PresetColor.YELLOW, 0.02, 0.8, 5, 0.99, 2));
+    return run(() -> updateWave(Section.Turret, PresetColor.PURPLE, 0.02, 0.8, 5, 0.99, 2));
   }
 
   public Command autoShootingActiveWaveCommand() {
@@ -216,11 +216,11 @@ public class LEDs extends SubsystemBase {
   }
 
   public Command shootingIdleWaveCommand() {
-    return run(() -> updateWave(Section.Turret, PresetColor.IDLE, 0.02, 0.8, 5, 0.99, 2));
+    return run(() -> updateWave(Section.Turret, PresetColor.WHITE, 0.02, 0.8, 5, 0.99, 2));
   }
 
   public Command idleWaveCommand() {
-    return run(() -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.3, 2));
+    return run(() -> updateWave(PresetColor.ORANGE.color, 0.02, 0.6, 4, 0.3, 2));
   }
 
   public Command testColour() {
