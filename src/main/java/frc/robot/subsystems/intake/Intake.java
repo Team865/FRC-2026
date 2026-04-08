@@ -57,7 +57,7 @@ public class Intake extends SubsystemBase {
           IntakeConstants.Extension.SYSTEM_CONSTANTS.maxAcceleration.get());
 
   private final Debouncer currentSenseDebouncer = new Debouncer(0.1);
-  private final Debouncer intakeDebouncer = new Debouncer(0.25, DebounceType.kRising);
+  private final Debouncer intakeDebouncer = new Debouncer(0.2, DebounceType.kRising);
 
   public Intake(RollersIO rollersIO, ExtensionIO extensionIO) {
     this.rollers = new Rollers("Intake/Rollers", rollersIO);
@@ -91,7 +91,7 @@ public class Intake extends SubsystemBase {
 
   @AutoLogOutput(key = "Intake/IsIntakingInAuto")
   public boolean isIntakingInAuto() {
-    return intakeDebouncer.calculate(rollers.inputs.supplyCurrentAmps > 20);
+    return intakeDebouncer.calculate(rollers.inputs.supplyCurrentAmps > 10);
   }
 
   public Command currentSensedRezero() {

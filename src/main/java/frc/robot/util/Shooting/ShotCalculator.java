@@ -22,11 +22,36 @@ public final class ShotCalculator {
   /** Distance (m) -> Pitch (deg) */
   private static final int MAX_ITERATIONS = 15;
 
-  private static final double CONVERGENCE_TOLERANCE_METERS = 0.1;
+  private static final double CONVERGENCE_TOLERANCE_METERS = 0.05;
 
-  private static final double kDrag = 0.3;
+  private static final double kDrag = 0.275;
   private static final LoggedTunableNumber testDragCoefficient =
       new LoggedTunableNumber("Test/DragCoefficient", kDrag);
+
+  private static long lastAttemptedRangeChangeTimeMillis = 0;
+  private static Range currentZone = Range.SHORT;
+  private static Range lastWantedZone = Range.SHORT;
+
+  private static Range getRange(double distanceFromGoalMeters) {
+    Range currentWantedZone =
+        (distanceFromGoalMeters < Range.SHORT.MAX_THESHOLD_METERS)
+            ? Range.SHORT
+            : (distanceFromGoalMeters < Range.MEDIUM.MAX_THESHOLD_METERS)
+                ? Range.MEDIUM
+                : Range.LONG;
+
+    if (true) return currentWantedZone;
+
+    if (currentWantedZone.equals(lastWantedZone)) {
+      if ((System.currentTimeMillis() - lastAttemptedRangeChangeTimeMillis) > 500) {
+        return currentWantedZone;
+      }
+    }
+
+    lastWantedZone = currentWantedZone;
+    lastAttemptedRangeChangeTimeMillis = System.currentTimeMillis();
+    return currentZone;
+  }
 
   public static ShootingCalculation calculateScoringShot(
       Pose2d robotPose, Pose2d targetPose, ChassisSpeeds robotSpeedsFieldOriented) {
@@ -38,10 +63,11 @@ public final class ShotCalculator {
             -robotSpeedsFieldOriented.vyMetersPerSecond);
 
     Translation2d vectorToGoal = goal.minus(origin);
+    double distanceFromGoalMeters = vectorToGoal.getNorm();
+
+    currentZone = getRange(distanceFromGoalMeters);
 
     if (relativeTargetSpeedMPS.getNorm() == 0) {
-      double distanceFromGoalMeters = vectorToGoal.getNorm();
-
       return new ShootingCalculation(
           targetPose.getTranslation(),
           ShootingMeasurements.getFlywheelVelocity(distanceFromGoalMeters),
@@ -55,7 +81,7 @@ public final class ShotCalculator {
     double dragCoefficient = testDragCoefficient.get();
 
     for (int i = 0; i < MAX_ITERATIONS; i++) {
-      double distanceFromGoalMeters = virtualGoal.getDistance(origin);
+      distanceFromGoalMeters = virtualGoal.getDistance(origin);
 
       timeOfFlightSeconds = ShootingMeasurements.getScoringToFSeconds(distanceFromGoalMeters);
 
@@ -70,7 +96,7 @@ public final class ShotCalculator {
     }
 
     vectorToGoal = virtualGoal.minus(origin);
-    double distanceFromGoalMeters = vectorToGoal.getNorm();
+    distanceFromGoalMeters = vectorToGoal.getNorm();
 
     return new ShootingCalculation(
         virtualGoal,
@@ -95,10 +121,10 @@ public final class ShotCalculator {
     AngularVelocity flywheelVelocity;
     double pitchDegrees;
 
-    if (distanceFromTarget < 7.0) {
+    if (distanceFromTarget < 8.0) {
       flywheelVelocity = RadiansPerSecond.of(350.0);
       pitchDegrees = 10 * distanceFromTarget - 43.75;
-    } else if (distanceFromTarget < 10.0) {
+    } else if (distanceFromTarget < 11.0) {
       flywheelVelocity = RadiansPerSecond.of(450.0);
       pitchDegrees = 8.0 * distanceFromTarget - 40;
     } else {

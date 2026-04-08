@@ -53,7 +53,7 @@ public final class ShooterConstants {
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);
     public static final Angle DEADZONE = Degrees.of(2);
-    public static final Angle SHOOTING_TOLERANCE = Degrees.of(10);
+    public static final Angle SHOOTING_TOLERANCE = Degrees.of(5.0);
     public static final Angle EXTRA_GAIN_TOLERANCE = Degrees.of(0.5);
 
     // 0.5 rotations / second

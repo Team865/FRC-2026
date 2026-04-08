@@ -40,7 +40,8 @@ public class GamePeriods {
         (myAlliance == Alliance.Red) ? (allianceChar == 'B') : (allianceChar == 'R'));
   }
 
-  public static int getSecondsLeftInShift(Boolean isFMSAttached, double teleopTimeElapsedSeconds) {
+  public static double getSecondsLeftInShift(
+      Boolean isFMSAttached, double teleopTimeElapsedSeconds) {
     Optional<Boolean> activeFirstBoolean = isCurrentAllianceActiveFirst(isFMSAttached);
     if (activeFirstBoolean.isEmpty()) return 0;
 
@@ -51,23 +52,23 @@ public class GamePeriods {
       // if (isActiveFirst)
       //   return (int) (transitionPeriodSeconds + activePeriodSeconds - teleopTimeElapsedSeconds);
       // else
-      return (int) (transitionPeriodSeconds - teleopTimeElapsedSeconds);
+      return (transitionPeriodSeconds - teleopTimeElapsedSeconds);
     }
 
     // Endgame Period
     if (teleopTimeElapsedSeconds >= (transitionPeriodSeconds + activePeriodSeconds * 4))
-      return (int) (140 - teleopTimeElapsedSeconds);
+      return (140 - teleopTimeElapsedSeconds);
 
     // Teleop Shift
     double timeElapsedExcludingTransitionPeriod =
         teleopTimeElapsedSeconds - transitionPeriodSeconds;
     double timeSpentInShift = timeElapsedExcludingTransitionPeriod % activePeriodSeconds;
 
-    // if (isActiveFirst) return (int) (activePeriodSeconds - timeSpentInShift);
+    // if (isActiveFirst) return (activePeriodSeconds - timeSpentInShift);
     // else if (timeElapsedExcludingTransitionPeriod >= 85)
-    //   return (int) (endgamePeriodSeconds + activePeriodSeconds - timeSpentInShift);
+    //   return (endgamePeriodSeconds + activePeriodSeconds - timeSpentInShift);
     // else
-    return (int) (activePeriodSeconds - timeSpentInShift);
+    return (activePeriodSeconds - timeSpentInShift);
   }
 
   /** Returns a pair of booleans in the form of (isHubActive, isHubAboutToChange) */

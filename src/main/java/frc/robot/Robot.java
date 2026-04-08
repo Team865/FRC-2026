@@ -178,7 +178,7 @@ public class Robot extends LoggedRobot {
 
     Logger.recordOutput("TeleopTimeElapsedSeconds", teleopTimeElapsedSeconds);
     Logger.recordOutput(
-        "TimeLeftInShift",
+        "TimeLeftInShiftSeconds",
         GamePeriods.getSecondsLeftInShift(isFMSAttached, teleopTimeElapsedSeconds));
 
     Pair<Boolean, Boolean> hubState =

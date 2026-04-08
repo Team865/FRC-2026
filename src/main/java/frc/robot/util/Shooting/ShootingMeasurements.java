@@ -41,6 +41,10 @@ public final class ShootingMeasurements {
   private static final ShootingRange scoringLongRange =
       new ShootingRange(RadiansPerSecond.of(450.0));
 
+  private static long lastAttemptedRangeChangeTimeMillis = 0;
+  private static Range currentZone = Range.SHORT;
+  private static Range lastWantedZone = Range.SHORT;
+
   static {
     // Add measurements
     scoringShortRange.addMeasurement(1.0, 0, 1.575);
