@@ -19,7 +19,7 @@ public final class IndexerConstants {
 
     public static AngularVelocity getSerializingSpeed() {
       return DriverStation.isAutonomous()
-          ? RotationsPerSecond.of(0.75)
+          ? RotationsPerSecond.of(1.0)
           : RotationsPerSecond.of(1.0);
     }
 

@@ -35,7 +35,7 @@ public final class ShootingMeasurements {
   private static final double SCORING_MEDIUM_MAX_THRESHOLD_METERS = 5.5;
 
   private static final ShootingRange scoringShortRange =
-      new ShootingRange(RadiansPerSecond.of(350.0));
+      new ShootingRange(RadiansPerSecond.of(300.0));
   private static final ShootingRange scoringMediumRange =
       new ShootingRange(RadiansPerSecond.of(400.0));
   private static final ShootingRange scoringLongRange =
@@ -47,14 +47,19 @@ public final class ShootingMeasurements {
 
   static {
     // Add measurements
-    scoringShortRange.addMeasurement(1.0, 0, 1.575);
-    scoringShortRange.addMeasurement(2.88, 10.5, 1.408333);
-    scoringShortRange.addMeasurement(2.22, 5, 1.39166666);
-    scoringShortRange.addMeasurement(4.505, 18, 1.36);
-    scoringShortRange.addMeasurement(3.0, 10.5, 1.34);
-    scoringShortRange.addMeasurement(1.71, 3, 1.33);
-    scoringShortRange.addMeasurement(3.51, 15, 1.32);
-    scoringShortRange.addMeasurement(4.0, 16.5, 1.3);
+    // scoringShortRange.addMeasurement(1.0, 0, 1.575);
+    // scoringShortRange.addMeasurement(2.88, 10.5, 1.408333);
+    // scoringShortRange.addMeasurement(2.22, 5, 1.39166666);
+    // scoringShortRange.addMeasurement(4.505, 18, 1.36);
+    // scoringShortRange.addMeasurement(3.0, 10.5, 1.34);
+    // scoringShortRange.addMeasurement(1.71, 3, 1.33);
+    // scoringShortRange.addMeasurement(3.51, 15, 1.32);
+    // scoringShortRange.addMeasurement(4.0, 16.5, 1.3);
+    scoringShortRange.addMeasurement(1.16, 3, 1.2);
+    scoringShortRange.addMeasurement(1.55, 7, 1.185);
+    scoringShortRange.addMeasurement(2, 11, 1.16);
+    scoringShortRange.addMeasurement(2.49, 15, 1.14);
+    scoringShortRange.addMeasurement(3, 22, 1.04);
 
     scoringMediumRange.addMeasurement(1.55, 0, 1.73793);
     scoringMediumRange.addMeasurement(5.35, 19, 1.7);

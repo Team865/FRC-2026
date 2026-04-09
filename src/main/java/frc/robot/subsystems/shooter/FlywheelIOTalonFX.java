@@ -111,7 +111,6 @@ public class FlywheelIOTalonFX implements FlywheelIO {
             BaseStatusSignal.refreshAll(
                     position,
                     masterVelocity,
-                    followerVelocity,
                     masterAppliedVoltage,
                     masterSupplyCurrent,
                     masterStatorCurrent)
@@ -120,7 +119,10 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     inputs.followerConnected =
         followerConnectedDebouncer.calculate(
             BaseStatusSignal.refreshAll(
-                    followerAppliedVoltage, followerSupplyCurrent, followerStatorCurrent)
+                    followerAppliedVoltage,
+                    followerVelocity,
+                    followerSupplyCurrent,
+                    followerStatorCurrent)
                 .isOK());
 
     inputs.position = position.getValue();

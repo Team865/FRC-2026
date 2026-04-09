@@ -43,7 +43,7 @@ public final class IntakeConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                2.6, 0.001, 1, 0.0, 3.0, 0, Optional.of(12.0), Optional.of(44.0)),
+                2.6, 0.001, 1, 0.0, 3.0, 0, Optional.of(16.0), Optional.of(100.0)),
             new ControlSystemContext(
                 0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(2.0), Optional.of(20.0)));
 

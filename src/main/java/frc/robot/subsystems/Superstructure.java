@@ -98,7 +98,6 @@ public class Superstructure extends SubsystemBase {
   private boolean isSlowMode = false;
   private boolean pitCheckMode = false;
 
-  @AutoLogOutput(key = "Superstructure/IsOutaking")
   private boolean isOutaking = false;
 
   private int numStallsDetected = 0;
@@ -114,6 +113,9 @@ public class Superstructure extends SubsystemBase {
   @AutoLogOutput(key = "Superstructure/PassingMode")
   private final Trigger passingModeTrigger =
       new Trigger(() -> isPassing && DriverStation.isTeleopEnabled() && !isManualOverride);
+
+  @AutoLogOutput(key = "Superstructure/IsOutaking")
+  private final Trigger outakingTrigger = new Trigger(() -> isOutaking);
 
   @AutoLogOutput(key = "Superstructure/PassingSide")
   private PassingSide passingSide;
@@ -240,30 +242,59 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine.stateTriggers.get(IntakingState.DEPLOYING).onTrue(intake.deploy());
     intakingStateMachine.stateTriggers.get(IntakingState.PARTIAL_STOW).onTrue(intake.halfStow());
 
-    intakingStateMachine
-        .stateTriggers
-        .get(IntakingState.DEPLOYING) // Deploy the intake
-        .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
-        .onTrue(forceState(IntakingState.DEPLOYED)); // Move to appropriate state
+    // intakingStateMachine
+    //     .stateTriggers
+    //     .get(IntakingState.DEPLOYING) // Deploy the intake
+    //     .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
+    //     .onTrue(forceState(IntakingState.DEPLOYED)); // Move to appropriate state
+
+    // intakingStateMachine
+    //     .stateTriggers
+    //     .get(IntakingState.DEPLOYED)
+    //     .and(outakingTrigger.negate())
+    //     .whileTrue( // Run the intake based on drivetrain speed
+    //         intake.runRollers(drive::getRotation, drive::getChassisSpeeds));
+    // intakingStateMachine
+    //     .stateTriggers
+    //     .get(IntakingState.DEPLOYING)
+    //     .and(outakingTrigger.negate())
+    //     .whileTrue( // Run the intake based on drivetrain speed
+    //         intake.runRollers(drive::getRotation, drive::getChassisSpeeds));
+    // intakingStateMachine
+    //     .stateTriggers
+    //     .get(IntakingState.STOWING)
+    //     .and(outakingTrigger.negate())
+    //     .whileTrue( // Run the intake based on drivetrain speed
+    //         intake.runRollers(drive::getRotation, drive::getChassisSpeeds));
+    // intakingStateMachine
+    //     .stateTriggers
+    //     .get(IntakingState.PARTIAL_STOW)
+    //     .and(outakingTrigger.negate())
+    //     .whileTrue( // Run the intake based on drivetrain speed
+    //         intake.runRollers(drive::getRotation, drive::getChassisSpeeds));
 
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYED)
+        .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYING)
+        .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWING)
+        .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.PARTIAL_STOW)
+        .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
   }
@@ -575,20 +606,6 @@ public class Superstructure extends SubsystemBase {
     isPassing = FieldConstants.Passing.shouldBePassing(drivePose);
     passingSide = FieldConstants.isOnRightSide(drivePose) ? PassingSide.RIGHT : PassingSide.LEFT;
 
-    // if (false) {
-    //   ShootingCalculation shotCalculation =
-    //       ShotCalculator.calculate(drivePose, originalGoal, drive.getFieldOrientedSpeeds());
-
-    //   turretTargetAngle = shotCalculation.yaw();
-    //   hoodTargetAngle = shotCalculation.pitch();
-    //   flywheelTargetVelocity = shotCalculation.flywheelVelocity();
-    //   Logger.recordOutput("Superstructure/ShooterTarget", shotCalculation.virtualGoal());
-    // }
-
-    // Legacy Shot Calc
-    // hoodTargetAngle = Degrees.of(hoodTestAngleDeg.get());
-    // flywheelTargetVelocity = RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get());
-
     ShootingCalculation shotCalculation;
 
     if (isPassing) {
@@ -606,6 +623,13 @@ public class Superstructure extends SubsystemBase {
     Logger.recordOutput(
         "Superstructure/ShooterTarget",
         new Pose2d(shotCalculation.virtualGoal(), Rotation2d.kZero));
+
+    distanceFromTargetMeters =
+        shotCalculation.virtualGoal().getDistance(drivePose.getTranslation());
+
+    // // Shot calc testing
+    // hoodTargetAngle = Degrees.of(hoodTestAngleDeg.get());
+    // flywheelTargetVelocity = RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get());
 
     Logger.recordOutput(
         "Superstructure/DistanceFromBumpMeters",
