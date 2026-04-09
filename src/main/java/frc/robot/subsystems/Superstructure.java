@@ -300,7 +300,7 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void configureGameStateTriggers() {
-    new Trigger(DriverStation::isTeleopEnabled).onTrue(forceState(ShootingState.IDLE));
+    new Trigger(DriverStation::isTeleopEnabled).onTrue(forceState(ShootingState.IDLE)).onTrue(Commands.runOnce(() -> setPitCheckMode(false)));
 
     new Trigger(DriverStation::isAutonomousEnabled)
         .negate()
@@ -407,13 +407,12 @@ public class Superstructure extends SubsystemBase {
     };
 
     return new SequentialCommandGroup(
-            startManualOverride(),
             intake.currentSensedRezero(),
             PitCheck.createCommand(
                 "Intake Extension Pit Check",
                 intake.extension.io::setPosition,
                 intake.extension::isAtSetpoint,
-                1.0,
+                0.0,
                 5.0,
                 extensionSetpoints),
             PitCheck.createCommand(
@@ -423,6 +422,7 @@ public class Superstructure extends SubsystemBase {
                 1.0,
                 5.0,
                 rollersSetpoints))
+        .beforeStarting(() -> setPitCheckMode(true))
         .finallyDo(
             () -> {
               intake.extension.stop();
@@ -441,8 +441,7 @@ public class Superstructure extends SubsystemBase {
       Degrees.of(0.0)
     };
 
-    return startManualOverride()
-        .andThen(
+    return
             hood.currentSensedRezero()
                 .andThen(
                     PitCheck.createCommand(
@@ -452,7 +451,7 @@ public class Superstructure extends SubsystemBase {
                         1,
                         5,
                         setpoints,
-                        hood)));
+                        hood)).beforeStarting(() -> setPitCheckMode(true));
   }
 
   public Command balltunnelerPitCheck() {
@@ -518,10 +517,10 @@ public class Superstructure extends SubsystemBase {
 
   public Command tunnelerShootingPitCheck() {
     return new SequentialCommandGroup(
-            startManualOverride(),
             flywheel.setVelocity(RadiansPerSecond.of(150)),
             ballTunneler.startTunneler(),
             new WaitCommand(15.0))
+        .beforeStarting(() -> setPitCheckMode(true))
         .finallyDo(
             () -> {
               System.out.println(ballTunneler.getAngularVelocity().toString());
@@ -534,12 +533,12 @@ public class Superstructure extends SubsystemBase {
 
   public Command fullShootingPitCheck() {
     return new SequentialCommandGroup(
-            startManualOverride(),
             flywheel.setVelocity(RadiansPerSecond.of(180.0)),
             ballTunneler.startTunneler(),
             new WaitCommand(0.5),
             serializer.startSerializer(),
             new WaitCommand(15.0))
+        .beforeStarting(() -> setPitCheckMode(true))
         .finallyDo(
             () -> {
               System.out.println(serializer.getAngularVelocity().toString());
@@ -646,5 +645,9 @@ public class Superstructure extends SubsystemBase {
     //         .plus(new Transform2d(0, 0, new Rotation2d(turret.getOrientation())))
     //         .plus(new Transform2d(distanceFromTargetMeters, 0, Rotation2d.kZero)));
 
+  }
+
+  public void setPitCheckMode(boolean enabled) {
+    pitCheckMode = enabled;
   }
 }
