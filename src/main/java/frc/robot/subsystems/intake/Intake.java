@@ -151,7 +151,7 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // int id = hashCode();
+    int id = hashCode();
 
     // LoggedTunableNumber.ifChanged(
     //     id,
@@ -161,18 +161,18 @@ public class Intake extends SubsystemBase {
     //     rollersKa,
     //     rollersKp,
     //     rollersKd);
-    // LoggedTunableNumber.ifChanged(
-    //     id,
-    //     c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
-    //     extensionKs,
-    //     extensionKv,
-    //     extensionKa,
-    //     extensionKp,
-    //     extensionKd);
-    // LoggedTunableNumber.ifChanged(
-    //     id,
-    //     c -> extension.io.setMotionProfile(c[0], c[1]),
-    //     extensionMaxVelocity,
-    //     extensionMaxAcceleration);
+    LoggedTunableNumber.ifChanged(
+        id,
+        c -> extension.io.setControlConstants(c[0], c[1], c[2], c[3], c[4]),
+        extensionKs,
+        extensionKv,
+        extensionKa,
+        extensionKp,
+        extensionKd);
+    LoggedTunableNumber.ifChanged(
+        id,
+        c -> extension.io.setMotionProfile(c[0], c[1]),
+        extensionMaxVelocity,
+        extensionMaxAcceleration);
   }
 }

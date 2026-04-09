@@ -37,13 +37,13 @@ public final class IntakeConstants {
 
     public static final Distance STOWED_POSITION = Inches.of(3.0);
     public static final Distance PARTIAL_STOWED_POSITION = Inches.of(11.0);
-    public static final Distance DEPLOYED_POSITION = Inches.of(11.0);
+    public static final Distance DEPLOYED_POSITION = Inches.of(12.5);
     // Inches.of(12.25);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                2.6, 0.001, 1, 0.0, 3.0, 0, Optional.of(16.0), Optional.of(100.0)),
+                2.6, 0.001, 1, 0.0, 53.0, 0, Optional.of(30.0), Optional.of(100.0)),
             new ControlSystemContext(
                 0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(2.0), Optional.of(20.0)));
 

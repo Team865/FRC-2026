@@ -242,11 +242,11 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine.stateTriggers.get(IntakingState.DEPLOYING).onTrue(intake.deploy());
     intakingStateMachine.stateTriggers.get(IntakingState.PARTIAL_STOW).onTrue(intake.halfStow());
 
-    // intakingStateMachine
-    //     .stateTriggers
-    //     .get(IntakingState.DEPLOYING) // Deploy the intake
-    //     .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
-    //     .onTrue(forceState(IntakingState.DEPLOYED)); // Move to appropriate state
+    intakingStateMachine
+        .stateTriggers
+        .get(IntakingState.DEPLOYING) // Deploy the intake
+        .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
+        .onTrue(forceState(IntakingState.DEPLOYED)); // Move to appropriate state
 
     // intakingStateMachine
     //     .stateTriggers
@@ -276,25 +276,25 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYED)
-        .and(outakingTrigger)
+        // .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYING)
-        .and(outakingTrigger)
+        // .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWING)
-        .and(outakingTrigger)
+        // .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.PARTIAL_STOW)
-        .and(outakingTrigger)
+        // .and(outakingTrigger)
         .whileTrue( // Run the intake based on drivetrain speed
             intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
   }
