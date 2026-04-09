@@ -19,6 +19,7 @@ public class Extension extends FullSubsystem {
   protected Distance atSetpointTolerance = Inches.of(1.0);
 
   // private final SysIdRoutine sysIdRoutine;
+  public boolean shouldAutoStopAtSetpoint = true;
 
   public Extension(String name, ExtensionIO io) {
     this.name = name;
@@ -71,6 +72,14 @@ public class Extension extends FullSubsystem {
   public void periodic() {
     io.updateInputs(inputs);
     Logger.processInputs(name + "/Motor", inputs);
+
+    if (shouldAutoStopAtSetpoint && this.isAtSetpoint(inputs.targetPosition)) {
+      io.stop();
+    }
+  }
+
+  public void setSetpointTolerance(Distance tolerance) {
+    this.atSetpointTolerance = tolerance;
   }
 
   public boolean isAtSetpoint(Distance setpoint) {

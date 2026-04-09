@@ -7,24 +7,6 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Right shoot only"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 2.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StopShooting"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "Right Start - Neutral Intake"
           }
         },
@@ -56,6 +38,6 @@
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "Single Swipe and depot",
   "choreoAuto": false
 }

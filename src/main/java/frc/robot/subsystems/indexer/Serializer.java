@@ -68,10 +68,10 @@ public class Serializer extends Rollers implements SysIdTestable {
 
   @Override
   public void periodic() {
-    // int id = hashCode();
+    int id = hashCode();
 
-    // LoggedTunableNumber.ifChanged(
-    //     id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
+    LoggedTunableNumber.ifChanged(
+        id, c -> io.setControlConstants(c[0], c[1], c[2], c[3], c[4]), kS, kV, kA, kP, kD);
 
     stallingAlert.set(isStalling());
 

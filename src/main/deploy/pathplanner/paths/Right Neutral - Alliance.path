@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.408659549228946,
-        "y": 2.071447212336892
+        "x": 7.4307829181494665,
+        "y": 1.8562633451957287
       },
       "isLocked": false,
       "linkedName": "RightNZEndA"
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 3.299252669039147,
-        "y": 2.225
+        "y": 2.5
       },
       "prevControl": {
         "x": 4.212904802725097,
-        "y": 2.225
+        "y": 2.5
       },
       "nextControl": null,
       "isLocked": false,
@@ -37,7 +37,7 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.4274465691788519,
+      "minWaypointRelativePos": 0.5,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.5,
@@ -89,8 +89,8 @@
   "reversed": false,
   "folder": "Right",
   "idealStartingState": {
-    "velocity": 0,
-    "rotation": -73.7798063043972
+    "velocity": 0.0,
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

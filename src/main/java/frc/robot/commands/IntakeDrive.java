@@ -1,37 +1,49 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.AllianceFlipUtil;
 import java.util.function.DoubleSupplier;
 
-public class JoystickDrive extends Command {
+public class IntakeDrive extends Command {
   private static final double DEADBAND = 0.1;
   private static final double MAX_SLOW_RATE = 0.1;
 
   private final Drive drive;
   private final DoubleSupplier xSupplier;
   private final DoubleSupplier ySupplier;
-  private final DoubleSupplier omegaSupplier;
+  private final ProfiledPIDController angleController;
 
   private final double directionSwitchingThreshold = -0.35;
 
   private double previousJoystickLinMagnitude = 0.0;
   private Rotation2d previousHeading = Rotation2d.kZero;
 
-  public JoystickDrive(
+  public IntakeDrive(
       Drive drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
-      DoubleSupplier omegaSupplier) {
+      double ANGLE_KP,
+      double ANGLE_KD,
+      double ANGLE_MAX_VELOCITY,
+      double ANGLE_MAX_ACCELERATION) {
     this.drive = drive;
     this.xSupplier = xSupplier;
     this.ySupplier = ySupplier;
-    this.omegaSupplier = omegaSupplier;
+
+    // Create PID controller
+    angleController =
+        new ProfiledPIDController(
+            ANGLE_KP,
+            0.0,
+            ANGLE_KD,
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+    angleController.enableContinuousInput(-Math.PI, Math.PI);
 
     addRequirements(drive);
   }
@@ -46,6 +58,9 @@ public class JoystickDrive extends Command {
 
   @Override
   public void execute() {
+    Rotation2d currentDriveRotation = drive.getRotation();
+    boolean isFlipped = AllianceFlipUtil.shouldFlip();
+
     // Get linear velocity
     double linearX = xSupplier.getAsDouble();
     double linearY = ySupplier.getAsDouble();
@@ -89,23 +104,24 @@ public class JoystickDrive extends Command {
         new Translation2d(targetLinearVelocityMagnitude, previousHeading);
 
     // Apply rotation deadband
-    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-
-    // Cube rotation value for more precise control
-    omega = Math.copySign(omega * omega * omega * omega, omega);
-
-    omega *= 0.5; // Artificially reduce max omega
+    double omega =
+        (targetLinearVelocityMagnitude > 0)
+            ? angleController.calculate(
+                currentDriveRotation.getRadians(),
+                isFlipped
+                    ? linearVelocity.getAngle().getRadians()
+                    : linearVelocity.unaryMinus().getAngle().getRadians())
+            : 0.0;
 
     // Convert to field relative speeds & send command
     ChassisSpeeds speeds =
         new ChassisSpeeds(
             linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
             linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-            omega * drive.getMaxAngularSpeedRadPerSec());
-    boolean isFlipped = AllianceFlipUtil.shouldFlip();
+            omega);
     drive.runVelocity(
         ChassisSpeeds.fromFieldRelativeSpeeds(
             speeds,
-            isFlipped ? drive.getRotation().plus(new Rotation2d(Math.PI)) : drive.getRotation()));
+            isFlipped ? currentDriveRotation.plus(new Rotation2d(Math.PI)) : currentDriveRotation));
   }
 }

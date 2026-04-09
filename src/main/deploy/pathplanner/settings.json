@@ -5,10 +5,12 @@
   "pathFolders": [
     "Left",
     "Middle",
+    "Just for fun",
     "Right"
   ],
   "autoFolders": [
     "Double Swipes",
+    "Single Swipe and depot",
     "Preloads Only"
   ],
   "defaultMaxVel": 4.0,

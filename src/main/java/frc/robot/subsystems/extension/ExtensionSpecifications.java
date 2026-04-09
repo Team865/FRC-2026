@@ -7,12 +7,12 @@ public final record ExtensionSpecifications(
     double supplyCurrentLimit,
     double statorCurrentLimit) {
   public ExtensionSpecifications {
-    supplyCurrentLimit = Math.min(supplyCurrentLimit, 70.0);
-    statorCurrentLimit = Math.min(statorCurrentLimit, 120.0);
+    supplyCurrentLimit = Math.min(supplyCurrentLimit, 90.0);
+    statorCurrentLimit = Math.min(statorCurrentLimit, 200.0);
   }
 
   public ExtensionSpecifications(
       double gearRatio, double drumRadiusMeters, boolean clockwisePositive) {
-    this(gearRatio, drumRadiusMeters, clockwisePositive, 60, 120);
+    this(gearRatio, drumRadiusMeters, clockwisePositive, 90, 200);
   }
 }

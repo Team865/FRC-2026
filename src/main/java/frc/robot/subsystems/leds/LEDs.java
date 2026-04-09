@@ -19,7 +19,8 @@ public class LEDs extends SubsystemBase {
 
   public final AddressableLED led;
   public final AddressableLEDBuffer buffer;
-  private double wavePhase = 0; // offsets for animation
+
+  private double wavePhase = 0;
 
   private static final LoggedTunableNumber testRed = new LoggedTunableNumber("TestLed/red", 1.0);
   private static final LoggedTunableNumber testGreen =
@@ -28,7 +29,7 @@ public class LEDs extends SubsystemBase {
 
   private final LEDPattern scrollingRainbow =
       LEDPattern.rainbow(255, 128)
-          .scrollAtAbsoluteSpeed(MetersPerSecond.of(5), Meters.of(1.0 / 60));
+          .scrollAtAbsoluteSpeed(MetersPerSecond.of(4), Meters.of(2.0 / 60));
 
   public LEDs() {
     led = new AddressableLED(pwmPort);
@@ -39,79 +40,68 @@ public class LEDs extends SubsystemBase {
     led.start();
   }
 
-  private void setLED(int ledIndex, int red, int green, int blue) {
-    // Red and Green are flipped for some reason
-    buffer.setRGB(ledIndex, green, red, blue);
+  private void setLED(int index, int r, int g, int b) {
+    // fix rbg swap
+    buffer.setRGB(index, g, r, b);
   }
 
-  // set a specific led to a color
   public void setLED(int index, Color color) {
-    setLED(index, (int) (color.red * 255), (int) (color.green * 255), (int) (color.blue * 255));
+    setLED(index, to255(color.red), to255(color.green), to255(color.blue));
   }
 
-  // Helper to set every LED to a color
-  public void setAll(int r, int g, int b) {
-    for (int i = 0; i < totalNumLeds; i++) {
-      setLED(i, r, g, b);
-    }
-
-    // Update LED
-    led.setData(buffer);
+  private int to255(double value) {
+    return (int) (value * 255);
   }
 
   public void setAll(Color color) {
-    int r = (int) (color.red * 255);
-    int g = (int) (color.green * 255);
-    int b = (int) (color.blue * 255);
-
-    setAll(r, g, b);
+    for (int i = 0; i < totalNumLeds; i++) {
+      setLED(i, color);
+    }
+    led.setData(buffer);
   }
 
   public void setAll(PresetColor color) {
     setAll(color.color);
   }
 
-  // Set a section to a color
-  public void setRange(int startIndex, int endIndex, Color color) {
-    startIndex = Math.max(0, startIndex);
-    endIndex = Math.min(totalNumLeds, endIndex);
-    int r = (int) (color.red * 255);
-    int g = (int) (color.green * 255);
-    int b = (int) (color.blue * 255);
+  public void setRange(int start, int end, Color color) {
+    start = Math.max(0, start);
+    end = Math.min(totalNumLeds, end);
 
-    for (int i = startIndex; i < endIndex; i++) {
-      setLED(i, r, g, b);
+    for (int i = start; i < end; i++) {
+      setLED(i, color);
     }
 
     led.setData(buffer);
   }
 
-  // Helper to set a named section using constants
   public void setSection(Section section, Color color) {
-    int quarterLength = numTableLeds / 4;
-    int start = quarterLength * section.getIndex();
-    int end = (section == Section.Overflow) ? numBellyPanLeds : start + quarterLength;
-    setRange(start, end, color);
-
-    led.setData(buffer);
+    setRange(section.getStart(), section.getEnd(), color);
   }
 
-  public Command setSideColorCommand(Section section, Color color) {
+  public void setSection(Section section, PresetColor color) {
+    setSection(section, color.color);
+  }
+
+  public Command setSectionCommand(Section section, PresetColor color) {
     return runOnce(() -> setSection(section, color));
   }
 
+  // wave math
+
   private double sampleSawtooth(double x, double amplitude, double period) {
-    // Limit x to the period
     x = x >= 0 ? x % period : period + (x % period);
 
-    double halfPeriod = period / 2;
+    double half = period / 2;
 
-    if (x <= halfPeriod) {
+    if (x <= half) {
       return 2 * (amplitude / period) * x - amplitude / 2;
     } else {
       return -2 * (amplitude / period) * x + 3 * (amplitude / 2);
     }
   }
+
+  // full strip wave
 
   public void updateWave(
       Color color,
@@ -122,24 +112,20 @@ public class LEDs extends SubsystemBase {
       int waveDegree) {
 
     double period = 1.0 / numPeriods;
-
     double range = maxBrightness - minBrightness;
 
     for (int i = 0; i < totalNumLeds; i++) {
       double x = (double) i / totalNumLeds;
 
       double wave = sampleSawtooth(x - wavePhase, 1.0, period) + 0.5;
-
-      // Bias lower values
       wave = Math.pow(wave, waveDegree);
+      wave = minBrightness + wave * range;
 
-      wave = minBrightness + wave * range; // Fit to min and max
-
-      int r = (int) (color.red * 255 * wave);
-      int g = (int) (color.green * 255 * wave);
-      int b = (int) (color.blue * 255 * wave);
-
-      setLED(i, r, g, b);
+      setLED(
+          i,
+          (int) (color.red * 255 * wave),
+          (int) (color.green * 255 * wave),
+          (int) (color.blue * 255 * wave));
     }
 
     led.setData(buffer);
@@ -153,6 +139,57 @@ public class LEDs extends SubsystemBase {
     updateWave(color, minBrightness, maxBrightness, numPeriods, waveRate, 1);
   }
 
+  // section only wave
+
+  public void updateWave(
+      Section section,
+      Color color,
+      double minBrightness,
+      double maxBrightness,
+      double numPeriods,
+      double waveRate,
+      int waveDegree) {
+
+    double period = 1.0 / numPeriods;
+    double range = maxBrightness - minBrightness;
+
+    int start = section.getStart();
+    int end = section.getEnd();
+    int length = section.getLength();
+
+    for (int i = start; i < end; i++) {
+      double x = (double) (i - start) / length;
+
+      double wave = sampleSawtooth(x - wavePhase, 1.0, period) + 0.5;
+      wave = Math.pow(wave, waveDegree);
+      wave = minBrightness + wave * range;
+
+      setLED(
+          i,
+          (int) (color.red * 255 * wave),
+          (int) (color.green * 255 * wave),
+          (int) (color.blue * 255 * wave));
+    }
+
+    led.setData(buffer);
+
+    wavePhase += waveRate * 0.020;
+    if (wavePhase > period) wavePhase -= period;
+  }
+
+  public void updateWave(
+      Section section,
+      PresetColor color,
+      double minBrightness,
+      double maxBrightness,
+      double numPeriods,
+      double waveRate,
+      int waveDegree) {
+
+    updateWave(
+        section, color.color, minBrightness, maxBrightness, numPeriods, waveRate, waveDegree);
+  }
+
   public void updateRainbowWave() {
     scrollingRainbow.applyTo(buffer);
     led.setData(buffer);
@@ -162,24 +199,33 @@ public class LEDs extends SubsystemBase {
     if (AllianceFlipUtil.shouldFlip()) {
       updateWave(PresetColor.RED.color, 0.02, 0.8, 4, 0.3, 2);
     } else {
-      updateWave(PresetColor.BLUE.color, 0.025, 0.8, 4, 0.3, 3);
+      updateWave(PresetColor.BLUE.color, 0.02, 0.8, 4, 0.3, 2);
     }
   }
 
   public Command allianceColorWaveCommand() {
-    return run(() -> updateAllianceColorWave());
+    return run(this::updateAllianceColorWave);
   }
 
-  public Command shootingWaveCommand() {
-    return run(() -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.9, 2));
+  public Command ShootingActiveWaveCommand() {
+    return run(() -> updateWave(PresetColor.GREEN.color, 0.02, 0.6, 4, 0.999, 2));
   }
 
   public Command idleWaveCommand() {
     return run(() -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.3, 2));
   }
 
+  public Command slowmodeWaveCommand() {
+    return run(() -> updateWave(PresetColor.ORANGE.color, 0.02, 0.6, 4, 0.3, 2));
+  }
+
+  public Command intakeWaveCommand() {
+    return run(() -> updateWave(PresetColor.YELLOW.color, 0.02, 0.6, 4, 0.3, 2));
+  }
+
   public Command testColour() {
     return runEnd(
-        () -> updateWave(PresetColor.IDLE.color, 0.02, 0.6, 4, 0.3, 2), () -> setAll(Color.kBlack));
+        () -> setAll(new Color(testRed.get(), testGreen.get(), testBlue.get())),
+        () -> setAll(Color.kBlack));
   }
 }

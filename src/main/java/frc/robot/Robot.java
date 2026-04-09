@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.Mode;
-import frc.robot.subsystems.leds.LEDConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.GamePeriods;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -127,14 +126,14 @@ public class Robot extends LoggedRobot {
     if (SmartDashboard.getBoolean("MATCH WON", false)) {
       robotContainer.leds.updateRainbowWave();
     } else {
-      robotContainer.leds.setAll(LEDConstants.PresetColor.RED);
+      robotContainer.leds.updateAllianceColorWave();
     }
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-
+    robotContainer.leds.idleWaveCommand();
     robotContainer.throttleCameras(0);
     autonomousCommand = robotContainer.getAutonomousCommand();
 
@@ -153,7 +152,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-
+    robotContainer.leds.idleWaveCommand();
     isFMSAttached = DriverStation.isFMSAttached();
     robotContainer.throttleCameras(0);
     SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
@@ -169,10 +168,6 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopPeriodic() {
 
-    // var colors = PresetColor.values();
-    // int colorIndex = (int) (Timer.getFPGATimestamp() * 2) % colors.length;
-    // robotContainer.leds.setAll(colors[colorIndex].color);
-
     SmartDashboard.putBoolean("RobotEnabled", DriverStation.isEnabled());
     double teleopTimeElapsedSeconds;
     if (isFMSAttached) {
@@ -183,7 +178,7 @@ public class Robot extends LoggedRobot {
 
     Logger.recordOutput("TeleopTimeElapsedSeconds", teleopTimeElapsedSeconds);
     Logger.recordOutput(
-        "TimeLeftInShift",
+        "TimeLeftInShiftSeconds",
         GamePeriods.getSecondsLeftInShift(isFMSAttached, teleopTimeElapsedSeconds));
 
     Pair<Boolean, Boolean> hubState =

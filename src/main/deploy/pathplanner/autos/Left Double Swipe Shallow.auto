@@ -7,18 +7,6 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Start Shoot Only"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.5
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "Left Start - Neutral Intake"
           }
         },

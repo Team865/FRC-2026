@@ -23,8 +23,8 @@ public final class ShooterConstants {
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
-            new ControlSystemContext(
-                0.12, 0.0, 0.4, 0.0, 0.5, 0.004, Optional.empty(), Optional.empty()),
+            // new ControlSystemContext(0.12, 0.0, 0.4, 0.0, 0.5, 0.004),
+            new ControlSystemContext(0.12123, 0.0084668, 0.17012, 0.0, 0.5, 0.0),
             new ControlSystemContext(
                 0.02, 0.01, 0.0, 0.0, 0.1, 0.0, Optional.empty(), Optional.empty()));
 
@@ -42,7 +42,7 @@ public final class ShooterConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                6.1331, 0, 0.28023, 0.0, 25.0, 0.0, Optional.of(5.0), Optional.of(8.0)),
+                4.8, 0.05, 0.38, 0.0, 1000.0, 0.0, Optional.of(5.0), Optional.of(8.0)),
             new ControlSystemContext(
                 1.0, 0.05, 0, 0, 20, 0.5, Optional.of(60.0), Optional.of(100.0)));
 
@@ -53,11 +53,11 @@ public final class ShooterConstants {
     public static final double MIN_ANGLE_RADS = Units.degreesToRadians(-190);
     public static final double MAX_ANGLE_RADS = Units.degreesToRadians(190);
     public static final Angle DEADZONE = Degrees.of(2);
-    public static final Angle SHOOTING_TOLERANCE = Degrees.of(5);
+    public static final Angle SHOOTING_TOLERANCE = Degrees.of(5.0);
     public static final Angle EXTRA_GAIN_TOLERANCE = Degrees.of(0.5);
 
-    // 0.75 rotations / second
-    public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.75).times(0.020);
+    // 0.5 rotations / second
+    public static final Angle MANUAL_CONTROL_RATE = Rotations.of(0.5).times(0.020);
   }
 
   public static final class Hood {

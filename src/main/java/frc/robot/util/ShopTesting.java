@@ -16,8 +16,8 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Flywheel;
 import frc.robot.subsystems.shooter.Hood;
 import frc.robot.subsystems.shooter.Turret;
+import frc.robot.util.Shooting.ShootingLogger;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -49,8 +49,7 @@ public class ShopTesting {
                 serializer.runSerializer(),
                 ballTunneler.runTunneler(),
                 hood.setTargetAngle(() -> Degrees.of(hoodTestAngleDeg.get())),
-                flywheel.runVelocity(
-                    () -> RadiansPerSecond.of(flywheelTestVelocityRadsPerSec.get()))));
+                flywheel.runVelocity(() -> RadiansPerSecond.of(450.0))));
 
     // driverController
     //     .y()
@@ -86,14 +85,14 @@ public class ShopTesting {
 
     SimpleDateFormat dateFormatter = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss");
 
-    driverController
-        .back()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    shootingLogger.writeToFile(
-                        String.format(
-                            "/U/logs/measurements_%s.txt", dateFormatter.format(new Date()))),
-                proxySubsystem));
+    // driverController
+    //     .back()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () ->
+    //                 shootingLogger.writeToFile(
+    //                     String.format(
+    //                         "/U/logs/measurements_%s.txt", dateFormatter.format(new Date()))),
+    //             proxySubsystem));
   }
 }

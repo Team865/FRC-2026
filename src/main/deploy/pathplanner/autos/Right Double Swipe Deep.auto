@@ -7,24 +7,6 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Right shoot only"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.5
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StopShooting"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "Right Start - Neutral Intake"
           }
         },
@@ -43,7 +25,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 1.5
+            "waitTime": 2.0
           }
         },
         {

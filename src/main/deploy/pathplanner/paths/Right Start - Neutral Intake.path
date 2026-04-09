@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 3.67,
-        "y": 2.8
+        "y": 2.5
       },
       "prevControl": null,
       "nextControl": {
         "x": 4.670000000000003,
-        "y": 2.8
+        "y": 2.5
       },
       "isLocked": false,
       "linkedName": "RightPreloadsEnd"
@@ -17,15 +17,15 @@
     {
       "anchor": {
         "x": 5.624583333333333,
-        "y": 2.5838
+        "y": 2.45
       },
       "prevControl": {
-        "x": 5.244518646176376,
-        "y": 2.9638646871566774
+        "x": 5.447806638036631,
+        "y": 2.626776695296572
       },
       "nextControl": {
         "x": 6.667633333336264,
-        "y": 1.5407499999978382
+        "y": 1.4069499999978383
       },
       "isLocked": false,
       "linkedName": null
@@ -89,7 +89,7 @@
       "minWaypointRelativePos": 1.7885264341957126,
       "maxWaypointRelativePos": 3.0,
       "constraints": {
-        "maxVelocity": 2.2,
+        "maxVelocity": 2.0,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -100,6 +100,17 @@
   ],
   "pointTowardsZones": [],
   "eventMarkers": [
+    {
+      "name": "RezeroIntake",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "RezeroIntake"
+        }
+      }
+    },
     {
       "name": "DeployIntake",
       "waypointRelativePos": 0.5796610169491523,
@@ -121,8 +132,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 2.0,
-    "rotation": -73.7798063043972
+    "velocity": 0.0,
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Right",

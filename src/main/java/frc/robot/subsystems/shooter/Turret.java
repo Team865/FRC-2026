@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.MathUtil;
@@ -63,7 +64,8 @@ public class Turret extends Pivot implements SysIdTestable {
     pivotIO.setMotionProfile(maxVelocity.get(), maxAcceleration.get());
     pivotIO.updateInputs(inputs);
 
-    pivotIO.setExtraEffort(0.25, ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
+    pivotIO.setExtraEffort(0.34, ShooterConstants.Turret.EXTRA_GAIN_TOLERANCE);
+    pivotIO.setBackwardModifier(0.0);
 
     // try (Alert failedReseedAlert =
     //     new Alert("Turret could not be seeded from encoder.", AlertType.kWarning)) {
@@ -126,6 +128,8 @@ public class Turret extends Pivot implements SysIdTestable {
             double gain = MathUtil.applyDeadband(gainSupplier.getAsDouble(), 0.1);
 
             if (gain == 0.0) return;
+
+            gain = Math.copySign(gain * gain, gain);
 
             currentTargetPosition =
                 currentTargetPosition.plus(ShooterConstants.Turret.MANUAL_CONTROL_RATE.times(gain));
@@ -202,27 +206,30 @@ public class Turret extends Pivot implements SysIdTestable {
 
   @Override
   public void periodic() {
-    // int id = hashCode();
+    int id = hashCode();
 
-    // LoggedTunableNumber.ifChanged(
-    //     id,
-    //     (constants) ->
-    //         this.io.setControlConstants(
-    //             constants[0], constants[1], constants[2], constants[3], constants[4]),
-    //     kS,
-    //     kV,
-    //     kA,
-    //     kP,
-    //     kD);
-    // LoggedTunableNumber.ifChanged(
-    //     id,
-    //     (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
-    //     maxVelocity,
-    //     maxAcceleration);
+    LoggedTunableNumber.ifChanged(
+        id,
+        (constants) ->
+            this.io.setControlConstants(
+                constants[0], constants[1], constants[2], constants[3], constants[4]),
+        kS,
+        kV,
+        kA,
+        kP,
+        kD);
+    LoggedTunableNumber.ifChanged(
+        id,
+        (constants) -> this.io.setMotionProfile(constants[0], constants[1]),
+        maxVelocity,
+        maxAcceleration);
 
     super.periodic();
 
     encoderIO.updateInputs(encoderInputs);
+
+    Logger.recordOutput("Turret/PositionRots", inputs.position.in(Rotations));
+    Logger.recordOutput("Turret/VelocityRotsPerSec", inputs.velocity.in(RotationsPerSecond));
     // encoderDisconnectedAlert.set(!encoderInputs.connected);
     Logger.processInputs("Shooter/Turret/AbsoluteEncoder", encoderInputs);
   }

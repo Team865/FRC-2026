@@ -8,13 +8,16 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.SysIdBuilder;
+import frc.robot.util.SysIdRegister.SysIdTestable;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Flywheel extends SubsystemBase {
+public class Flywheel extends SubsystemBase implements SysIdTestable {
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
   public final FlywheelIO io;
 
@@ -37,10 +40,17 @@ public class Flywheel extends SubsystemBase {
   private final Alert followerDisconnectedAlert =
       new Alert("Flywheel follower motor disconnected.", AlertType.kError);
 
+  private final SysIdRoutine sysIdRoutine;
+
   public Flywheel(FlywheelIO io) {
     this.io = io;
 
     io.setControlConstants(kS.get(), kV.get(), kA.get(), kP.get(), kD.get());
+    sysIdRoutine =
+        new SysIdBuilder(this, io::setVolts)
+            .withDynamicStepVoltage(6.0)
+            .withQuasistaticRampRate(1.0)
+            .build();
   }
 
   public Command setVolts(double volts) {
@@ -127,15 +137,20 @@ public class Flywheel extends SubsystemBase {
 
     Logger.processInputs("Shooter/Flywheel", inputs);
 
-    // LoggedTunableNumber.ifChanged(
-    //     hashCode(),
-    //     (constants) ->
-    //         io.setControlConstants(
-    //             constants[0], constants[1], constants[2], constants[3], constants[4]),
-    //     kS,
-    //     kV,
-    //     kA,
-    //     kP,
-    //     kD);
+    LoggedTunableNumber.ifChanged(
+        hashCode(),
+        (constants) ->
+            io.setControlConstants(
+                constants[0], constants[1], constants[2], constants[3], constants[4]),
+        kS,
+        kV,
+        kA,
+        kP,
+        kD);
+  }
+
+  @Override
+  public SysIdRoutine getRoutine() {
+    return sysIdRoutine;
   }
 }

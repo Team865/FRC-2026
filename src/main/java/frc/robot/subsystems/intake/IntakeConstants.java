@@ -21,10 +21,10 @@ public final class IntakeConstants {
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(0.24252, 0.005021, 0.30791, 0.0, 1.0, 0.0),
-            new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 0.5, 0.0));
+            new ControlSystemContext(0.12, 0.01, 0.2, 0.0, 1.0, 0.0));
 
     public static final RollersSpecifications ROLLER_SPECS =
-        new RollersSpecifications(2.0, false, Units.inchesToMeters(1), 80.0, 170.0);
+        new RollersSpecifications(2.0, false, Units.inchesToMeters(1), 40.0, 170.0);
 
     public static final LinearVelocity MINIMUM_INTAKE_SPEED = MetersPerSecond.of(3.5);
     public static final LinearVelocity AGITATING_VELOCITY = MetersPerSecond.of(5);
@@ -37,17 +37,20 @@ public final class IntakeConstants {
 
     public static final Distance STOWED_POSITION = Inches.of(3.0);
     public static final Distance PARTIAL_STOWED_POSITION = Inches.of(11.0);
-    public static final Distance DEPLOYED_POSITION = Inches.of(12.25);
+    public static final Distance DEPLOYED_POSITION = Inches.of(12.5);
+    // Inches.of(12.25);
 
     public static final ControlSystemConstants SYSTEM_CONSTANTS =
         new ControlSystemConstants(
             new ControlSystemContext(
-                2.6, 0.001, 1, 0.0, 3.0, 0, Optional.of(10.0), Optional.of(40.0)),
+                2.6, 0.001, 1, 0.0, 53.0, 0, Optional.of(30.0), Optional.of(100.0)),
             new ControlSystemContext(
                 0.12, 0.05, 0.0, 0.0, 1.0, 0.4, Optional.of(2.0), Optional.of(20.0)));
 
     public static final ExtensionSpecifications EXTENSION_SPECS =
         new ExtensionSpecifications(20.0, Units.inchesToMeters(1.0), false);
+
+    public static final Distance SETPOINT_TOLERANCE = Inches.of(0.5);
   }
 
   private IntakeConstants() {}

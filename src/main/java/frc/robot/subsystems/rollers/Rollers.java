@@ -16,7 +16,7 @@ import org.littletonrobotics.junction.Logger;
 public class Rollers extends FullSubsystem {
   public final String name;
   public final RollersIO io;
-  protected final RollersIOInputsAutoLogged inputs = new RollersIOInputsAutoLogged();
+  public final RollersIOInputsAutoLogged inputs = new RollersIOInputsAutoLogged();
 
   protected final Alert motorDisconnectedAlert;
   protected AngularVelocity atSetpointTolerance = RadiansPerSecond.of(10.0);

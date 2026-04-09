@@ -103,7 +103,7 @@ public class Hood extends Pivot implements SysIdTestable {
       return new SequentialCommandGroup(
           setVoltage(-1),
           new WaitUntilCommand(
-                  () -> currentSenseDebouncer.calculate(Math.abs(inputs.torqueCurrentAmps) > 20))
+                  () -> currentSenseDebouncer.calculate(inputs.torqueCurrentAmps < -20))
               .raceWith(new WaitCommand(2)),
           stop(),
           runOnce(() -> io.seedPosition(Rotations.zero())));

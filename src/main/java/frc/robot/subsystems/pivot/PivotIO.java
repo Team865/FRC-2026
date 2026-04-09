@@ -44,4 +44,6 @@ public interface PivotIO {
   public default boolean seedPosition(Angle position) {
     return true;
   }
+
+  public default void setBackwardModifier(double modifier) {}
 }

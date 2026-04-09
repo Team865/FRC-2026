@@ -65,10 +65,10 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     config.Slot0.kD = constants.kD;
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    config.CurrentLimits.SupplyCurrentLimit = 70.0;
+    config.CurrentLimits.SupplyCurrentLimit = 200.0;
 
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = 200.0;
+    config.CurrentLimits.StatorCurrentLimit = 500.0;
 
     PhoenixUtil.tryUntilOk(5, () -> masterTalon.getConfigurator().apply(config));
     PhoenixUtil.tryUntilOk(5, () -> followerTalon.getConfigurator().apply(config));
@@ -111,7 +111,6 @@ public class FlywheelIOTalonFX implements FlywheelIO {
             BaseStatusSignal.refreshAll(
                     position,
                     masterVelocity,
-                    followerVelocity,
                     masterAppliedVoltage,
                     masterSupplyCurrent,
                     masterStatorCurrent)
@@ -120,7 +119,10 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     inputs.followerConnected =
         followerConnectedDebouncer.calculate(
             BaseStatusSignal.refreshAll(
-                    followerAppliedVoltage, followerSupplyCurrent, followerStatorCurrent)
+                    followerAppliedVoltage,
+                    followerVelocity,
+                    followerSupplyCurrent,
+                    followerStatorCurrent)
                 .isOK());
 
     inputs.position = position.getValue();
@@ -134,6 +136,10 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     inputs.followerAppliedVoltage = followerAppliedVoltage.getValueAsDouble();
     inputs.followerSupplyCurrentAmps = followerSupplyCurrent.getValueAsDouble();
     inputs.followerStatorCurrentAmps = followerStatorCurrent.getValueAsDouble();
+
+    // Logger.recordOutput(
+    //     "Flywheel/VelocityRotsPerSec", inputs.masterVelocity.in(RotationsPerSecond));
+    // Logger.recordOutput("Flywheel/PositionRots", inputs.position.in(Rotations));
   }
 
   @Override
