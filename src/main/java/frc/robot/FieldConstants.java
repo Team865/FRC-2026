@@ -69,8 +69,8 @@ public class FieldConstants {
     private static final double redPassingTargetXPos = fieldLength - 0.5;
     private static final double bluePassingTargetXPos = 0.5;
 
-    private static final double blueRightPassingTargetYPos = 2.0;
-    private static final double blueLeftPassingTargetYPos = fieldWidth - 2.0;
+    private static final double blueRightPassingTargetYPos = 2.5;
+    private static final double blueLeftPassingTargetYPos = fieldWidth - 2.5;
 
     public static double getBumpLineXPos() {
       return AllianceFlipUtil.shouldFlip() ? redBumpLineXPos : blueBumpLineXPos;

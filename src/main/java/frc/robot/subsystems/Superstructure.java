@@ -156,7 +156,7 @@ public class Superstructure extends SubsystemBase {
     configureStateRequirements();
     configureStateBehaviours();
     configureGameStateTriggers();
-    configureShooter();
+    // configureShooter();
 
     this.passingSide =
         FieldConstants.isOnRightSide(drive.getPose()) ? PassingSide.RIGHT : PassingSide.LEFT;
@@ -300,11 +300,16 @@ public class Superstructure extends SubsystemBase {
   }
 
   private void configureGameStateTriggers() {
-    new Trigger(DriverStation::isTeleopEnabled).onTrue(forceState(ShootingState.IDLE)).onTrue(Commands.runOnce(() -> setPitCheckMode(false)));
+    new Trigger(DriverStation::isTeleopEnabled)
+        .onTrue(forceState(ShootingState.IDLE))
+        .onTrue(Commands.runOnce(() -> setPitCheckMode(false)));
 
     new Trigger(DriverStation::isAutonomousEnabled)
         .negate()
         .onTrue(Commands.runOnce(() -> isManualOverride = false).ignoringDisable(true));
+
+    new Trigger(DriverStation::isDisabled)
+        .onTrue(Commands.runOnce(() -> setPitCheckMode(false)).ignoringDisable(true));
   }
 
   private void configureShooter() {
@@ -441,17 +446,11 @@ public class Superstructure extends SubsystemBase {
       Degrees.of(0.0)
     };
 
-    return
-            hood.currentSensedRezero()
-                .andThen(
-                    PitCheck.createCommand(
-                        "Hood Pit Checks",
-                        hood.io::setPosition,
-                        hood::isAtSetpoint,
-                        1,
-                        5,
-                        setpoints,
-                        hood)).beforeStarting(() -> setPitCheckMode(true));
+    return hood.currentSensedRezero()
+        .andThen(
+            PitCheck.createCommand(
+                "Hood Pit Checks", hood.io::setPosition, hood::isAtSetpoint, 1, 5, setpoints, hood))
+        .beforeStarting(() -> setPitCheckMode(true));
   }
 
   public Command balltunnelerPitCheck() {

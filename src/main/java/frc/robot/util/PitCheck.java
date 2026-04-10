@@ -31,7 +31,6 @@ public class PitCheck<Goal> extends Command {
       FullSubsystem... subsystems) {
     return new PitCheck<>(
             name, driver, checkGoalSupplier, goalDebounceSeconds, timeoutSeconds, goals, subsystems)
-        .finallyDo(() -> superstructure.setPitCheckMode(false))
         .ignoringDisable(true);
   }
 

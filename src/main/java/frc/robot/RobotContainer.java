@@ -407,12 +407,12 @@ public class RobotContainer {
 
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            () -> -driverController.getRightX()));
+    // drive.setDefaultCommand(
+    //     DriveCommands.joystickDrive(
+    //         drive,
+    //         () -> -driverController.getLeftY(),
+    //         () -> -driverController.getLeftX(),
+    //         () -> -driverController.getRightX()));
 
     // Reset gyro to 0° when B button is pressed
     driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
@@ -468,10 +468,10 @@ public class RobotContainer {
                 .stateTriggers
                 .get(IntakingState.STOWED)
                 .or(superstructure.intakingStateMachine.stateTriggers.get(IntakingState.STOWING))
-                .negate())
-        .whileTrue(
-            DriveCommands.intakeDrive(
-                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+                .negate());
+        // .whileTrue(
+        //     DriveCommands.intakeDrive(
+        //         drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // OPERATOR CONTROLLER
     operatorController
