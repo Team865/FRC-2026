@@ -31,8 +31,12 @@ public final class ShootingMeasurements {
     }
   }
 
-  private static final double SCORING_SHORT_MAX_THRESHOLD_METERS = 3.0;
-  private static final double SCORING_MEDIUM_MAX_THRESHOLD_METERS = 5.5;
+  private static final double SCORING_SHORT_MAX_THRESHOLD_METERS =
+      // 100.0;
+      3.0;
+  private static final double SCORING_MEDIUM_MAX_THRESHOLD_METERS =
+      // 100.0;
+      6.0;
 
   private static final ShootingRange scoringShortRange =
       new ShootingRange(RadiansPerSecond.of(300.0));

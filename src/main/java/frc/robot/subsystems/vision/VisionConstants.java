@@ -60,7 +60,7 @@ public class VisionConstants {
       new double[] {
         1.0, // Left
         1.0, // Right
-        10.0 // Turret
+        3.5 // Turret
       };
 
   // Vertical offset: 0.676

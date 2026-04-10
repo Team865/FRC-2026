@@ -329,6 +329,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("StopShooting", superstructure.forceState(ShootingState.IDLE));
 
     NamedCommands.registerCommand("RezeroIntake", intake.currentSensedRezero());
+    NamedCommands.registerCommand("RezeroHood", hood.currentSensedRezero());
+
     NamedCommands.registerCommand(
         "HalfStowIntake", superstructure.forceState(IntakingState.PARTIAL_STOW));
 
@@ -343,6 +345,7 @@ public class RobotContainer {
       autoChooser.addOption("Turret Pit Check", superstructure.turretPitCheck());
       autoChooser.addOption("Shooting Pit Check", superstructure.fullShootingPitCheck());
       autoChooser.addOption("Balltunneler Pit Check", superstructure.balltunnelerPitCheck());
+      autoChooser.addOption("Flywheel Pit Check", superstructure.flywheelPitCheck());
       autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
       autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
     }
@@ -393,26 +396,14 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    // ShopTesting.enable(
-    //     driverController,
-    //     drive,
-    //     serializer,
-    //     ballTunneler,
-    //     flywheel,
-    //     hood,
-    //     turret,
-    //     intake,
-    //     () -> getAllianceHubPose(),
-    //     () -> getDistanceFromHub());
-
     // DRIVE CONTROLLER
     // Default command, normal field-relative drive
-    // drive.setDefaultCommand(
-    //     DriveCommands.joystickDrive(
-    //         drive,
-    //         () -> -driverController.getLeftY(),
-    //         () -> -driverController.getLeftX(),
-    //         () -> -driverController.getRightX()));
+    drive.setDefaultCommand(
+        DriveCommands.joystickDrive(
+            drive,
+            () -> -driverController.getLeftY(),
+            () -> -driverController.getLeftX(),
+            () -> -driverController.getRightX()));
 
     // Reset gyro to 0° when B button is pressed
     driverController.start().onTrue(DriveCommands.resetGyro(drive).ignoringDisable(true));
@@ -468,10 +459,10 @@ public class RobotContainer {
                 .stateTriggers
                 .get(IntakingState.STOWED)
                 .or(superstructure.intakingStateMachine.stateTriggers.get(IntakingState.STOWING))
-                .negate());
-        // .whileTrue(
-        //     DriveCommands.intakeDrive(
-        //         drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
+                .negate())
+        .whileTrue(
+            DriveCommands.intakeDrive(
+                drive, () -> -driverController.getLeftY(), () -> -driverController.getLeftX()));
 
     // OPERATOR CONTROLLER
     operatorController

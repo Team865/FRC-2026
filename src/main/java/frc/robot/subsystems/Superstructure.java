@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
@@ -156,7 +157,7 @@ public class Superstructure extends SubsystemBase {
     configureStateRequirements();
     configureStateBehaviours();
     configureGameStateTriggers();
-    // configureShooter();
+    configureShooter();
 
     this.passingSide =
         FieldConstants.isOnRightSide(drive.getPose()) ? PassingSide.RIGHT : PassingSide.LEFT;
@@ -514,6 +515,28 @@ public class Superstructure extends SubsystemBase {
         turret);
   }
 
+  public Command flywheelPitCheck() {
+    AngularVelocity[] setpoints = {
+      DegreesPerSecond.of(200.0),
+      DegreesPerSecond.of(300.0),
+      DegreesPerSecond.of(350.0),
+      DegreesPerSecond.of(400.0),
+      DegreesPerSecond.of(450.0),
+      DegreesPerSecond.of(500.0),
+      DegreesPerSecond.of(550.0),
+      DegreesPerSecond.of(600.0),
+    };
+
+    return PitCheck.createCommand(
+        "Flywheel Pit Checks",
+        flywheel.io::setVelocity,
+        flywheel::isAtSetpoint,
+        0.5,
+        5.0,
+        setpoints,
+        flywheel);
+  }
+
   public Command tunnelerShootingPitCheck() {
     return new SequentialCommandGroup(
             flywheel.setVelocity(RadiansPerSecond.of(150)),
@@ -618,6 +641,7 @@ public class Superstructure extends SubsystemBase {
     turretTargetAngle = shotCalculation.yaw();
     hoodTargetAngle = shotCalculation.pitch();
     flywheelTargetVelocity = shotCalculation.flywheelVelocity();
+
     Logger.recordOutput(
         "Superstructure/ShooterTarget",
         new Pose2d(shotCalculation.virtualGoal(), Rotation2d.kZero));

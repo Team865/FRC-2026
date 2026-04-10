@@ -6,9 +6,9 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.util.FullSubsystem;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.SysIdBuilder;
 import frc.robot.util.SysIdRegister.SysIdTestable;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Flywheel extends SubsystemBase implements SysIdTestable {
+public class Flywheel extends FullSubsystem implements SysIdTestable {
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
   public final FlywheelIO io;
 
@@ -122,10 +122,11 @@ public class Flywheel extends SubsystemBase implements SysIdTestable {
   }
 
   public Trigger atTargetVelocity() {
-    return new Trigger(
-        () ->
-            inputs.masterVelocity.isNear(
-                targetVelocity, ShooterConstants.Flywheel.SETPOINT_TOLERANCE));
+    return new Trigger(() -> isAtSetpoint(targetVelocity));
+  }
+
+  public boolean isAtSetpoint(AngularVelocity setpoint) {
+    return inputs.masterVelocity.isNear(setpoint, ShooterConstants.Flywheel.SETPOINT_TOLERANCE);
   }
 
   @Override

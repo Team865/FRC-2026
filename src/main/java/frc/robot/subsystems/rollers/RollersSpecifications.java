@@ -13,6 +13,6 @@ public record RollersSpecifications(
 
   public RollersSpecifications(
       double gearRatio, boolean clockwisePositive, double rollerRadiusMeters) {
-    this(gearRatio, clockwisePositive, rollerRadiusMeters, 70.0, 120.0);
+    this(gearRatio, clockwisePositive, rollerRadiusMeters, 40.0, 120.0);
   }
 }
