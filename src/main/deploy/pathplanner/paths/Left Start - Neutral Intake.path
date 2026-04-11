@@ -105,26 +105,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "RezeroAll",
+      "name": "RezeroIntake",
       "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
-        "type": "parallel",
+        "type": "named",
         "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "RezeroIntake"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "RezeroHood"
-              }
-            }
-          ]
+          "name": "RezeroIntake"
         }
       }
     },
