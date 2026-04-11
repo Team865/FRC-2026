@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.4307829181494665,
-        "y": 1.8562633451957287
+        "x": 7.448599054493214,
+        "y": 1.9251749079232472
       },
       "isLocked": false,
       "linkedName": "RightNZEndA"
@@ -38,9 +38,9 @@
     {
       "name": "Constraints Zone",
       "minWaypointRelativePos": 0.5,
-      "maxWaypointRelativePos": 1.0,
+      "maxWaypointRelativePos": 0.8571428571428571,
       "constraints": {
-        "maxVelocity": 1.5,
+        "maxVelocity": 1.7,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,

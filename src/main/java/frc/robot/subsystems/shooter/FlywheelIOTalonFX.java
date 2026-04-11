@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -24,6 +26,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   private final TalonFX followerTalon;
 
   private final TalonFXConfiguration config = new TalonFXConfiguration();
+  private AngularVelocity targetVelocity = RotationsPerSecond.zero();
 
   private final VoltageOut voltageRequest =
       new VoltageOut(0.0).withUpdateFreqHz(50.0).withEnableFOC(true);
@@ -126,6 +129,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
                 .isOK());
 
     inputs.position = position.getValue();
+    inputs.targetVelocity = targetVelocity;
     inputs.masterVelocity = masterVelocity.getValue();
     inputs.followerVelocity = followerVelocity.getValue();
 
@@ -162,6 +166,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   @Override
   public void setVelocity(AngularVelocity velocity) {
     masterTalon.setControl(velocityRequest.withVelocity(velocity));
+    targetVelocity = velocity;
   }
 
   @Override
