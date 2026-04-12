@@ -112,6 +112,12 @@
       }
     },
     {
+      "name": "rezeroHood",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
       "name": "DeployIntake",
       "waypointRelativePos": 0.5796610169491523,
       "endWaypointRelativePos": null,
