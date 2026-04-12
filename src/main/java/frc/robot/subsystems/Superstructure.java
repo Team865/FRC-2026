@@ -25,6 +25,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Superstructure.IntakingState;
+import frc.robot.subsystems.Superstructure.ShootingState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
@@ -434,6 +436,10 @@ public class Superstructure extends SubsystemBase {
               intake.extension.stop();
               intake.rollers.stop();
             });
+  }
+
+  public Command toggleIntakeExtensionPitcheck() {
+    return toggleIntakeExtension().beforeStarting(() -> setPitCheckMode(true));
   }
 
   public Command hoodPitCheck() {
