@@ -26,16 +26,16 @@ public class VisionConstants {
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d robotToCamera0 =
       new Transform3d(
-          Units.inchesToMeters(-11.490),
-          Units.inchesToMeters(-11.250),
+          Units.inchesToMeters(0),
+          Units.inchesToMeters(0),
           Units.inchesToMeters(25.938),
-          new Rotation3d(0, Units.degreesToRadians(-30), 45));
+          new Rotation3d(0, Units.degreesToRadians(-10), 90));
   public static Transform3d robotToCamera1 =
       new Transform3d(
-          Units.inchesToMeters(11.490),
-          Units.inchesToMeters(11.250),
-          Units.inchesToMeters(25.938),
-          new Rotation3d(0, Units.degreesToRadians(-30), Units.degreesToRadians(-45)));
+          Units.inchesToMeters(0),
+          Units.inchesToMeters(0),
+          Units.inchesToMeters(0),
+          new Rotation3d(0, Units.degreesToRadians(-15), Units.degreesToRadians(-90)));
   public static Transform3d robotToCamera2 =
       new Transform3d(
           Units.inchesToMeters(1),
@@ -60,7 +60,7 @@ public class VisionConstants {
       new double[] {
         1.0, // Left
         1.0, // Right
-        10.0 // Turret
+        5.0 // Turret
       };
 
   // Vertical offset: 0.676

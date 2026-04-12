@@ -29,18 +29,9 @@ public class PitCheck<Goal> extends Command {
       double timeoutSeconds,
       Goal[] goals,
       FullSubsystem... subsystems) {
-    return superstructure
-        .startManualOverride()
-        .andThen(
-            new PitCheck<>(
-                    name,
-                    driver,
-                    checkGoalSupplier,
-                    goalDebounceSeconds,
-                    timeoutSeconds,
-                    goals,
-                    subsystems)
-                .ignoringDisable(true));
+    return new PitCheck<>(
+            name, driver, checkGoalSupplier, goalDebounceSeconds, timeoutSeconds, goals, subsystems)
+        .ignoringDisable(true);
   }
 
   private PitCheck(
@@ -73,6 +64,7 @@ public class PitCheck<Goal> extends Command {
 
   @Override
   public void initialize() {
+    superstructure.setPitCheckMode(true);
     currentGoalIndex = 0;
     goalStartTimeMillis = System.currentTimeMillis();
     System.out.println(getName() + " started.");

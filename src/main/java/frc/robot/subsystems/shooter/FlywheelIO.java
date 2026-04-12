@@ -11,6 +11,7 @@ public interface FlywheelIO {
   @AutoLog
   class FlywheelIOInputs {
     public Angle position = Rotations.zero();
+    public AngularVelocity targetVelocity = RotationsPerSecond.zero();
     public AngularVelocity masterVelocity = RotationsPerSecond.zero();
     public AngularVelocity followerVelocity = RotationsPerSecond.zero();
 

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.730626706947289,
-        "y": 5.7625539605179235
+        "x": 6.964591199437945,
+        "y": 5.959075292472498
       },
       "isLocked": false,
       "linkedName": "LeftNZEndA"
     },
     {
       "anchor": {
-        "x": 3.312,
-        "y": 5.3728249999985405
+        "x": 3.2466153846153856,
+        "y": 5.8
       },
       "prevControl": {
-        "x": 4.018788908085645,
-        "y": 5.3728249999985405
+        "x": 3.9534042927010304,
+        "y": 5.8
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,8 +30,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.20931586608442587,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 0.4631578947368406,
+      "rotationDegrees": 90.0
     }
   ],
   "constraintZones": [
@@ -40,7 +40,7 @@
       "minWaypointRelativePos": 0.4994375703037141,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 1.5,
+        "maxVelocity": 1.7,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -84,7 +84,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -179.99999999960926
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": "Left",

@@ -48,6 +48,7 @@ public class FlywheelIOSim implements FlywheelIO {
 
     inputs.position = sim.getAngularPosition().times(ShooterConstants.Flywheel.GEAR_RATIO);
     inputs.masterVelocity = sim.getAngularVelocity().times(ShooterConstants.Flywheel.GEAR_RATIO);
+    inputs.targetVelocity = targetVelocity;
 
     inputs.masterConnected = true;
     inputs.masterAppliedVoltage = appliedVoltage;

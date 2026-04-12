@@ -114,7 +114,7 @@ public final class ShotCalculator {
             robotSpeedsFieldOriented.vxMetersPerSecond, robotSpeedsFieldOriented.vyMetersPerSecond);
     Translation2d originalGoal =
         FieldConstants.Passing.getPassingTargetPos(!FieldConstants.isOnRightSide(robotPose));
-    Translation2d virtualGoal = originalGoal.plus(robotSpeedsVector.times(-0.5));
+    Translation2d virtualGoal = originalGoal.plus(robotSpeedsVector.times(-0.6));
 
     double distanceFromTarget = robotTranslation.getDistance(virtualGoal);
 
