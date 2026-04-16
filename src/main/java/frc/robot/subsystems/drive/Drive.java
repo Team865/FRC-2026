@@ -124,6 +124,7 @@ public class Drive extends SubsystemBase {
 
   // For controlling drive speed
   private LinearVelocity currentMaxSpeed = TunerConstants.kSpeedAt12Volts.times(0.8);
+  private double angularSpeedMultiplier = 1.0;
 
   private boolean shouldReseedOnRotationStop = false;
 
@@ -452,6 +453,10 @@ public class Drive extends SubsystemBase {
     return Commands.runOnce(() -> setMaxLinearSpeed(maxSpeed));
   }
 
+  public Command setAngularSpeedMultiplierCmd(double multiplier) {
+    return Commands.runOnce(() -> angularSpeedMultiplier = multiplier);
+  }
+
   /** Returns the maximum linear speed */
   public LinearVelocity getMaxLinearSpeed() {
     return currentMaxSpeed;
@@ -464,7 +469,7 @@ public class Drive extends SubsystemBase {
 
   /** Returns the maximum angular speed in radians per sec. */
   public double getMaxAngularSpeedRadPerSec() {
-    return getMaxLinearSpeedMetersPerSec() / DRIVE_BASE_RADIUS;
+    return getMaxLinearSpeedMetersPerSec() * angularSpeedMultiplier / DRIVE_BASE_RADIUS;
   }
 
   /** Returns the current angular velocity of the drivetrain in radians per sec */
