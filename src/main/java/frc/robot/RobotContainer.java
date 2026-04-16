@@ -348,6 +348,7 @@ public class RobotContainer {
       autoChooser.addOption("Flywheel Pit Check", superstructure.flywheelPitCheck());
       autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
       autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
+      autoChooser.addOption("Extend Intake", superstructure.toggleIntakeExtensionPitcheck());
     }
     // // Set up SysId routines
     // autoChooser.addOption(

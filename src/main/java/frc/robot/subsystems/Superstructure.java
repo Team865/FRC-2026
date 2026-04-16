@@ -25,6 +25,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.FieldConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Superstructure.IntakingState;
+import frc.robot.subsystems.Superstructure.ShootingState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.indexer.BallTunneler;
@@ -61,6 +63,8 @@ public class Superstructure extends SubsystemBase {
     STOWING,
     /** Requestable: The intake is currently being deployed */
     DEPLOYING,
+    /** Intermediate: Temporarily run rollers while intake is extended to deploy kicker bar */
+    DEPLOY_KICKER,
     /** Requestable: The intake is partially stowed to prevent fuel from leaking */
     PARTIAL_STOW,
     /** Intermediate: The intake is deployed and running */
@@ -101,6 +105,8 @@ public class Superstructure extends SubsystemBase {
 
   private boolean isOutaking = false;
 
+  private boolean intakeAlreadyBeenDeployed = false;
+
   private int numStallsDetected = 0;
 
   private final CommandXboxController operatorController;
@@ -114,6 +120,9 @@ public class Superstructure extends SubsystemBase {
   @AutoLogOutput(key = "Superstructure/PassingMode")
   private final Trigger passingModeTrigger =
       new Trigger(() -> isPassing && DriverStation.isTeleopEnabled() && !isManualOverride);
+
+  @AutoLogOutput(key = "Superstructure/SlowMode")
+  private final Trigger slowModeTrigger = new Trigger(() -> isSlowMode);
 
   @AutoLogOutput(key = "Superstructure/IsOutaking")
   private final Trigger outakingTrigger = new Trigger(() -> isOutaking);
@@ -237,7 +246,9 @@ public class Superstructure extends SubsystemBase {
         .stateTriggers
         .get(IntakingState.STOWING)
         .onTrue(intake.stow()) // Stow the intake
-        .and(intake.extensionAtSetpoint()) // If the intake is stowed,
+        .and(
+            intake.extension.atSetpoint(
+                IntakeConstants.Extension.STOWED_POSITION)) // If the intake is stowed,
         .onTrue(forceState(IntakingState.STOWED)); // move to appropriate state
 
     intakingStateMachine.stateTriggers.get(IntakingState.DEPLOYING).onTrue(intake.deploy());
@@ -246,10 +257,28 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYING) // Deploy the intake
-        .and(intake.extensionAtSetpoint()) // If the intake arm is deployed,
+        .and(
+            intake.extension.atSetpoint(
+                IntakeConstants.Extension.DEPLOYED_POSITION)) // If the intake arm is deployed,
+        .and(() -> intakeAlreadyBeenDeployed)
         .onTrue(forceState(IntakingState.DEPLOYED)); // Move to appropriate state
 
-    // intakingStateMachine
+    intakingStateMachine
+        .stateTriggers
+        .get(IntakingState.DEPLOYING) // Deploy the intake
+        .and(
+            intake.extension.atSetpoint(
+                IntakeConstants.Extension.DEPLOYED_POSITION)) // If the intake arm is deployed,
+        .and(() -> !intakeAlreadyBeenDeployed)
+        .onTrue(forceState(IntakingState.DEPLOY_KICKER)); // Move to appropriate state
+
+    intakingStateMachine
+        .stateTriggers
+        .get(IntakingState.DEPLOY_KICKER)
+        .whileTrue(intake.rollers.runVolts(-12.0))
+        .onTrue(new WaitCommand(1.0).andThen(forceState(IntakingState.DEPLOYED)));
+
+    // intakingStateMachinee
     //     .stateTriggers
     //     .get(IntakingState.DEPLOYED)
     //     .and(outakingTrigger.negate())
@@ -277,27 +306,26 @@ public class Superstructure extends SubsystemBase {
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYED)
-        // .and(outakingTrigger)
-        .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+        .onTrue(Commands.runOnce(() -> intakeAlreadyBeenDeployed = true))
+        .whileTrue(intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.DEPLOYING)
-        // .and(outakingTrigger)
-        .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+        .whileTrue(intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.STOWING)
-        // .and(outakingTrigger)
-        .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+        .whileTrue(intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
     intakingStateMachine
         .stateTriggers
         .get(IntakingState.PARTIAL_STOW)
         // .and(outakingTrigger)
-        .whileTrue( // Run the intake based on drivetrain speed
-            intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+        .whileTrue(intake.rollers.runVolts(() -> isOutaking ? -12.0 : 12.0));
+
+    passingModeTrigger
+        .and(slowModeTrigger)
+        .onTrue(drive.setAngularSpeedMultiplierCmd(2.25))
+        .onFalse(drive.setAngularSpeedMultiplierCmd(1.0));
   }
 
   private void configureGameStateTriggers() {
@@ -434,6 +462,10 @@ public class Superstructure extends SubsystemBase {
               intake.extension.stop();
               intake.rollers.stop();
             });
+  }
+
+  public Command toggleIntakeExtensionPitcheck() {
+    return toggleIntakeExtension().beforeStarting(() -> setPitCheckMode(true));
   }
 
   public Command hoodPitCheck() {
@@ -658,7 +690,6 @@ public class Superstructure extends SubsystemBase {
         Math.abs(drivePose.getX() - FieldConstants.Passing.getBumpLineXPos()));
     Logger.recordOutput("Superstructure/ShootingState", shootingStateMachine.getState().toString());
     Logger.recordOutput("Superstructure/IntakingState", intakingStateMachine.getState().toString());
-    Logger.recordOutput("Superstructure/SlowMode", isSlowMode);
 
     // // Render a Pose showing where the turret (thinks it) is pointing
     // Logger.recordOutput(

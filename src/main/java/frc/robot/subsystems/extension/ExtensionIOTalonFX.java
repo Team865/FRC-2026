@@ -113,7 +113,7 @@ public class ExtensionIOTalonFX implements ExtensionIO {
 
   @Override
   public boolean seedPosition(Distance position) {
-    Angle angularPosition = Radians.of(position.in(Meters) / drumRadiusMeters);
+    Angle angularPosition = linearToAngular(position);
 
     return PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(angularPosition));
   }

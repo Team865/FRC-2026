@@ -40,6 +40,10 @@ public class Extension extends FullSubsystem {
     return runOnce(() -> io.setPosition(positionSupplier.get()));
   }
 
+  public Trigger atSetpoint(Distance targetPosition) {
+    return new Trigger(() -> inputs.position.isNear(targetPosition, Inches.of(0.5)));
+  }
+
   public Trigger atSetpoint() {
     return new Trigger(() -> inputs.position.isNear(inputs.targetPosition, Inches.of(0.5)));
   }

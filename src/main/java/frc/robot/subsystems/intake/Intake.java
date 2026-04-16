@@ -1,6 +1,6 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.math.filter.Debouncer;
@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.subsystems.extension.Extension;
 import frc.robot.subsystems.extension.ExtensionIO;
@@ -56,7 +55,7 @@ public class Intake extends SubsystemBase {
           "IntakePivot/maxAcceleration",
           IntakeConstants.Extension.SYSTEM_CONSTANTS.maxAcceleration.get());
 
-  private final Debouncer currentSenseDebouncer = new Debouncer(0.1);
+  private final Debouncer currentSenseDebouncer = new Debouncer(0.04);
   private final Debouncer intakeDebouncer = new Debouncer(0.2, DebounceType.kBoth);
 
   public Intake(RollersIO rollersIO, ExtensionIO extensionIO) {
@@ -100,24 +99,20 @@ public class Intake extends SubsystemBase {
               this.runOnce(
                   () -> {
                     extension.shouldAutoStopAtSetpoint = false;
-                    extension.io.setVolts(-5);
+                    extension.io.setVolts(-3);
                   }),
               this.runOnce(() -> rollers.io.stop()),
               new WaitUntilCommand(
                       () ->
                           currentSenseDebouncer.calculate(
-                              Math.abs(extension.inputs.torqueCurrentAmps) > 60))
+                              Math.abs(extension.inputs.torqueCurrentAmps) > 70))
                   .raceWith(new WaitCommand(5)),
-              runOnce(() -> extension.io.seedPosition(Meters.zero())),
+              runOnce(() -> extension.io.seedPosition(Inches.of(-0.3))),
               this.runOnce(() -> extension.io.stop()))
           .finallyDo(() -> extension.shouldAutoStopAtSetpoint = true);
     } else {
       return this.runOnce(() -> rollers.io.stop()).andThen(new WaitCommand(0.5));
     }
-  }
-
-  public Trigger extensionAtSetpoint() {
-    return extension.atSetpoint();
   }
 
   public Command runRollers(
