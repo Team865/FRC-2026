@@ -324,7 +324,7 @@ public class Superstructure extends SubsystemBase {
 
     passingModeTrigger
         .and(slowModeTrigger)
-        .onTrue(drive.setAngularSpeedMultiplierCmd(2.25))
+        .onTrue(drive.setAngularSpeedMultiplierCmd(3.0))
         .onFalse(drive.setAngularSpeedMultiplierCmd(1.0));
   }
 
@@ -441,7 +441,7 @@ public class Superstructure extends SubsystemBase {
     };
 
     return new SequentialCommandGroup(
-            intake.currentSensedRezero(),
+            intake.currentSensedRezero(5.0),
             PitCheck.createCommand(
                 "Intake Extension Pit Check",
                 intake.extension.io::setPosition,
@@ -466,6 +466,10 @@ public class Superstructure extends SubsystemBase {
 
   public Command toggleIntakeExtensionPitcheck() {
     return toggleIntakeExtension().beforeStarting(() -> setPitCheckMode(true));
+  }
+
+  public Command inspectionPitcheck() {
+    return Commands.runOnce(() -> setPitCheckMode(true));
   }
 
   public Command hoodPitCheck() {

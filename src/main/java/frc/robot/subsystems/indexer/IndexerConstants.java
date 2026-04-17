@@ -18,7 +18,7 @@ public final class IndexerConstants {
     public static final int CAN_ID = 17;
 
     public static AngularVelocity getSerializingSpeed() {
-      return DriverStation.isAutonomous() ? RotationsPerSecond.of(1.0) : RotationsPerSecond.of(1.0);
+      return DriverStation.isAutonomous() ? RotationsPerSecond.of(1.1) : RotationsPerSecond.of(1.0);
     }
 
     public static final RollersSpecifications ROLLERS_SPECS =

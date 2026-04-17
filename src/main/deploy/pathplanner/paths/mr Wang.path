@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5,
-        "y": 6.0
+        "x": 3.492918149466193,
+        "y": 6.009311981020167
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.7500000000000004,
-        "y": 6.0
+        "x": 4.267580071174375,
+        "y": 6.289051008303679
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.55,
-        "y": 6.0
+        "x": 4.740984578884935,
+        "y": 5.363760379596679
       },
       "prevControl": {
-        "x": 3.3,
-        "y": 6.0
+        "x": 4.497602156187716,
+        "y": 5.42090052592159
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,32 +31,9 @@
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "RezeroIntake",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "RezeroIntake"
-        }
-      }
-    },
-    {
-      "name": "RezeroHood",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "RezeroHood"
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 0.1,
+    "maxVelocity": 4.5,
     "maxAcceleration": 10.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -71,7 +48,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

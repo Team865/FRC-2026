@@ -7,7 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Start - Neutral Intake"
+            "pathName": "Right Start - Neutral Intake Fast"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Neutral - Alliance"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StartShooting"
           }
         },
         {
@@ -31,7 +43,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Second Pass Shallow"
+            "pathName": "Right Second Swipe Deep"
           }
         },
         {

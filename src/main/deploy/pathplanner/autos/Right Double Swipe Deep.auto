@@ -11,12 +11,6 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Right Neutral - Alliance"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "StartShooting"

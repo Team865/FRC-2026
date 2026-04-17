@@ -22,6 +22,7 @@ import frc.robot.subsystems.rollers.RollersIO;
 import frc.robot.util.LoggedTunableNumber;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
   public final Rollers rollers;
@@ -56,7 +57,7 @@ public class Intake extends SubsystemBase {
           IntakeConstants.Extension.SYSTEM_CONSTANTS.maxAcceleration.get());
 
   private final Debouncer currentSenseDebouncer = new Debouncer(0.04);
-  private final Debouncer intakeDebouncer = new Debouncer(0.2, DebounceType.kBoth);
+  private final Debouncer intakeDebouncer = new Debouncer(0.1, DebounceType.kBoth);
 
   public Intake(RollersIO rollersIO, ExtensionIO extensionIO) {
     this.rollers = new Rollers("Intake/Rollers", rollersIO);
@@ -90,14 +91,15 @@ public class Intake extends SubsystemBase {
 
   @AutoLogOutput(key = "Intake/IsIntakingInAuto")
   public boolean isIntakingInAuto() {
-    return intakeDebouncer.calculate(rollers.inputs.supplyCurrentAmps > 30);
+    return intakeDebouncer.calculate(rollers.inputs.supplyCurrentAmps > 20);
   }
 
-  public Command currentSensedRezero() {
+  public Command currentSensedRezero(double timeoutSeconds) {
     if (Constants.currentMode == Constants.Mode.REAL) {
       return new SequentialCommandGroup(
               this.runOnce(
                   () -> {
+                    Logger.recordOutput("Intake/Rezeroing", true);
                     extension.shouldAutoStopAtSetpoint = false;
                     extension.io.setVolts(-3);
                   }),
@@ -106,10 +108,14 @@ public class Intake extends SubsystemBase {
                       () ->
                           currentSenseDebouncer.calculate(
                               Math.abs(extension.inputs.torqueCurrentAmps) > 70))
-                  .raceWith(new WaitCommand(5)),
+                  .raceWith(new WaitCommand(timeoutSeconds)),
               runOnce(() -> extension.io.seedPosition(Inches.of(-0.3))),
               this.runOnce(() -> extension.io.stop()))
-          .finallyDo(() -> extension.shouldAutoStopAtSetpoint = true);
+          .finallyDo(
+              () -> {
+                extension.shouldAutoStopAtSetpoint = true;
+                Logger.recordOutput("Intake/Rezeroing", false);
+              });
     } else {
       return this.runOnce(() -> rollers.io.stop()).andThen(new WaitCommand(0.5));
     }

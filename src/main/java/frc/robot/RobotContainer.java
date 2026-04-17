@@ -328,7 +328,7 @@ public class RobotContainer {
         "StartShooting", superstructure.forceState(ShootingState.SHOOTING));
     NamedCommands.registerCommand("StopShooting", superstructure.forceState(ShootingState.IDLE));
 
-    NamedCommands.registerCommand("RezeroIntake", intake.currentSensedRezero());
+    NamedCommands.registerCommand("RezeroIntake", intake.currentSensedRezero(1.0));
     NamedCommands.registerCommand("RezeroHood", hood.currentSensedRezero());
 
     NamedCommands.registerCommand(
@@ -349,6 +349,7 @@ public class RobotContainer {
       autoChooser.addOption("Serializer Pit Check", superstructure.serializerPitCheck());
       autoChooser.addOption("Hood Pit Check", superstructure.hoodPitCheck());
       autoChooser.addOption("Extend Intake", superstructure.toggleIntakeExtensionPitcheck());
+      autoChooser.addOption("Blank Inspection", superstructure.inspectionPitcheck());
     }
     // // Set up SysId routines
     // autoChooser.addOption(
@@ -489,7 +490,7 @@ public class RobotContainer {
 
     operatorController
         .back()
-        .onTrue(hood.currentSensedRezero().andThen(intake.currentSensedRezero()));
+        .onTrue(hood.currentSensedRezero().andThen(intake.currentSensedRezero(5.0)));
 
     operatorController.start().onTrue(superstructure.toggleManualOverride());
 

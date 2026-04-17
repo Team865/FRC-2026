@@ -1,6 +1,7 @@
 package frc.robot.subsystems.extension;
 
 import static edu.wpi.first.units.Units.Hertz;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
@@ -77,7 +78,7 @@ public class ExtensionIOTalonFX implements ExtensionIO {
     statorCurrentSignal = talon.getStatorCurrent();
     torqueCurrentSignal = talon.getTorqueCurrent();
 
-    PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(0.0));
+    PhoenixUtil.tryUntilOk(5, () -> talon.setPosition(linearToAngular(Inches.of(-0.2))));
     talon.optimizeBusUtilization();
     PhoenixUtil.tryUntilOk(
         5,

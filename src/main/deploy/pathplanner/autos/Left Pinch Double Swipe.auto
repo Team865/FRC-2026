@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Start - Neutral Intake"
+            "pathName": "Left Start - Neutral Intake Fast"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Neutral First Swipe Return B"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 1.5
           }
         },
         {
@@ -31,7 +37,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left Second Pass Shallow"
+            "pathName": "Left Second Pass Deep"
           }
         },
         {
@@ -50,6 +56,18 @@
           "type": "named",
           "data": {
             "name": "StowIntake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left End Neutral Zone"
           }
         }
       ]

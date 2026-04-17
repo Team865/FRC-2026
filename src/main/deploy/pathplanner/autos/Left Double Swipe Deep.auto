@@ -11,12 +11,6 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Left Neutral Double Swipe Return"
-          }
-        },
-        {
           "type": "wait",
           "data": {
             "waitTime": 1.5
@@ -38,12 +32,6 @@
           "type": "path",
           "data": {
             "pathName": "Left Second Pass Deep"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StartShooting"
           }
         },
         {

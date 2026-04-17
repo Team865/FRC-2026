@@ -4,12 +4,12 @@
     {
       "anchor": {
         "x": 7.807354685641123,
-        "y": 4.71820877816781
+        "y": 4.5
       },
       "prevControl": null,
       "nextControl": {
         "x": 6.320592020592022,
-        "y": 5.9785714285714295
+        "y": 5.76036265040362
       },
       "isLocked": false,
       "linkedName": "LeftNZEndA"

@@ -4,27 +4,27 @@
     {
       "anchor": {
         "x": 3.299252669039147,
-        "y": 2.5
+        "y": 2.3
       },
       "prevControl": null,
       "nextControl": {
         "x": 4.267580071174378,
-        "y": 2.4892408066429423
+        "y": 2.289240806642942
       },
       "isLocked": false,
       "linkedName": "RightFirstSwipeEnd"
     },
     {
       "anchor": {
-        "x": 6.064,
+        "x": 5.9,
         "y": 2.394223013048635
       },
       "prevControl": {
-        "x": 5.8872233047033635,
+        "x": 5.723223304703364,
         "y": 2.217446317751998
       },
       "nextControl": {
-        "x": 6.240776695296637,
+        "x": 6.076776695296637,
         "y": 2.570999708345272
       },
       "isLocked": false,
@@ -134,10 +134,10 @@
     },
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 1.0573678290213684,
+      "minWaypointRelativePos": 1.35,
       "maxWaypointRelativePos": 4.053156146179441,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 2.1,
         "maxAcceleration": 10.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -148,7 +148,7 @@
     {
       "name": "Constraints Zone",
       "minWaypointRelativePos": 4.668166479190096,
-      "maxWaypointRelativePos": 4.9606299212598435,
+      "maxWaypointRelativePos": 4.95,
       "constraints": {
         "maxVelocity": 1.7,
         "maxAcceleration": 10.0,
@@ -193,10 +193,21 @@
           "name": "HalfStowIntake"
         }
       }
+    },
+    {
+      "name": "StartShooting",
+      "waypointRelativePos": 4.95,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "StartShooting"
+        }
+      }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.0,
+    "maxVelocity": 4.5,
     "maxAcceleration": 10.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
