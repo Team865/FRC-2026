@@ -42,30 +42,6 @@
           "name": "StartShooting"
         }
       }
-    },
-    {
-      "name": "RezeroIntake",
-      "waypointRelativePos": 0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "sequential",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "RezeroIntake"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "StowIntake"
-              }
-            }
-          ]
-        }
-      }
     }
   ],
   "globalConstraints": {

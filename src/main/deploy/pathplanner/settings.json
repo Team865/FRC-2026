@@ -13,7 +13,7 @@
     "Single Swipe and depot",
     "Preloads Only"
   ],
-  "defaultMaxVel": 4.0,
+  "defaultMaxVel": 4.5,
   "defaultMaxAccel": 10.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
@@ -39,6 +39,6 @@
   "bumperOffsetY": 0.0,
   "robotFeatures": [
     "{\"name\":\"Circle\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.0,\"y\":0.0},\"radius\":0.127,\"strokeWidth\":0.04,\"filled\":false}}",
-    "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.4,\"y\":0.0},\"size\":{\"width\":0.6,\"length\":0.1},\"borderRadius\":0.05,\"strokeWidth\":0.01,\"filled\":false}}"
+    "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.498,\"y\":0.0},\"size\":{\"width\":0.8,\"length\":0.22222},\"borderRadius\":0.05,\"strokeWidth\":0.01,\"filled\":false}}"
   ]
 }

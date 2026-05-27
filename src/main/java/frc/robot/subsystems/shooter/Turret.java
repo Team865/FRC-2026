@@ -2,7 +2,6 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.MathUtil;
@@ -228,7 +227,7 @@ public class Turret extends Pivot implements SysIdTestable {
 
     encoderIO.updateInputs(encoderInputs);
 
-    Logger.recordOutput("Turret/PositionRots", inputs.position.in(Rotations));
+    Logger.recordOutput("Turret/PositionDeg", inputs.position.in(Degrees));
     Logger.recordOutput("Turret/VelocityRotsPerSec", inputs.velocity.in(RotationsPerSecond));
     // encoderDisconnectedAlert.set(!encoderInputs.connected);
     Logger.processInputs("Shooter/Turret/AbsoluteEncoder", encoderInputs);

@@ -42,13 +42,13 @@ public class FieldConstants {
   // Scoring element positions
   public static final Pose2d allianceHubPoseBlue =
       new Pose2d(
-          Units.inchesToMeters(182.25),
-          Units.inchesToMeters(158.125),
+          Units.inchesToMeters(182.11),
+          Units.inchesToMeters(158.84),
           Rotation2d.fromDegrees(180)); // Towards origin
   public static final Pose2d allianceHubPoseRed =
       new Pose2d(
-          fieldLength - Units.inchesToMeters(182.25),
-          Units.inchesToMeters(158.125),
+          fieldLength - Units.inchesToMeters(182.11),
+          Units.inchesToMeters(158.84),
           Rotation2d.fromDegrees(0)); // Away from origin
 
   public static final Pose2d allianceRightClimbPose =

@@ -35,7 +35,10 @@ public final class VisionUtil {
       boolean isMT1 = observation.type() == VisionIO.PoseObservationType.MEGATAG_1;
       boolean rejectPose =
           observation.tagCount() == 0
-              || (isMT1 && observation.tagCount() == 1 && observation.ambiguity() > maxAmbiguity)
+              || (isMT1
+                  && observation.tagCount() == 1
+                  && (observation.ambiguity() > maxAmbiguity
+                      || observation.averageTagDistance() > singleTagMaxDistanceMeters))
               || Math.abs(observation.pose().getZ()) > maxZError
               || observation.pose().getX() < 0.0
               || observation.pose().getX() > aprilTagLayout.getFieldLength()

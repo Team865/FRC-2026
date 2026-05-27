@@ -11,15 +11,63 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "StartShooting"
+          }
+        },
+        {
           "type": "wait",
           "data": {
             "waitTime": 3.0
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "StopShooting"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Middle - Depot - Back"
+            "pathName": "Middle - Depot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Depot - Back"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 2.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowIntake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 8.0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopShooting"
           }
         }
       ]
